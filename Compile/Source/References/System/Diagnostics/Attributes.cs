@@ -25,24 +25,18 @@ namespace System.Diagnostics.CodeAnalysis
     /// <summary>
     /// Specifies that the method will not return if the associated Boolean parameter is passed the specified value.
     /// </summary>
+    /// <param name="parameterValue">
+    /// The condition parameter value. Code after the method will be considered unreachable
+    /// by diagnostics if the argument to the associated parameter matches this value.
+    /// </param>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class DoesNotReturnIfAttribute : Attribute
+    sealed partial class DoesNotReturnIfAttribute(bool parameterValue) : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DoesNotReturnIfAttribute"/> class
-        /// with the specified parameter value.
-        /// </summary>
-        /// <param name="parameterValue">
-        /// The condition parameter value. Code after the method will be considered unreachable
-        /// by diagnostics if the argument to the associated parameter matches this value.
-        /// </param>
-        public DoesNotReturnIfAttribute(bool parameterValue) => ParameterValue = parameterValue;
-
         /// <summary>
         /// Gets a value indicating whether the condition parameter value
         /// is <see langword="true"/> or <see langword="false"/>.
         /// </summary>
-        public bool ParameterValue { get; }
+        public bool ParameterValue => parameterValue;
     }
 
     /// <summary>Specifies that an output may be null even if the corresponding type disallows it.</summary>
@@ -64,66 +58,48 @@ namespace System.Diagnostics.CodeAnalysis
     /// Specifies that when a method returns <see cref="ReturnValue"/>,
     /// the parameter may be null even if the corresponding type disallows it.
     /// </summary>
+    /// <param name="returnValue">
+    /// The return value condition. If the method returns this value, the associated parameter may be null.
+    /// </param>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class MaybeNullWhenAttribute : Attribute
+    sealed partial class MaybeNullWhenAttribute(bool returnValue) : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MaybeNullWhenAttribute"/> class
-        /// with the specified return value condition.
-        /// </summary>
-        /// <param name="returnValue">
-        /// The return value condition. If the method returns this value, the associated parameter may be null.
-        /// </param>
-        public MaybeNullWhenAttribute(bool returnValue) => ReturnValue = returnValue;
-
         /// <summary>
         /// Gets a value indicating whether the return value condition
         /// is <see langword="true"/> or <see langword="false"/>.
         /// </summary>
-        public bool ReturnValue { get; }
+        public bool ReturnValue => returnValue;
     }
 
     /// <summary>
     /// Specifies that when a method returns <see cref="ReturnValue"/>,
     /// the parameter will not be null even if the corresponding type allows it.
     /// </summary>
+    /// <param name="returnValue">
+    /// The return value condition. If the method returns this value, the associated parameter will not be null.
+    /// </param>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class NotNullWhenAttribute : Attribute
+    sealed partial class NotNullWhenAttribute(bool returnValue) : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CodeAnalysis.NotNullWhenAttribute"/>
-        /// class with the specified return value condition.
-        /// </summary>
-        /// <param name="returnValue">
-        /// The return value condition. If the method returns this value, the associated parameter will not be null.
-        /// </param>
-        public NotNullWhenAttribute(bool returnValue) => ReturnValue = returnValue;
-
         /// <summary>
         /// Gets a value indicating whether the return value condition is <see langword="true"/> or <see langword="false"/>.
         /// </summary>
-        public bool ReturnValue { get; }
+        public bool ReturnValue => returnValue;
     }
 
     /// <summary>Specifies that the output will be non-null if the named parameter is non-null.</summary>
+    /// <param name="parameterName">
+    /// The associated parameter name.
+    /// The output will be non-null if the argument to the parameter specified is non-null.
+    /// </param>
     [AttributeUsage(
         AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue,
         AllowMultiple = true
     )]
-    sealed partial class NotNullIfNotNullAttribute : Attribute
+    sealed partial class NotNullIfNotNullAttribute(string parameterName) : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NotNullIfNotNullAttribute"/> class
-        /// with the associated parameter name.
-        /// </summary>
-        /// <param name="parameterName">
-        /// The associated parameter name.
-        /// The output will be non-null if the argument to the parameter specified is non-null.
-        /// </param>
-        public NotNullIfNotNullAttribute(string parameterName) => ParameterName = parameterName;
-
         /// <summary>Gets the associated parameter name.</summary>
-        public string ParameterName { get; }
+        public string ParameterName => parameterName;
     }
 #endif
 #if NETFRAMEWORK || NETSTANDARD
@@ -131,8 +107,11 @@ namespace System.Diagnostics.CodeAnalysis
     /// Specifies that the method or property will ensure that the
     /// listed field and property members have not-null values.
     /// </summary>
+    /// <param name="members">
+    /// The list of field and AttributeTargets.Property members that are promised to be not-null.
+    /// </param>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
-    sealed partial class MemberNotNullAttribute : Attribute
+    sealed partial class MemberNotNullAttribute(params string[] members) : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullAttribute"/>
@@ -141,19 +120,11 @@ namespace System.Diagnostics.CodeAnalysis
         /// <param name="member">
         /// The field or property member that is promised to be not-null.
         /// </param>
-        public MemberNotNullAttribute(string member) => Members = [member];
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MemberNotNullAttribute"/> class
-        /// with the list of field and property members.
-        /// </summary>
-        /// <param name="members">
-        /// The list of field and AttributeTargets.Property members that are promised to be not-null.
-        /// </param>
-        public MemberNotNullAttribute(params string[] members) => Members = members;
+        public MemberNotNullAttribute(string member)
+            : this([member]) { }
 
         /// <summary>Gets field or AttributeTargets.Property member names.</summary>
-        public string[] Members { get; }
+        public string[] Members => members;
     }
 #endif
 #if !NET5_0_OR_GREATER
@@ -161,8 +132,14 @@ namespace System.Diagnostics.CodeAnalysis
     /// Specifies that the method or property will ensure that the listed field and property members
     /// have not-null values when returning with the specified return value condition.
     /// </summary>
+    /// <param name="returnValue">
+    /// The return value condition. If the method returns this value, the associated parameter will not be null.
+    /// </param>
+    /// <param name="members">
+    /// The list of field and property members that are promised to be not-null.
+    /// </param>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
-    sealed partial class MemberNotNullWhenAttribute : Attribute
+    sealed partial class MemberNotNullWhenAttribute(bool returnValue, params string[] members) : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullWhenAttribute"/> class
@@ -173,35 +150,16 @@ namespace System.Diagnostics.CodeAnalysis
         /// </param>
         /// <param name="member">The field or property member that is promised to be not-null.</param>
         public MemberNotNullWhenAttribute(bool returnValue, string member)
-        {
-            ReturnValue = returnValue;
-            Members = [member];
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MemberNotNullWhenAttribute"/> class
-        /// with the specified return value condition and list of field and property members.
-        /// </summary>
-        /// <param name="returnValue">
-        /// The return value condition. If the method returns this value, the associated parameter will not be null.
-        /// </param>
-        /// <param name="members">
-        /// The list of field and property members that are promised to be not-null.
-        /// </param>
-        public MemberNotNullWhenAttribute(bool returnValue, params string[] members)
-        {
-            ReturnValue = returnValue;
-            Members = members;
-        }
+            : this(returnValue, [member]) { }
 
         /// <summary>
         /// Gets a value indicating whether the return value condition
         /// is <see langword="true"/> or <see langword="false"/>.
         /// </summary>
-        public bool ReturnValue { get; }
+        public bool ReturnValue => returnValue;
 
         /// <summary>Gets field or property member names.</summary>
-        public string[] Members { get; }
+        public string[] Members => members;
     }
 #endif
 #if !NET7_0_OR_GREATER
@@ -213,8 +171,10 @@ namespace System.Diagnostics.CodeAnalysis
     sealed partial class SetsRequiredMembersAttribute : Attribute;
 
     /// <summary>Specifies the syntax used in a string.</summary>
+    /// <param name="syntax">The syntax identifier.</param>
+    /// <param name="arguments">Optional arguments associated with the specific syntax employed.</param>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field | AttributeTargets.Property)]
-    sealed partial class StringSyntaxAttribute : Attribute
+    sealed partial class StringSyntaxAttribute(string syntax, params object?[] arguments) : Attribute
     {
         /// <summary>The syntax identifier for strings containing composite formats for string formatting.</summary>
         public const string CompositeFormat = nameof(CompositeFormat);
@@ -258,28 +218,13 @@ namespace System.Diagnostics.CodeAnalysis
         /// </summary>
         /// <param name="syntax">The syntax identifier.</param>
         public StringSyntaxAttribute(string syntax)
-        {
-            Syntax = syntax;
-            Arguments = [null];
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StringSyntaxAttribute"/> class
-        /// with the identifier of the syntax used.
-        /// </summary>
-        /// <param name="syntax">The syntax identifier.</param>
-        /// <param name="arguments">Optional arguments associated with the specific syntax employed.</param>
-        public StringSyntaxAttribute(string syntax, params object?[] arguments)
-        {
-            Syntax = syntax;
-            Arguments = arguments;
-        }
+            : this(syntax, [null]) { }
 
         /// <summary>Gets the identifier of the syntax used.</summary>
-        public string Syntax { get; }
+        public string Syntax => syntax;
 
         /// <summary>Gets the optional arguments associated with the specific syntax employed.</summary>
-        public object?[] Arguments { get; }
+        public object?[] Arguments => arguments;
     }
 
     /// <summary>Used to indicate a byref escapes and is not scoped.</summary>
@@ -295,6 +240,9 @@ namespace System.Diagnostics.CodeAnalysis
     /// This attribute allows call sites to be flagged with a diagnostic that indicates that an experimental
     /// feature is used. Authors can use this attribute to ship preview features in their assemblies.
     /// </para></remarks>
+    /// <param name="diagnosticId">
+    /// The ID that the compiler will use when reporting a use of the API the attribute applies to.
+    /// </param>
     [AttributeUsage(
         AttributeTargets.Assembly |
         AttributeTargets.Class |
@@ -310,17 +258,8 @@ namespace System.Diagnostics.CodeAnalysis
         AttributeTargets.Struct,
         Inherited = false
     )]
-    sealed partial class ExperimentalAttribute : Attribute
+    sealed partial class ExperimentalAttribute(string diagnosticId) : Attribute
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ExperimentalAttribute"/> class, specifying the
-        /// ID that the compiler will use when reporting a use of the API the attribute applies to.
-        /// </summary>
-        /// <param name="diagnosticId">
-        /// The ID that the compiler will use when reporting a use of the API the attribute applies to.
-        /// </param>
-        public ExperimentalAttribute(string diagnosticId) => DiagnosticId = diagnosticId;
-
         /// <summary>
         /// Gets the ID that the compiler will use when reporting a use of the API the attribute applies to.
         /// </summary>
@@ -329,7 +268,7 @@ namespace System.Diagnostics.CodeAnalysis
         /// The diagnostic ID is shown in build output for warnings and errors.
         /// This property represents the unique ID that can be used to suppress the warnings or errors, if needed.
         /// </para></remarks>
-        public string DiagnosticId { get; }
+        public string DiagnosticId => diagnosticId;
 
         /// <summary>
         /// Gets or sets the URL for corresponding documentation. The API accepts a format string
@@ -349,7 +288,7 @@ namespace System.Runtime.CompilerServices
     /// <summary>Indicates that a location is intercepted by this method.</summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 #pragma warning disable CS9113
-    sealed class InterceptsLocationAttribute : Attribute
+    sealed partial class InterceptsLocationAttribute : Attribute
     {
         /// <summary>Initializes a new instance of the <see cref="InterceptsLocationAttribute"/> class.</summary>
         /// <param name="version">The version number of the encoding data.</param>
@@ -380,15 +319,15 @@ namespace System.Runtime.CompilerServices
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, Inherited = false)]
     sealed class CollectionBuilderAttribute(Type builderType, string methodName) : Attribute
     {
-        /// <summary>Gets the type of the builder to use to construct the collection.</summary>
-        public Type BuilderType => builderType;
-
         /// <summary>Gets the name of the method on the builder to use to construct the collection.</summary>
         /// <remarks><para>
         /// This should match the metadata name of the target method.
         /// For example, this might be ".ctor" if targeting the type's constructor.
         /// </para></remarks>
         public string MethodName => methodName;
+
+        /// <summary>Gets the type of the builder to use to construct the collection.</summary>
+        public Type BuilderType => builderType;
     }
 #endif
 #if !NET5_0_OR_GREATER
@@ -409,6 +348,7 @@ namespace System.Runtime.CompilerServices
     /// build the attributed async method or to build the attributed type when used as the return type
     /// of an async method.
     /// </summary>
+    /// <param name="builderType">The <see cref="Type"/> of the associated builder.</param>
     [AttributeUsage(
         AttributeTargets.Class |
         AttributeTargets.Struct |
@@ -418,14 +358,10 @@ namespace System.Runtime.CompilerServices
         AttributeTargets.Method,
         Inherited = false
     )]
-    sealed partial class AsyncMethodBuilderAttribute : Attribute
+    sealed partial class AsyncMethodBuilderAttribute(Type builderType) : Attribute
     {
-        /// <summary>Initializes a new instance of the <see cref="AsyncMethodBuilderAttribute"/> class.</summary>
-        /// <param name="builderType">The <see cref="Type"/> of the associated builder.</param>
-        public AsyncMethodBuilderAttribute(Type builderType) => BuilderType = builderType;
-
         /// <summary>Gets the <see cref="Type"/> of the associated builder.</summary>
-        public Type BuilderType { get; }
+        public Type BuilderType => builderType;
     }
 #endif
 #if NET20 || NET30
@@ -443,8 +379,9 @@ namespace System.Runtime.CompilerServices
     /// <summary>
     /// Indicates which arguments to a method involving an interpolated string handler should be passed to that handler.
     /// </summary>
+    /// <param name="arguments">The names of the arguments that should be passed to the handler.</param>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class InterpolatedStringHandlerArgumentAttribute : Attribute
+    sealed partial class InterpolatedStringHandlerArgumentAttribute(params string[] arguments) : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InterpolatedStringHandlerArgumentAttribute"/> class.
@@ -453,22 +390,14 @@ namespace System.Runtime.CompilerServices
         /// The empty string may be used as the name of the receiver in an instance method.
         /// </para></remarks>
         /// <param name="argument">The name of the argument that should be passed to the handler.</param>
-        public InterpolatedStringHandlerArgumentAttribute(string argument) => Arguments = [argument];
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InterpolatedStringHandlerArgumentAttribute"/> class.
-        /// </summary>
-        /// <remarks><para>
-        /// The empty string may be used as the name of the receiver in an instance method.
-        /// </para></remarks>
-        /// <param name="arguments">The names of the arguments that should be passed to the handler.</param>
-        public InterpolatedStringHandlerArgumentAttribute(params string[] arguments) => Arguments = arguments;
+        public InterpolatedStringHandlerArgumentAttribute(string argument)
+            : this([argument]) { }
 
         /// <summary>Gets the names of the arguments that should be passed to the handler.</summary>
         /// <remarks><para>
         /// The empty string may be used as the name of the receiver in an instance method.
         /// </para></remarks>
-        public string[] Arguments { get; }
+        public string[] Arguments => arguments;
     }
 #endif
 #if !NET5_0_OR_GREATER
@@ -534,23 +463,15 @@ namespace System.Runtime.CompilerServices
 #if NETFRAMEWORK || NETSTANDARD
     /// <summary>Indicates that a parameter captures the expression passed for another parameter as a string.</summary>
     /// <remarks><para>This attribute is implemented in the compiler for C# 10 and later versions only.</para></remarks>
+    /// <param name="parameterName">The name of the parameter whose expression should be captured as a string.</param>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class CallerArgumentExpressionAttribute : Attribute
+    sealed partial class CallerArgumentExpressionAttribute([InvokerParameterName] string parameterName) : Attribute
     {
-        /// <summary>Initializes a new instance of the <see cref="CallerArgumentExpressionAttribute"/> class.</summary>
-        /// <param name="parameterName">
-        /// The name of the parameter whose expression should be captured as a string.
-        /// </param>
-        public CallerArgumentExpressionAttribute([InvokerParameterName] string parameterName) =>
-            ParameterName = parameterName;
-
         /// <summary>Gets the name of the parameter whose expression should be captured as a string.</summary>
-        public string ParameterName { [Pure] get; }
+        public string ParameterName => parameterName;
     }
 #endif
-#if !NET5_0_OR_GREATER
-    // ReSharper disable once CommentTypo
-
+#if !NET5_0_OR_GREATER // ReSharper disable once CommentTypo
     /// <summary>
     /// Used to indicate to the compiler that the <c>.locals init</c> flag should not be set in method headers.
     /// </summary>
@@ -619,8 +540,9 @@ namespace System.Runtime.CompilerServices
     /// Indicates that compiler support for a particular feature is
     /// required for the location where this attribute is applied.
     /// </summary>
+    /// <param name="featureName">The name of the compiler feature.</param>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    sealed partial class CompilerFeatureRequiredAttribute : Attribute
+    sealed partial class CompilerFeatureRequiredAttribute(string featureName) : Attribute
     {
         /// <summary>The <see cref="FeatureName"/> used for the ref structs C# feature.</summary>
         public const string RefStructs = nameof(RefStructs);
@@ -628,18 +550,14 @@ namespace System.Runtime.CompilerServices
         /// <summary>The <see cref="FeatureName"/> used for the required members C# feature.</summary>
         public const string RequiredMembers = nameof(RequiredMembers);
 
-        /// <summary>Initializes a new instance of the <see cref="CompilerFeatureRequiredAttribute"/> class.</summary>
-        /// <param name="featureName">The name of the compiler feature.</param>
-        public CompilerFeatureRequiredAttribute(string featureName) => FeatureName = featureName;
-
-        /// <summary>Gets the name of the compiler feature.</summary>
-        public string FeatureName { [Pure] get; }
-
         /// <summary>
         /// Gets or sets a value indicating whether the compiler can choose to allow access to the location
         /// where this attribute is applied if it does not understand <see cref="FeatureName"/>.
         /// </summary>
         public bool IsOptional { [Pure] get; set; }
+
+        /// <summary>Gets the name of the compiler feature.</summary>
+        public string FeatureName => featureName;
     }
 
     /// <summary>Specifies that a type has required members or that a member is required.</summary>
@@ -652,7 +570,7 @@ namespace System.Runtime.CompilerServices
     sealed partial class InlineArrayAttribute(int length) : Attribute
     {
         /// <summary>Gets the length of the inlined array.</summary>
-        public int Length { get; } = length;
+        public int Length => length;
     }
 #endif
 #if !NET9_0_OR_GREATER
@@ -670,7 +588,7 @@ namespace System.Runtime.CompilerServices
     sealed class OverloadResolutionPriorityAttribute(int priority) : Attribute
     {
         /// <summary>Gets the priority of the member.</summary>
-        public int Priority { get; } = priority;
+        public int Priority => priority;
     }
 #endif
 }
@@ -697,8 +615,35 @@ namespace System.Text.RegularExpressions
     /// on the target framework at compile time. This differs from the rest of the <see cref="Regex"/> engines, which
     /// perform this transformation at run-time, meaning they will always use casing table for the current runtime.
     /// </para></remarks>
+    /// <param name="pattern">The regular expression pattern to match.</param>
+    /// <param name="options">
+    /// A bitwise combination of the enumeration values that modify the regular expression.
+    /// </param>
+    /// <param name="matchTimeoutMilliseconds">
+    /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
+    /// to indicate that the method should not time out.</param>
+    /// <param name="cultureName">
+    /// The name of a culture to be used for case-sensitive comparisons.
+    /// <paramref name="cultureName"/> is not case-sensitive.
+    /// </param>
+    /// <remarks><para>
+    /// For a list of predefined culture names on Windows systems, see the Language tag column in the
+    /// list of language/region names supported by
+    /// <a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c">
+    /// Windows
+    /// </a>.
+    /// Culture names follow the standard defined by <a href="https://tools.ietf.org/html/bcp47">BCP 47</a>.
+    /// In addition, starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
+    /// </para><para>
+    /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
+    /// </para></remarks>
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    sealed partial class GeneratedRegexAttribute : Attribute
+    sealed partial class GeneratedRegexAttribute(
+        [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
+        RegexOptions options,
+        int matchTimeoutMilliseconds,
+        string cultureName
+    ) : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/> class with the specified pattern.
@@ -771,58 +716,19 @@ namespace System.Text.RegularExpressions
             : this(pattern, options, matchTimeoutMilliseconds, "") { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
-        /// class with the specified pattern, options, and timeout.
-        /// </summary>
-        /// <param name="pattern">The regular expression pattern to match.</param>
-        /// <param name="options">
-        /// A bitwise combination of the enumeration values that modify the regular expression.
-        /// </param>
-        /// <param name="matchTimeoutMilliseconds">
-        /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
-        /// to indicate that the method should not time out.</param>
-        /// <param name="cultureName">
-        /// The name of a culture to be used for case-sensitive comparisons.
-        /// <paramref name="cultureName"/> is not case-sensitive.
-        /// </param>
-        /// <remarks><para>
-        /// For a list of predefined culture names on Windows systems, see the Language tag column in the
-        /// list of language/region names supported by
-        /// <a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c">
-        /// Windows
-        /// </a>.
-        /// Culture names follow the standard defined by <a href="https://tools.ietf.org/html/bcp47">BCP 47</a>.
-        /// In addition, starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
-        /// </para><para>
-        /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
-        /// </para></remarks>
-        public GeneratedRegexAttribute(
-            [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
-            RegexOptions options,
-            int matchTimeoutMilliseconds,
-            string cultureName
-        )
-        {
-            Pattern = pattern;
-            Options = options;
-            MatchTimeoutMilliseconds = matchTimeoutMilliseconds;
-            CultureName = cultureName;
-        }
-
-        /// <summary>
         /// Gets a time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
         /// to indicate that the method should not time out.
         /// </summary>
-        public int MatchTimeoutMilliseconds { [Pure] get; }
+        public int MatchTimeoutMilliseconds => matchTimeoutMilliseconds;
 
         /// <summary>Gets the name of the culture to be used for case-sensitive comparisons.</summary>
-        public string CultureName { [Pure] get; }
+        public string CultureName => cultureName;
 
         /// <summary>Gets the regular expression pattern to match.</summary>
-        public string Pattern { [Pure] get; }
+        public string Pattern => pattern;
 
         /// <summary>Gets a bitwise combination of the enumeration values that modify the regular expression.</summary>
-        public RegexOptions Options { [Pure] get; }
+        public RegexOptions Options => options;
     }
 }
 #endif
