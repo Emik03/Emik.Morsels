@@ -287,7 +287,7 @@ namespace System.Runtime.CompilerServices
 {
     /// <summary>Indicates that a location is intercepted by this method.</summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-#pragma warning disable CS9113
+#pragma warning disable CA1019, CS9113
     sealed class InterceptsLocationAttribute : Attribute
     {
         /// <summary>Initializes a new instance of the <see cref="InterceptsLocationAttribute"/> class.</summary>
@@ -303,7 +303,7 @@ namespace System.Runtime.CompilerServices
         [UsedImplicitly]
         public InterceptsLocationAttribute(string filePath, int line, int character) { }
     }
-#pragma warning restore CS9113
+#pragma warning restore CA1019, CS9113
 #if !NET8_0_OR_GREATER
     /// <summary>
     /// Initialize the attribute to refer to the <paramref name="methodName"/>

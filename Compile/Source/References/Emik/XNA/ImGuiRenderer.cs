@@ -3,7 +3,7 @@
 // ReSharper disable RedundantNameQualifier
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable CA1707, CA2213
 using Buffer = System.Buffer;
 
 /// <summary>ImGui renderer for use with MonoGame.</summary>
