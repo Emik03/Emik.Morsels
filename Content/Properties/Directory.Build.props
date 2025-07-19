@@ -200,7 +200,7 @@
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Drawing" Private="false"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Xml.Linq" Private="false"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25277.114" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25358.103" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Runtime.Serialization" Private="false"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="JetBrainsAnnotations.Fody" Version="2.17" PrivateAssets="all" ExcludeAssets="runtime"/>
