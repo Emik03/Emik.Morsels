@@ -1,1 +1,0 @@
-mklink %~dp0 Emik.Morsels\Content\Properties\global.json && mklink %~dp0 Emik.Morsels\Content\Properties\stylecop.json && mklink %~dp0 Emik.Morsels\Content\Properties\Directory.Build.props && mklink %~dp0 Emik.Morsels\Content\Properties\Directory.Build.targets && mklink %~dp0 Emik.Morsels\Content\Properties\Directory.Build.local.props
