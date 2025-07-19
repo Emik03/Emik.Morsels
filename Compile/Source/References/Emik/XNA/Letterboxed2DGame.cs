@@ -109,13 +109,10 @@ public abstract partial class Letterboxed2DGame : Game
     public Vector2 World(Vector2 v) => World(v.X, v.Y);
 
     /// <inheritdoc />
-    protected override bool BeginDraw()
+    protected override void Dispose(bool disposing)
     {
-        Debug.Assert(Batch is not null);
-        GraphicsDevice.SetRenderTarget(_target);
-        GraphicsDevice.Clear(Background);
-        Batch.Begin(blendState: BatchBlendState);
-        return base.BeginDraw();
+        _target?.Dispose();
+        base.Dispose(disposing);
     }
 
     /// <inheritdoc />
@@ -141,6 +138,16 @@ public abstract partial class Letterboxed2DGame : Game
         Services.AddService(Batch = new(GraphicsDevice));
         WhitePixel = new(GraphicsDevice, 1, 1);
         WhitePixel.SetData([Color.White]);
+    }
+
+    /// <inheritdoc />
+    protected override bool BeginDraw()
+    {
+        Debug.Assert(Batch is not null);
+        GraphicsDevice.SetRenderTarget(_target);
+        GraphicsDevice.Clear(Background);
+        Batch.Begin(blendState: BatchBlendState);
+        return base.BeginDraw();
     }
 #if !ANDROID
     /// <summary>Invoked when a keyboard button is pressed.</summary>

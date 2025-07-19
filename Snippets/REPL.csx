@@ -12697,13 +12697,10 @@ public abstract partial class Letterboxed2DGame : Game
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Vector2 World(Vector2 v) => World(v.X, v.Y);
     /// <inheritdoc />
-    protected override bool BeginDraw()
+    protected override void Dispose(bool disposing)
     {
-        Debug.Assert(Batch is not null);
-        GraphicsDevice.SetRenderTarget(_target);
-        GraphicsDevice.Clear(Background);
-        Batch.Begin(blendState: BatchBlendState);
-        return base.BeginDraw();
+        _target?.Dispose();
+        base.Dispose(disposing);
     }
     /// <inheritdoc />
     protected override void EndDraw()
@@ -12727,6 +12724,15 @@ public abstract partial class Letterboxed2DGame : Game
         Services.AddService(Batch = new(GraphicsDevice));
         WhitePixel = new(GraphicsDevice, 1, 1);
         WhitePixel.SetData([Color.White]);
+    }
+    /// <inheritdoc />
+    protected override bool BeginDraw()
+    {
+        Debug.Assert(Batch is not null);
+        GraphicsDevice.SetRenderTarget(_target);
+        GraphicsDevice.Clear(Background);
+        Batch.Begin(blendState: BatchBlendState);
+        return base.BeginDraw();
     }
 #if !ANDROID
     /// <summary>Invoked when a keyboard button is pressed.</summary>
@@ -12752,6 +12758,7 @@ public abstract partial class Letterboxed2DGame : Game
 #if IMGUI && XNA
 // ReSharper disable RedundantNameQualifier
 // ReSharper disable once CheckNamespace
+#pragma warning disable CA1707, CA2213
 /// <summary>ImGui renderer for use with MonoGame.</summary>
 /// <param name="game">The game to use as reference.</param>
 /// <param name="shared">Whether the <see cref="Context"/> is shared between instances of this type.</param>
@@ -13505,7 +13512,7 @@ readonly
         /// <inheritdoc cref="Choices{T}.K"/>
         [NonNegativeValue, Pure]
         public int K { get; } = Math.Max(k, 0);
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [Pure]
         public IList<T> Current { get; private set; } = [];
         /// <inheritdoc cref="Choices{T}.N"/>
@@ -16081,7 +16088,7 @@ readonly
 // ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantCallerArgumentExpressionDefaultValue RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
-#pragma warning disable CS9107
+#pragma warning disable CA1031, CS9107
     [return: NotNullIfNotNull(nameof(it))]
     public static T Debug<T>(
         this T it,
@@ -18905,6 +18912,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #pragma warning disable GlobalUsingsAnalyzer
 #pragma warning restore GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
+#pragma warning disable CA1031
 /// <summary>Provides methods to wrap delegates around try-catch blocks.</summary>
 // ReSharper disable OutParameterValueIsAlwaysDiscarded.Global
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
