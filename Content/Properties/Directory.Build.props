@@ -140,8 +140,8 @@
         <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
     </PropertyGroup>
     <!-- Ensure that the path is not relative, escaping all instances of "..", which is necessary if through a symlink. -->
-    <PropertyGroup Condition="!$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
-        <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)/../../$(Morsels)'))</Morsels>
+    <PropertyGroup Condition="'$(OS)' != 'Windows_NT' and !$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
+        <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)/../$(Morsels)'))</Morsels>
     </PropertyGroup>
     <!-- F# exclusive properties. -->
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
