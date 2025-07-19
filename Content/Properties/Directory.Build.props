@@ -1,5 +1,9 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
+    <!-- Windows doesn't have $(HOME) set. -->
+    <PropertyGroup Condition="'$(HOME)' == ''">
+        <HOME>$(USERPROFILE)</HOME>
+    </PropertyGroup>
     <!-- Common and/or default values. -->
     <PropertyGroup>
         <Authors>Emik</Authors>
