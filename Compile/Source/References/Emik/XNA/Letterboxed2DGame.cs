@@ -111,7 +111,9 @@ public abstract partial class Letterboxed2DGame : Game
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        _target?.Dispose();
+        if (disposing)
+            _target?.Dispose();
+
         base.Dispose(disposing);
     }
 
