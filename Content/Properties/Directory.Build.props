@@ -100,7 +100,11 @@
         <AndroidSdkDirectory Condition="Exists('$(HOME)/Android/Sdk/')">$(HOME)/Android/Sdk/</AndroidSdkDirectory>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../Emik.Morsels/')">../../../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../../Emik.Morsels/')">../../../../Emik.Morsels/</Morsels>
-        <AndroidSdkDirectory Condition="Exists('$(USERPROFILE)/Android/android-sdk/')">$(USERPROFILE)/Android/android-sdk/</AndroidSdkDirectory>
+        <Morsels Condition="$(Morsels) == '' and Exists('../../../../../Emik.Morsels/')">../../../../../Emik.Morsels/</Morsels>
+        <AndroidSdkDirectory Condition="Exists('$(HOME)/Android/android-sdk/')">$(HOME)/Android/android-sdk/</AndroidSdkDirectory>
+        <Morsels Condition="$(Morsels) == '' and Exists('../../../../../../Emik.Morsels/')">../../../../../../Emik.Morsels/</Morsels>
+        <Morsels Condition="$(Morsels) == '' and Exists('../../../../../../../Emik.Morsels/')">../../../../../../../Emik.Morsels/</Morsels>
+        <Morsels Condition="$(Morsels) == '' and Exists('../../../../../../../../Emik.Morsels/')">../../../../../../../../Emik.Morsels/</Morsels>
         <Unity Condition="$(Unity) == '' and Exists('$(HOME)/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('$(HOME)/Unity/Hub/Editor/')[0])</Unity>
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Celeste/')">$(HOME)/.steam/steam/steamapps/common/Celeste/</Celeste>
         <Unity Condition="$(Unity) == '' and Exists('/Applications/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('/Applications/Unity/Hub/Editor/')[0])</Unity>
@@ -137,7 +141,7 @@
     </PropertyGroup>
     <!-- Ensure that the path is not relative, escaping all instances of "..", which is necessary if through a symlink. -->
     <PropertyGroup Condition="!$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
-        <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../$(Morsels)'))</Morsels>
+        <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)/../../$(Morsels)'))</Morsels>
     </PropertyGroup>
     <!-- F# exclusive properties. -->
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
