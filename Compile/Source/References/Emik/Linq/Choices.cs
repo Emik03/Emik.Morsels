@@ -131,7 +131,7 @@ readonly
         [NonNegativeValue, Pure]
         public int K { get; } = Math.Max(k, 0);
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         [Pure]
         public IList<T> Current { get; private set; } = [];
 
