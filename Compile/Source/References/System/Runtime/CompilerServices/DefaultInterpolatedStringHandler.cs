@@ -601,7 +601,8 @@ ref struct DefaultInterpolatedStringHandler
             "An incorrectly written provider said it implemented ICustomFormatter, and then didn't"
         );
 
-        if (formatter?.Format(format, value, _provider) is { } customFormatted)
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        if (formatter!.Format(format, value, _provider) is { } customFormatted)
             AppendLiteral(customFormatted);
     }
 
