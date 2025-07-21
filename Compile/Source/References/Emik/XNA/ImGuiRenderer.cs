@@ -86,7 +86,9 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
     {
         async Task ShowAsync()
         {
-            var input = await KeyboardInput.Show(title, description, defaultText, usePasswordMode);
+            var input = await KeyboardInput.Show(title, description, defaultText, usePasswordMode)
+               .ConfigureAwait(false);
+
             var io = ImGui.GetIO();
 
             foreach (var c in input.AsSpan())
@@ -409,11 +411,12 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
             var display = label.SplitOn('#').First;
 
             var result = await KeyboardInput.Show(
-                display.ToString(),
-                $"Enter a value for {display}.",
-                copy,
-                flags.Has(ImGuiInputTextFlags.Password)
-            );
+                    display.ToString(),
+                    $"Enter a value for {display}.",
+                    copy,
+                    flags.Has(ImGuiInputTextFlags.Password)
+                )
+               .ConfigureAwait(false);
 
             s_queued.Add((label, result));
         }
