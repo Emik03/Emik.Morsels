@@ -14807,6 +14807,41 @@ public sealed class RoslynComparer
         r => x => x.IsOptional.ToByte() * Prime() ^ r.GetHashCode(x.Modifier),
         _ => x => x.Span.GetHashCode()
     );
+    /// <summary>Determines whether the <see cref="ITypeSymbol"/> has the defined operator.</summary>
+    /// <param name="name">The operator to check for.</param>
+    /// <param name="type">The <see cref="ITypeSymbol"/>.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="type"/>
+    /// has the operator named after the parameter <paramref name="name"/>.
+    /// </returns>
+    [Pure]
+    public bool ContainsOperator([NotNullWhen(true)] ITypeSymbol? type, string name) =>
+        type switch
+        {
+            null => false,
+            {
+                SpecialType: SpecialType.System_Boolean or
+                SpecialType.System_Char or
+                SpecialType.System_SByte or
+                SpecialType.System_Byte or
+                SpecialType.System_Int16 or
+                SpecialType.System_UInt16 or
+                SpecialType.System_Int32 or
+                SpecialType.System_UInt32 or
+                SpecialType.System_Int64 or
+                SpecialType.System_UInt64 or
+                SpecialType.System_Decimal or
+                SpecialType.System_Single or
+                SpecialType.System_Double or
+                SpecialType.System_String or
+                SpecialType.System_IntPtr or
+                SpecialType.System_UIntPtr or
+                SpecialType.System_DateTime,
+            } or { TypeKind: TypeKind.Enum } => true,
+            { SpecialType: SpecialType.System_Nullable_T } =>
+                type.TryGetSingleTypeArgument(out var arg) && ContainsOperator(arg, name),
+            _ => type.GetMembers(name).TryFirst(IsOperator, out var op) && Equals(type, op.ContainingType),
+        };
     /// <inheritdoc />
     [Pure]
     public bool Equals(CustomModifier? x, CustomModifier? y) =>
@@ -14858,6 +14893,12 @@ public sealed class RoslynComparer
     static bool Eq<T>(ISymbol x, ISymbol y, Func<T, T, bool> predicate)
         where T : ISymbol =>
         x is T tx && y is T ty && predicate(tx, ty) || x is not T && y is not T;
+    /// <summary>Determines whether the symbol is an operator.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>Whether the parameter <paramref name="symbol"/> is an operator.</returns>
+    [Pure]
+    static bool IsOperator(ISymbol symbol) =>
+        symbol is IMethodSymbol { MethodKind: MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator };
     [Pure]
     static bool True<T>(T _, T __) => true;
     [Pure]
