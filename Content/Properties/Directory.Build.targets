@@ -146,7 +146,8 @@
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
-        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime" GeneratePathProperty="true"/>
+        <Compile Include="$(PkgGu_Roslyn_Extensions_Source)/contentFiles/cs/any/**/*.cs"/>
     </ItemGroup>
     <!-- Reference roslyn analyzer from above onto tests. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
