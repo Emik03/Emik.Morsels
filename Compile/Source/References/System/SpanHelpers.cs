@@ -1835,13 +1835,13 @@ static partial class SpanHelpers
             zero += Unsafe.SizeOf<_Reg16>();
         }
 
-        if (zero.LessThanEqual(byteLength - 8))
+        if (zero.LessThanEqual(byteLength - (nuint)8))
         {
             *(long*)((nint)b + zero) = 0;
             zero += 8;
         }
 
-        if (Unsafe.SizeOf<nint>() is 4 && zero.LessThanEqual(byteLength - 4))
+        if (Unsafe.SizeOf<nint>() is 4 && zero.LessThanEqual(byteLength - (nuint)4))
             *(int*)((nint)b + zero) = 0;
     }
 
@@ -1849,7 +1849,7 @@ static partial class SpanHelpers
     {
         nint intPtr = 0, zero;
 
-        while ((zero = intPtr + 8).LessThanEqual(pointerSizeLength))
+        while ((zero = intPtr + (nint)8).LessThanEqual(pointerSizeLength))
         {
             *ip = 0;
             ip[1] = 0;
@@ -1862,7 +1862,7 @@ static partial class SpanHelpers
             intPtr = zero;
         }
 
-        if ((zero = intPtr + 4).LessThanEqual(pointerSizeLength))
+        if ((zero = intPtr + (nint)4).LessThanEqual(pointerSizeLength))
         {
             *ip = 0;
             ip[1] = 0;
@@ -1871,14 +1871,14 @@ static partial class SpanHelpers
             intPtr = zero;
         }
 
-        if ((zero = intPtr + 2).LessThanEqual(pointerSizeLength))
+        if ((zero = intPtr + (nint)2).LessThanEqual(pointerSizeLength))
         {
             *ip = 0;
             ip[1] = 0;
             intPtr = zero;
         }
 
-        if ((intPtr + 1).LessThanEqual(pointerSizeLength))
+        if ((intPtr + (nint)1).LessThanEqual(pointerSizeLength))
             ip[intPtr] = 0;
     }
 
