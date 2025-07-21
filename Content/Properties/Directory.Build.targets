@@ -168,7 +168,7 @@
         <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit.Analyzers" Version="3.10" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
         <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit3TestAdapter" Version="4.5" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
         <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.console" Version="2.9.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
-        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="3.1.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="3.1.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
