@@ -5,7 +5,7 @@ namespace System;
 using Emik.Morsels;
 
 // ReSharper disable CognitiveComplexity InconsistentNaming RedundantCast UnusedMember.Local
-#pragma warning disable CS8500, CS8602, MA0051
+#pragma warning disable CS8500, CS8602, IDE0004, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
