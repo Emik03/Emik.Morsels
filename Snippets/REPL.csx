@@ -2465,12 +2465,12 @@ public
     public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
         context.AddSource(generated.HintName, generated.Source);
     /// <summary>
-    /// Returns the <see cref="TypeDeclarationSyntax"/> annotated with the provided <see cref="AttributeSyntax"/>.
+    /// Returns the <c>TypeDeclarationSyntax</c> annotated with the provided <c>AttributeSyntax</c>.
     /// </summary>
-    /// <param name="syntax">The <see cref="AttributeSyntax"/> to extract from.</param>
+    /// <param name="syntax">The <c>AttributeSyntax</c> to extract from.</param>
     /// <returns>
-    /// The <see cref="TypeDeclarationSyntax"/>, or <see langword="null"/> if the parameter <paramref name="syntax"/>
-    /// is <see langword="null"/>, or annotated to something other than a <see cref="TypeDeclarationSyntax"/>.
+    /// The <c>TypeDeclarationSyntax</c>, or <see langword="null"/> if the parameter <paramref name="syntax"/>
+    /// is <see langword="null"/>, or annotated to something other than a <c>TypeDeclarationSyntax</c>.
     /// </returns>
     [Pure]
     public static TypeDeclarationSyntax? TypeDeclaration(this AttributeSyntax? syntax)
@@ -14816,32 +14816,7 @@ public sealed class RoslynComparer
     /// </returns>
     [Pure]
     public bool ContainsOperator([NotNullWhen(true)] ITypeSymbol? type, string name) =>
-        type switch
-        {
-            null => false,
-            {
-                SpecialType: SpecialType.System_Boolean or
-                SpecialType.System_Char or
-                SpecialType.System_SByte or
-                SpecialType.System_Byte or
-                SpecialType.System_Int16 or
-                SpecialType.System_UInt16 or
-                SpecialType.System_Int32 or
-                SpecialType.System_UInt32 or
-                SpecialType.System_Int64 or
-                SpecialType.System_UInt64 or
-                SpecialType.System_Decimal or
-                SpecialType.System_Single or
-                SpecialType.System_Double or
-                SpecialType.System_String or
-                SpecialType.System_IntPtr or
-                SpecialType.System_UIntPtr or
-                SpecialType.System_DateTime,
-            } or { TypeKind: TypeKind.Enum } => true,
-            { SpecialType: SpecialType.System_Nullable_T } =>
-                type.TryGetSingleTypeArgument(out var arg) && ContainsOperator(arg, name),
-            _ => type.GetMembers(name).TryFirst(IsOperator, out var op) && Equals(type, op.ContainingType),
-        };
+        type is not null && type.GetMembers(name).TryFirst(IsOperator, out var op) && Equals(type, op.ContainingType);
     /// <inheritdoc />
     [Pure]
     public bool Equals(CustomModifier? x, CustomModifier? y) =>
