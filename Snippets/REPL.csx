@@ -14808,15 +14808,18 @@ public sealed class RoslynComparer
         _ => x => x.Span.GetHashCode()
     );
     /// <summary>Determines whether the <see cref="ITypeSymbol"/> has the defined operator.</summary>
-    /// <param name="name">The operator to check for.</param>
     /// <param name="type">The <see cref="ITypeSymbol"/>.</param>
+    /// <param name="name">The operator to check for.</param>
+    /// <param name="returnType">The expected return type of the operator.</param>
     /// <returns>
     /// The value <see langword="true"/> if the parameter <paramref name="type"/>
     /// has the operator named after the parameter <paramref name="name"/>.
     /// </returns>
     [Pure]
-    public bool ContainsOperator([NotNullWhen(true)] ITypeSymbol? type, string name) =>
-        type is not null && type.GetMembers(name).TryFirst(IsOperator, out var op) && Equals(type, op.ContainingType);
+    public bool ContainsOperator([NotNullWhen(true)] ITypeSymbol? type, string name, SpecialType? returnType = null) =>
+        type is not null &&
+        type.GetMembers(name).TryFirst(x => IsOperator(x, returnType), out var op) &&
+        Equals(type, op.ContainingType);
     /// <inheritdoc />
     [Pure]
     public bool Equals(CustomModifier? x, CustomModifier? y) =>
@@ -14870,10 +14873,16 @@ public sealed class RoslynComparer
         x is T tx && y is T ty && predicate(tx, ty) || x is not T && y is not T;
     /// <summary>Determines whether the symbol is an operator.</summary>
     /// <param name="symbol">The symbol to check.</param>
+    /// <param name="returnType">The expected return type.</param>
     /// <returns>Whether the parameter <paramref name="symbol"/> is an operator.</returns>
     [Pure]
-    static bool IsOperator(ISymbol symbol) =>
-        symbol is IMethodSymbol { MethodKind: MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator };
+    static bool IsOperator(ISymbol symbol, SpecialType? returnType) =>
+        symbol is IMethodSymbol
+        {
+            MethodKind: MethodKind.BuiltinOperator or MethodKind.UserDefinedOperator,
+            ReturnType.SpecialType: var specialType,
+        } &&
+        (returnType is not { } type || specialType == type);
     [Pure]
     static bool True<T>(T _, T __) => true;
     [Pure]
