@@ -2,7 +2,7 @@
 #if !NET7_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System.Diagnostics;
-
+#pragma warning disable CA1064
 /// <summary>Exception thrown when the program executes an instruction that was thought to be unreachable.</summary>
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 [Serializable]

@@ -21,12 +21,12 @@ static partial class IncludedSyntaxNodeRegistrant
         context.AddSource(generated.HintName, generated.Source);
 
     /// <summary>
-    /// Returns the <see cref="TypeDeclarationSyntax"/> annotated with the provided <see cref="AttributeSyntax"/>.
+    /// Returns the <c>TypeDeclarationSyntax</c> annotated with the provided <c>AttributeSyntax</c>.
     /// </summary>
-    /// <param name="syntax">The <see cref="AttributeSyntax"/> to extract from.</param>
+    /// <param name="syntax">The <c>AttributeSyntax</c> to extract from.</param>
     /// <returns>
-    /// The <see cref="TypeDeclarationSyntax"/>, or <see langword="null"/> if the parameter <paramref name="syntax"/>
-    /// is <see langword="null"/>, or annotated to something other than a <see cref="TypeDeclarationSyntax"/>.
+    /// The <c>TypeDeclarationSyntax</c>, or <see langword="null"/> if the parameter <paramref name="syntax"/>
+    /// is <see langword="null"/>, or annotated to something other than a <c>TypeDeclarationSyntax</c>.
     /// </returns>
     [Pure]
     public static TypeDeclarationSyntax? TypeDeclaration(this AttributeSyntax? syntax)
