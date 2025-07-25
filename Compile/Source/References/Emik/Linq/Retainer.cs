@@ -28,4 +28,35 @@ static partial class Retainer
             count--;
         }
     }
+
+    /// <summary>Removes all elements that match the conditions defined by the specified predicate.</summary>
+    /// <typeparam name="T">The type of element in the collection to filter.</typeparam>
+    /// <param name="collection">The collection to filter.</param>
+    /// <param name="match">
+    /// The <see cref="Predicate{T}"/> delegate that defines the conditions of the elements to remove.
+    /// </param>
+    /// <returns>The number of elements that were removed from the parameter <paramref name="collection"/>.</returns>
+    public static int RemoveWhere<T>(this ICollection<T> collection, Func<T, bool> match) =>
+        RemoveWhere<T, ICollection<T>>(collection, match);
+
+    /// <summary>Removes all elements that match the conditions defined by the specified predicate.</summary>
+    /// <typeparam name="TElement">The type of element in the collection to filter.</typeparam>
+    /// <typeparam name="TCollection">The type of collection to filter.</typeparam>
+    /// <param name="collection">The collection to filter.</param>
+    /// <param name="match">
+    /// The <see cref="Predicate{T}"/> delegate that defines the conditions of the elements to remove.
+    /// </param>
+    /// <returns>The number of elements that were removed from the parameter <paramref name="collection"/>.</returns>
+    public static int RemoveWhere<TElement, TCollection>(this TCollection collection, Func<TElement, bool> match)
+        where TCollection : ICollection<TElement>
+    {
+        List<TElement> matches = [..collection.Where(match)];
+        var removed = 0;
+
+        // Enumerate the results in reverse in an attempt to lower cost.
+        for (var i = matches.Count - 1; i >= 0 && matches[i] is var current; i--)
+            _ = collection.Remove(current) ? removed++ : 0;
+
+        return removed;
+    }
 }
