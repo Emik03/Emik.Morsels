@@ -26,7 +26,7 @@ Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project
 3. Copy-paste [Directory.Build.local.props.template](https://raw.githubusercontent.com/Emik03/Emik.Morsels/main/Content/Properties/Directory.Build.local.props.template) and name the new duplicate `Directory.Build.local.props`.
 4. Modify the [PropertyGroup](https://learn.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild?view=vs-2022) of `Directory.Build.local.props`, which contains absolute paths that are system-dependent.
 5. Execute [this command on Windows](https://github.com/Emik03/Emik.Morsels/blob/main/Shell/symlink.bat) or [this command on Mac/Linux](https://github.com/Emik03/Emik.Morsels/blob/main/Shell/symlink.sh) with each [Emik.Morsels](https://github.com/Emik03/Emik.Morsels) project as the working directory to symlink everything together.
-    - You can alternatively have a folder for `Emik.Morsels` projects, and all projects simply reside in nested folders. This way, you only need to set up the symlinks a single time on the root folder since [search scope applies to parent folders](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2022#search-scope) as well.
+    - Alternatively, create the directory `./Content/Properties/Projects`, and clone any dependent project inside this directory. This works because [search scope applies to parent folders](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2022#search-scope), which resolves `Directory.Build.props` and `Directory.Build.targets` without the need for any symlinks.
 
 ## Family
 
