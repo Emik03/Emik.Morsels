@@ -195,7 +195,7 @@
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Text.Analyzers" Version="5.0.0-1.25277.114" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.14" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.16" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6581" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all" ExcludeAssets="runtime"/>
@@ -212,7 +212,7 @@
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Runtime.Serialization" Private="false"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="JetBrainsAnnotations.Fody" Version="2.17" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="JetBrains.Annotations" Version="2025.1.0-eap1" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="JetBrains.Annotations" Version="2025.2.0" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="9.0.100-beta.24406.3"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="mscorlib" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))" Include="FSharp.Core" Version="4.1.18"/>
