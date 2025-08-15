@@ -3,6 +3,7 @@
 namespace System;
 
 using Emik.Morsels;
+using Unsafe = Runtime.CompilerServices.Unsafe;
 
 // ReSharper disable CognitiveComplexity InconsistentNaming RedundantCast UnusedMember.Local
 #pragma warning disable CS8500, CS8602, IDE0004, MA0051

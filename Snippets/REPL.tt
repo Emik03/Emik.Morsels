@@ -235,6 +235,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using FieldInfo = System.Reflection.FieldInfo;" => "",
         "global using static IncludedSyntaxNodeRegistrant;" => "",
         "using Expression = System.Linq.Expressions.Expression;" => "",
+        "using Unsafe = System.Runtime.CompilerServices.Unsafe;" => "",
         "    public static string[] Split(" => "    public static string[] Chop(",
         "using static Expression;" => "using static System.Linq.Expressions.Expression;",
         "using static SecurityAction;" => "using static System.Security.Permissions.SecurityAction;",

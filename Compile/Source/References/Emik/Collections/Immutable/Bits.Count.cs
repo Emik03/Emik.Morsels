@@ -4,6 +4,8 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
+
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public

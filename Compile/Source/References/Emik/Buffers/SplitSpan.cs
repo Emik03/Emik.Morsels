@@ -12,6 +12,7 @@ using ComptimeString = SearchValues<char>;
 #else
 using ComptimeString = char;
 #endif
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Methods to split spans into multiple spans.</summary>
 static partial class SplitSpanFactory

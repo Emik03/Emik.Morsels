@@ -6,6 +6,7 @@ namespace Emik.Morsels;
 #pragma warning disable CS8631, IDE0032
 using static Span;
 using static SplitSpanFactory;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 partial struct SplitSpan<TBody, TSeparator, TStrategy>

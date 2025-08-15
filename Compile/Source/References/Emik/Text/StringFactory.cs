@@ -19,7 +19,7 @@ static partial class StringFactory
     static readonly Regex
         s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
         s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
-        s_singleQuotes = new(@"'(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})'", Options),
+        s_singleQuotes = new(@"'(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})'", Options), // ReSharper disable once UseRawString
         s_doubleQuotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options),
         s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options);
@@ -77,7 +77,7 @@ static partial class StringFactory
 #if NET7_0_OR_GREATER
         (many.AsSpan().IndexOfAnyExcept('-') is not -1 and var found ? found : 0)
 #else
-        Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
+        System.Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
 #endif // ReSharper disable once BadPreprocessorIndent
         is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
@@ -216,7 +216,7 @@ static partial class StringFactory
     public static string ToConciseString(this TimeSpan time)
     {
         var sign = time.Ticks < 0 ? "-" : "";
-        var ticks = Math.Abs(time.Ticks);
+        var ticks = System.Math.Abs(time.Ticks);
 
         return ticks switch
         {
@@ -230,8 +230,9 @@ static partial class StringFactory
             }m{ticks % TimeSpan.TicksPerMinute / TimeSpan.TicksPerSecond}s",
             >= TimeSpan.TicksPerMinute => $"{sign}{ticks / TimeSpan.TicksPerMinute
             }m{ticks % TimeSpan.TicksPerMinute / TimeSpan.TicksPerSecond}s",
-            >= TimeSpan.TicksPerSecond => $"{sign}{Math.Round(ticks / (double)TimeSpan.TicksPerSecond, 1)}s",
-            >= TimeSpan.TicksPerMillisecond => $"{sign}{Math.Round(ticks / (double)TimeSpan.TicksPerMillisecond, 1)}ms",
+            >= TimeSpan.TicksPerSecond => $"{sign}{System.Math.Round(ticks / (double)TimeSpan.TicksPerSecond, 1)}s",
+            >= TimeSpan.TicksPerMillisecond =>
+                $"{sign}{System.Math.Round(ticks / (double)TimeSpan.TicksPerMillisecond, 1)}ms",
             _ => $"{sign}{ticks / 10.0}µs",
         };
     }
@@ -246,7 +247,7 @@ static partial class StringFactory
             { Minor: <= 0, Build: <= 0, Revision: <= 0 } => $"v{version.Major}",
             { Build: <= 0, Revision: <= 0 } => $"v{version.Major}.{version.Minor}",
             { Revision: <= 0 } => $"v{version.Major}.{version.Minor}.{version.Build}",
-            _ => $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
+            _ => $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}",
         };
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>

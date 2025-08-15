@@ -14,6 +14,7 @@ global using Attribute = System.Attribute;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using FieldInfo = System.Reflection.FieldInfo;
 global using MemberInfo = System.Reflection.MemberInfo;
+global using OpCodes = System.Reflection.Emit.OpCodes;
 global using Version = System.Version;
 #if ANDROID
 global using Array = System.Array;

@@ -6,6 +6,7 @@ namespace Emik.Morsels;
 #pragma warning disable CS8500, CS8631, RCS1175
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>

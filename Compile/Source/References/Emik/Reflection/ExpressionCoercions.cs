@@ -10,7 +10,7 @@ static partial class ExpressionCoercions
     /// <summary>Provides the verbose representation found in the debug view.</summary>
     /// <param name="x">The expression to get the <see langword="string"/> representation of.</param>
     /// <returns>The verbose representation of the parameter <paramref name="x"/>.</returns>
-    public static string? ToVerboseString(this Expression x) =>
+    public static string? ToVerboseString(this System.Linq.Expressions.Expression x) =>
         typeof(System.Linq.Expressions.Expression)
            .GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic)
           ?.GetGetMethod(true)
@@ -20,7 +20,10 @@ static partial class ExpressionCoercions
     /// <param name="expression">The expression to retrieve from.</param>
     /// <param name="member">The member to access.</param>
     /// <returns>The <see cref="BinaryExpression"/> representing <c>left.member = right</c>.</returns>
-    public static MemberExpression FieldOrProperty(this Expression expression, MemberInfo member) =>
+    public static MemberExpression FieldOrProperty(
+        this System.Linq.Expressions.Expression expression,
+        MemberInfo member
+    ) =>
         member switch
         {
             PropertyInfo p => System.Linq.Expressions.Expression.Property(expression, p),

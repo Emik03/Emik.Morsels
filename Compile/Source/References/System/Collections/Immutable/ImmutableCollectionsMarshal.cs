@@ -3,6 +3,8 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Runtime.InteropServices;
 #if !NET8_0_OR_GREATER && (NETCOREAPP || ROSLYN)
+using Unsafe = CompilerServices.Unsafe;
+
 /// <summary>
 /// An unsafe class that provides a set of methods to access the
 /// underlying data representations of immutable collections.

@@ -83,6 +83,8 @@ static partial class ReadOnlyFactory
     public static IReadOnlyList<T>? ReadOnly<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
+#pragma warning disable IDE0028
             : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? [.. iterable]);
+#pragma warning restore IDE0028
 }
 #endif

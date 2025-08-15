@@ -5,6 +5,7 @@ namespace Emik.Morsels;
 // ReSharper disable once RedundantUsingDirective
 using static OperatorCaching;
 using static Span;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias

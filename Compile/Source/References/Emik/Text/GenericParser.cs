@@ -382,7 +382,7 @@ static partial class GenericParser
                .FirstOrDefault();
 
         [MustUseReturnValue]
-        static MethodInfo TryCoerce(MethodInfo x)
+        static System.Reflection.MethodInfo TryCoerce(System.Reflection.MethodInfo x)
         {
             try
             {

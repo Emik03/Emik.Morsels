@@ -7,6 +7,7 @@ namespace Emik.Morsels;
 
 // ReSharper disable once RedundantNameQualifier
 using Expression = System.Linq.Expressions.Expression;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
 static partial class OperatorCaching

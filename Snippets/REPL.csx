@@ -502,7 +502,7 @@ using Substring = System.ReadOnlyMemory<char>;
                .OfType<TDelegate>()
                .FirstOrDefault();
         [MustUseReturnValue]
-        static MethodInfo TryCoerce(MethodInfo x)
+        static System.Reflection.MethodInfo TryCoerce(System.Reflection.MethodInfo x)
         {
             try
             {
@@ -1135,7 +1135,7 @@ public
             ReadOnlySpan<T> original = s_values;
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
-            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
+            var replacement = new T[System.Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));
@@ -1257,7 +1257,7 @@ public
 #if KTANE
         UnityEngine.Random.Range;
 #elif NET6_0_OR_GREATER
-        Random.Shared.Next;
+        System.Random.Shared.Next;
 #else
         new Random().Next;
 #endif
@@ -4272,7 +4272,8 @@ public partial struct SmallList<T> :
     /// <summary>Gets the number of head elements used.</summary>
     public readonly int HeadCount
     {
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Math.Min(Count, 3);
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get =>
+            System.Math.Min(Count, 3);
     }
     /// <summary>Gets the deep clone of this instance.</summary>
     public readonly SmallList<T> Cloned
@@ -4592,7 +4593,7 @@ public partial struct SmallList<T> :
         if (index < InlinedLength && _rest is [var head, ..])
             _third = head;
         if (count > InlinedLength)
-            EnsureMutability().RemoveAt(Math.Max(index - InlinedLength, 0));
+            EnsureMutability().RemoveAt(System.Math.Max(index - InlinedLength, 0));
         else
             UnsafelySetNullishTo(out _rest, (byte)count);
     }
@@ -4795,8 +4796,8 @@ public partial struct SmallList<T> :
     public readonly SmallList<T> Slice(int start, int length)
     {
         var count = Count;
-        start = Math.Max(start, 0);
-        length = Math.Min(length, count - start);
+        start = System.Math.Max(start, 0);
+        length = System.Math.Min(length, count - start);
         if (length <= 0)
             return default;
         if (start is 0 && length == count)
@@ -10758,13 +10759,17 @@ readonly
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
     /// <param name="tuple">The tuple to get the value from.</param>
-    /// <returns>The field <see cref="ValueTuple{T1, T2}.Item1"/> from the parameter <paramref name="tuple"/>.</returns>
+    /// <returns>
+    /// The field <see cref="System.ValueTuple{T1, T2}.Item1"/> from the parameter <paramref name="tuple"/>.
+    /// </returns>
     public static T1 First<T1, T2>((T1, T2) tuple) => tuple.Item1;
     /// <summary>Gets the second item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
     /// <param name="tuple">The tuple to get the value from.</param>
-    /// <returns>The field <see cref="ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.</returns>
+    /// <returns>
+    /// The field <see cref="System.ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.
+    /// </returns>
     public static T2 Second<T1, T2>((T1, T2) tuple) => tuple.Item2;
 #if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0
     /// <summary>Gets the enumeration of the tuple.</summary>
@@ -13513,7 +13518,7 @@ readonly
         int[] _values = Rent(n, k);
         /// <inheritdoc cref="Choices{T}.K"/>
         [NonNegativeValue, Pure]
-        public int K { get; } = Math.Max(k, 0);
+        public int K { get; } = System.Math.Max(k, 0);
         /// <inheritdoc />
         [Pure]
         public IList<T> Current { get; private set; } = [];
@@ -13612,7 +13617,7 @@ readonly
     public readonly int Count => N.Count.Choose(K);
     /// <summary>Gets the number of choices.</summary>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
-    public int K { get; } = Math.Max(k, 0);
+    public int K { get; } = System.Math.Max(k, 0);
     /// <summary>Gets the list of choices.</summary>
     [CollectionAccess(Read), Pure]
     public IList<T> N { get; } = n ?? [];
@@ -15103,7 +15108,9 @@ public ref partial struct ImmutableArrayBuilder<T>
     public static IReadOnlyList<T>? ReadOnly<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
+#pragma warning disable IDE0028
             : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? [.. iterable]);
+#pragma warning restore IDE0028
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -15809,7 +15816,7 @@ readonly
         if (leftLength is 0 || rightLength is 0)
             return jaro;
         var slice = Slice(left, right, leftLength, rightLength, indexer, comparer) * Grade(leftLength, rightLength);
-        return Math.Max(jaro, slice);
+        return System.Math.Max(jaro, slice);
     }
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -15861,7 +15868,7 @@ readonly
         var jaroDistance = JaroInner(left, right, leftLength, rightLength, indexer, comparer);
         var prefixLength = NumberOfEquals(left, right, leftLength, rightLength, indexer, comparer);
         var distance = JaroWinklerDistance(jaroDistance, prefixLength);
-        return Math.Min(distance, 1);
+        return System.Math.Min(distance, 1);
     }
     [MustUseReturnValue, ValueRange(0, 1)]
     static double JaroAllocated<T, TItem>(
@@ -15984,7 +15991,7 @@ readonly
         var bigLength = isLeftSmaller ? rightLength : leftLength;
         for (var i = 0; i < bigLength; i++)
         {
-            var highestPossibleScore = Math.Min(bigLength - i - 1, smallLength);
+            var highestPossibleScore = System.Math.Min(bigLength - i - 1, smallLength);
             if (score >= highestPossibleScore)
                 break;
             score = SliceInner(big, small, bigLength, smallLength, indexer, comparer, i, score);
@@ -16006,7 +16013,7 @@ readonly
         var lower = -1;
         for (var j = 0; j < smallLength && i + j < bigLength; j++)
             if (EqualsAt(big, small, i + j, j, comparer, indexer))
-                score = Math.Max(score, j - lower);
+                score = System.Math.Max(score, j - lower);
             else
                 lower = j;
         return score;
@@ -16021,7 +16028,7 @@ readonly
         [InstantHandle] Func<TItem, TItem, bool> comparer
     )
     {
-        var sharedLength = Math.Min(leftLength, rightLength);
+        var sharedLength = System.Math.Min(leftLength, rightLength);
         for (var sharedIndex = 0; sharedIndex < sharedLength; sharedIndex++)
             if (!EqualsAt(left, right, sharedIndex, sharedIndex, comparer, indexer))
                 return sharedIndex;
@@ -16049,7 +16056,7 @@ readonly
         [ValueRange(2, int.MaxValue)] int rightLength,
         [NonNegativeValue] int leftIndex
     ) =>
-        Math.Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
+        System.Math.Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int MinBound(
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -16057,14 +16064,14 @@ readonly
         [NonNegativeValue] int leftIndex
     ) =>
         SearchRange(leftLength, rightLength) < leftIndex
-            ? Math.Max(0, leftIndex - SearchRange(leftLength, rightLength))
+            ? System.Math.Max(0, leftIndex - SearchRange(leftLength, rightLength))
             : 0;
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int SearchRange(
         [ValueRange(2, int.MaxValue)] int leftLength,
         [ValueRange(2, int.MaxValue)] int rightLength
     ) =>
-        Math.Max(leftLength, rightLength) / 2 - 1;
+        System.Math.Max(leftLength, rightLength) / 2 - 1;
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroDistance(
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -16075,7 +16082,7 @@ readonly
         1 / 3.0 * (matchCount / leftLength + matchCount / rightLength + (matchCount - transpositionCount) / matchCount);
     [ValueRange(0, 1), Pure]
     static double Grade([NonNegativeValue] int leftLength, [NonNegativeValue] int rightLength) =>
-        1 - 1.0 / Math.Min(leftLength + 1, rightLength + 1);
+        1 - 1.0 / System.Math.Min(leftLength + 1, rightLength + 1);
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroWinklerDistance([ValueRange(0, 1)] double jaroDistance, [NonNegativeValue] int prefixLength) =>
         jaroDistance + 0.1 * prefixLength * (1.0 - jaroDistance);
@@ -17206,7 +17213,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <summary>Provides the verbose representation found in the debug view.</summary>
     /// <param name="x">The expression to get the <see langword="string"/> representation of.</param>
     /// <returns>The verbose representation of the parameter <paramref name="x"/>.</returns>
-    public static string? ToVerboseString(this Expression x) =>
+    public static string? ToVerboseString(this System.Linq.Expressions.Expression x) =>
         typeof(System.Linq.Expressions.Expression)
            .GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic)
           ?.GetGetMethod(true)
@@ -17215,7 +17222,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="expression">The expression to retrieve from.</param>
     /// <param name="member">The member to access.</param>
     /// <returns>The <see cref="BinaryExpression"/> representing <c>left.member = right</c>.</returns>
-    public static MemberExpression FieldOrProperty(this Expression expression, MemberInfo member) =>
+    public static MemberExpression FieldOrProperty(
+        this System.Linq.Expressions.Expression expression,
+        MemberInfo member
+    ) =>
         member switch
         {
             PropertyInfo p => System.Linq.Expressions.Expression.Property(expression, p),
@@ -17904,7 +17914,7 @@ readonly
     /// <typeparam name="T">The type of the random value.</typeparam>
     /// <param name="random">The random number generator.</param>
     /// <returns>The random value.</returns>
-    public static T Next<T>(this Random random)
+    public static T Next<T>(this System.Random random)
         where T : unmanaged
     {
         T output = default;
@@ -18093,7 +18103,7 @@ readonly
 #if NET7_0_OR_GREATER
         (many.AsSpan().IndexOfAnyExcept('-') is not -1 and var found ? found : 0)
 #else
-        Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
+        System.Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
 #endif
         is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
@@ -18223,7 +18233,7 @@ readonly
     public static string ToConciseString(this TimeSpan time)
     {
         var sign = time.Ticks < 0 ? "-" : "";
-        var ticks = Math.Abs(time.Ticks);
+        var ticks = System.Math.Abs(time.Ticks);
         return ticks switch
         {
             0 => "0",
@@ -18236,8 +18246,9 @@ readonly
             }m{ticks % TimeSpan.TicksPerMinute / TimeSpan.TicksPerSecond}s",
             >= TimeSpan.TicksPerMinute => $"{sign}{ticks / TimeSpan.TicksPerMinute
             }m{ticks % TimeSpan.TicksPerMinute / TimeSpan.TicksPerSecond}s",
-            >= TimeSpan.TicksPerSecond => $"{sign}{Math.Round(ticks / (double)TimeSpan.TicksPerSecond, 1)}s",
-            >= TimeSpan.TicksPerMillisecond => $"{sign}{Math.Round(ticks / (double)TimeSpan.TicksPerMillisecond, 1)}ms",
+            >= TimeSpan.TicksPerSecond => $"{sign}{System.Math.Round(ticks / (double)TimeSpan.TicksPerSecond, 1)}s",
+            >= TimeSpan.TicksPerMillisecond =>
+                $"{sign}{System.Math.Round(ticks / (double)TimeSpan.TicksPerMillisecond, 1)}ms",
             _ => $"{sign}{ticks / 10.0}µs",
         };
     }
@@ -18250,7 +18261,7 @@ readonly
             { Minor: <= 0, Build: <= 0, Revision: <= 0 } => $"v{version.Major}",
             { Build: <= 0, Revision: <= 0 } => $"v{version.Major}.{version.Minor}",
             { Revision: <= 0 } => $"v{version.Major}.{version.Minor}.{version.Build}",
-            _ => $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
+            _ => $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}",
         };
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>

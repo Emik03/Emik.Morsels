@@ -5,6 +5,7 @@ namespace Emik.Morsels;
 
 using static OperatorCaching;
 using static Span;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Contains extension methods for fast SIMD operations.</summary>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
@@ -170,7 +171,7 @@ static partial class SpanSimdQueries
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
 
-            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
+            var replacement = new T[System.Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));

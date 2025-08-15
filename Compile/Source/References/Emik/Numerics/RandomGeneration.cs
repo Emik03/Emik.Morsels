@@ -12,7 +12,7 @@ static partial class RandomGeneration
     /// <typeparam name="T">The type of the random value.</typeparam>
     /// <param name="random">The random number generator.</param>
     /// <returns>The random value.</returns>
-    public static T Next<T>(this Random random)
+    public static T Next<T>(this System.Random random)
         where T : unmanaged
     {
         T output = default;

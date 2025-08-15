@@ -5,6 +5,7 @@ namespace Emik.Morsels;
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once RedundantUsingDirective
 using static Span;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias

@@ -6,6 +6,7 @@ namespace Emik.Morsels;
 
 using static CollectionAccessType;
 using static Span;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
 static partial class BitsFactory

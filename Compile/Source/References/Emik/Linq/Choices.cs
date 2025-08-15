@@ -129,7 +129,7 @@ readonly
 
         /// <inheritdoc cref="Choices{T}.K"/>
         [NonNegativeValue, Pure]
-        public int K { get; } = Math.Max(k, 0);
+        public int K { get; } = System.Math.Max(k, 0);
 
         /// <inheritdoc />
         [Pure]
@@ -249,7 +249,7 @@ readonly
 
     /// <summary>Gets the number of choices.</summary>
     [CollectionAccess(None), NonNegativeValue, Pure]
-    public int K { get; } = Math.Max(k, 0);
+    public int K { get; } = System.Math.Max(k, 0);
 
     /// <summary>Gets the list of choices.</summary>
     [CollectionAccess(Read), Pure]

@@ -601,7 +601,7 @@ static partial class Similarity
 
         var slice = Slice(left, right, leftLength, rightLength, indexer, comparer) * Grade(leftLength, rightLength);
 
-        return Math.Max(jaro, slice);
+        return System.Math.Max(jaro, slice);
     }
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
@@ -657,7 +657,7 @@ static partial class Similarity
         var prefixLength = NumberOfEquals(left, right, leftLength, rightLength, indexer, comparer);
         var distance = JaroWinklerDistance(jaroDistance, prefixLength);
 
-        return Math.Min(distance, 1);
+        return System.Math.Min(distance, 1);
     }
 
     [MustUseReturnValue, ValueRange(0, 1)]
@@ -795,7 +795,7 @@ static partial class Similarity
 
         for (var i = 0; i < bigLength; i++)
         {
-            var highestPossibleScore = Math.Min(bigLength - i - 1, smallLength);
+            var highestPossibleScore = System.Math.Min(bigLength - i - 1, smallLength);
 
             if (score >= highestPossibleScore)
                 break;
@@ -822,7 +822,7 @@ static partial class Similarity
 
         for (var j = 0; j < smallLength && i + j < bigLength; j++)
             if (EqualsAt(big, small, i + j, j, comparer, indexer))
-                score = Math.Max(score, j - lower);
+                score = System.Math.Max(score, j - lower);
             else
                 lower = j;
 
@@ -839,7 +839,7 @@ static partial class Similarity
         [InstantHandle] Func<TItem, TItem, bool> comparer
     )
     {
-        var sharedLength = Math.Min(leftLength, rightLength);
+        var sharedLength = System.Math.Min(leftLength, rightLength);
 
         for (var sharedIndex = 0; sharedIndex < sharedLength; sharedIndex++)
             if (!EqualsAt(left, right, sharedIndex, sharedIndex, comparer, indexer))
@@ -872,7 +872,7 @@ static partial class Similarity
         [ValueRange(2, int.MaxValue)] int rightLength,
         [NonNegativeValue] int leftIndex
     ) =>
-        Math.Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
+        System.Math.Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int MinBound(
@@ -881,7 +881,7 @@ static partial class Similarity
         [NonNegativeValue] int leftIndex
     ) =>
         SearchRange(leftLength, rightLength) < leftIndex
-            ? Math.Max(0, leftIndex - SearchRange(leftLength, rightLength))
+            ? System.Math.Max(0, leftIndex - SearchRange(leftLength, rightLength))
             : 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
@@ -889,7 +889,7 @@ static partial class Similarity
         [ValueRange(2, int.MaxValue)] int leftLength,
         [ValueRange(2, int.MaxValue)] int rightLength
     ) =>
-        Math.Max(leftLength, rightLength) / 2 - 1;
+        System.Math.Max(leftLength, rightLength) / 2 - 1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroDistance(
@@ -902,7 +902,7 @@ static partial class Similarity
 
     [ValueRange(0, 1), Pure]
     static double Grade([NonNegativeValue] int leftLength, [NonNegativeValue] int rightLength) =>
-        1 - 1.0 / Math.Min(leftLength + 1, rightLength + 1);
+        1 - 1.0 / System.Math.Min(leftLength + 1, rightLength + 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroWinklerDistance([ValueRange(0, 1)] double jaroDistance, [NonNegativeValue] int prefixLength) =>

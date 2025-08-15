@@ -6,6 +6,7 @@ namespace Emik.Morsels;
 
 using static CollectionAccessType;
 using static Span;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
@@ -189,7 +190,8 @@ partial struct SmallList<T> :
     /// <summary>Gets the number of head elements used.</summary>
     public readonly int HeadCount
     {
-        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Math.Min(Count, 3);
+        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get =>
+            System.Math.Min(Count, 3);
     }
 
     /// <summary>Gets the deep clone of this instance.</summary>
@@ -554,7 +556,7 @@ partial struct SmallList<T> :
             _third = head;
 
         if (count > InlinedLength)
-            EnsureMutability().RemoveAt(Math.Max(index - InlinedLength, 0));
+            EnsureMutability().RemoveAt(System.Math.Max(index - InlinedLength, 0));
         else
             UnsafelySetNullishTo(out _rest, (byte)count);
     }
@@ -778,8 +780,8 @@ partial struct SmallList<T> :
     public readonly SmallList<T> Slice(int start, int length)
     {
         var count = Count;
-        start = Math.Max(start, 0);
-        length = Math.Min(length, count - start);
+        start = System.Math.Max(start, 0);
+        length = System.Math.Min(length, count - start);
 
         if (length <= 0)
             return default;

@@ -10,7 +10,7 @@ static partial class RandomizedGetters
 #if KTANE
         UnityEngine.Random.Range;
 #elif NET6_0_OR_GREATER
-        Random.Shared.Next;
+        System.Random.Shared.Next;
 #else // ReSharper disable once RedundantNameQualifier
         new Random().Next;
 #endif

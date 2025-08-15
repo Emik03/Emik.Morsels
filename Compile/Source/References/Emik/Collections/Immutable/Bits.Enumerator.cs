@@ -6,6 +6,7 @@ namespace Emik.Morsels;
 
 using static CollectionAccessType;
 using static Span;
+using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
