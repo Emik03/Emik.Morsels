@@ -20,6 +20,7 @@ static partial class UnmanagedTypeChecker
             s_fullyUnmanaged[type] = type.IsGenericTypeDefinition
                 ? type
                    .GetCustomAttributes()
+                    // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
                    .Any(x => x?.GetType().FullName is "System.Runtime.CompilerServices.IsUnmanagedAttribute")
                 : Array.TrueForAll(
                     type.GetFields(
