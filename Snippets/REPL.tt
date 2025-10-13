@@ -228,6 +228,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "global using static Unforgiving;" => "",
         "global using static TupleExtracts;" => "",
         "global using static FixedGenerator;" => "",
+        "global using static ManifestReader;" => "",
         "global using static MethodGroupings;" => "",
         "using ComptimeString = SearchValues<char>;" => "",
         "using static Enum;" => "using static System.Enum;",
