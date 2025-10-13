@@ -17021,7 +17021,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     ) =>
         path is null or ""
             ? null
-            : typeof(Split<>).Assembly.GetManifestResourceStream(path.Replace('/', '.').Replace('\\', '.'));
+            : typeof(Split<>).Assembly.GetManifestResourceStream(
+                $"{typeof(Split<>).Assembly.GetName().Name}.{path.Replace('/', '.').Replace('\\', '.')}"
+            );
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
