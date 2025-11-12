@@ -88,6 +88,11 @@
     <PropertyGroup Condition="$(CelesteLegacy) != '' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">
         <Celeste>$(CelesteLegacy)</Celeste>
     </PropertyGroup>
+    <!-- Properties for Unit Test projects. -->
+    <PropertyGroup Condition="'$(IsPlantsVsZombiesFusion)' == 'true'">
+        <NoWarn>$(NoWarn);MA0049;NU1903</NoWarn>
+        <DoNotMerge>^(?:(?!(CommunityToolkit)|(ZLinq)|(System\.Collections\.Immutable)).)+$</DoNotMerge>
+    </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <None Remove="$(AssemblyName).Tests/**"/>
@@ -141,6 +146,14 @@
         <Reference Include="HOOKS-Assembly-CSharp" HintPath="$(RainWorld)/BepInEx/plugins/HOOKS-Assembly-CSharp.dll" Private="false"/>
         <Reference Include="PUBLIC-Assembly-CSharp" HintPath="$(RainWorld)/BepInEx/utils/PUBLIC-Assembly-CSharp.dll" Private="false"/>
         <Reference Condition="'$(UseUnityCoreModule)' == 'true'" Include="UnityEngine.CoreModule" HintPath="$(RainWorld)/RainWorld_Data/Managed/UnityEngine.CoreModule.dll" Private="false"/>
+    </ItemGroup>
+    <!-- Plants vs Zombies: Fusion references. -->
+    <ItemGroup Condition="'$(IsPlantsVsZombiesFusion)' == 'true'">
+        <EmbeddedResource Include="*.bundle"/>
+        <EmbeddedResource Include="*.loc.txt"/>
+        <PackageReference Remove="FastGenericNew.SourceGenerator"/>
+        <Reference Include="$(PlantsVsZombiesFusion)/MelonLoader/net6/*.dll" Private="false"/>
+        <Reference Include="$(PlantsVsZombiesFusion)/MelonLoader/Il2CppAssemblies/*.dll" Private="false"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
@@ -237,5 +250,6 @@
         <Error Condition="'$(IsRainWorld)' == 'true' and '$(IsRainWorld)' == ''" Text="Rain World link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Rain World should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
         <Error Condition="'$(IsHollowKnight)' == 'true' and '$(HollowKnight)' == ''" Text="Hollow Knight link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Hollow Knight should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
         <Error Condition="'$(IsKtane)' == 'true' and '$(Ktane)' == ''" Text="Keep Talking and Nobody Explodes link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Keep Talking and Nobody Explodes should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(IsPlantsVsZombiesFusion)' == 'true' and '$(PlantsVsZombiesFusion)' == ''" Text="Plants vs Zombies: Fusion link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Plants vs Zombies: Fusion should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
     </Target>
 </Project>
