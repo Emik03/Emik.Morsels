@@ -54,8 +54,8 @@ static partial class ManifestReader
     ) =>
         path is null or ""
             ? null
-            : typeof(Split<>).Assembly.GetManifestResourceStream(
-                $"{typeof(Split<>).Assembly.GetName().Name}.{path.Replace('/', '.').Replace('\\', '.')}"
+            : typeof(ManifestReader).Assembly.GetManifestResourceStream(
+                $"{typeof(ManifestReader).Assembly.GetName().Name}.{path.Replace('/', '.').Replace('\\', '.')}"
             );
 }
 #endif
