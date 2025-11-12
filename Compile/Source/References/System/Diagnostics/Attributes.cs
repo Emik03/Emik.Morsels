@@ -554,7 +554,7 @@ namespace System.Runtime.CompilerServices
         /// Gets or sets a value indicating whether the compiler can choose to allow access to the location
         /// where this attribute is applied if it does not understand <see cref="FeatureName"/>.
         /// </summary>
-        public bool IsOptional { [Pure] get; set; }
+        public bool IsOptional { get; set; }
 
         /// <summary>Gets the name of the compiler feature.</summary>
         public string FeatureName => featureName;
