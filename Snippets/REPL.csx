@@ -17021,8 +17021,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     ) =>
         path is null or ""
             ? null
-            : typeof(Split<>).Assembly.GetManifestResourceStream(
-                $"{typeof(Split<>).Assembly.GetName().Name}.{path.Replace('/', '.').Replace('\\', '.')}"
+            : typeof(ManifestReader).Assembly.GetManifestResourceStream(
+                $"{typeof(ManifestReader).Assembly.GetName().Name}.{path.Replace('/', '.').Replace('\\', '.')}"
             );
 #endif
 // SPDX-License-Identifier: MPL-2.0
@@ -19366,6 +19366,8 @@ static partial class ManyQueries
     [MustUseReturnValue]
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
+/// <summary>Methods to read this assembly's manifest streams into common data structures.</summary>
+static partial class ManifestReader;
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
 partial class InlineAttribute : Attribute

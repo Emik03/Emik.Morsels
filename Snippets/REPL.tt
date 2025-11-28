@@ -312,6 +312,8 @@ static partial class ManyQueries
     [MustUseReturnValue]
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
+/// <summary>Methods to read this assembly's manifest streams into common data structures.</summary>
+static partial class ManifestReader;
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
 partial class InlineAttribute : Attribute
