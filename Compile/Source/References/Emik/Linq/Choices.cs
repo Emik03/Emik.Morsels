@@ -128,7 +128,7 @@ readonly
         int[] _values = Rent(n, k);
 
         /// <inheritdoc cref="Choices{T}.K"/>
-        [NonNegativeValue, Pure]
+        [NonNegativeValue, Pure] // ReSharper disable once RedundantNameQualifier
         public int K { get; } = System.Math.Max(k, 0);
 
         /// <inheritdoc />
@@ -248,7 +248,7 @@ readonly
     public readonly int Count => N.Count.Choose(K);
 
     /// <summary>Gets the number of choices.</summary>
-    [CollectionAccess(None), NonNegativeValue, Pure]
+    [CollectionAccess(None), NonNegativeValue, Pure] // ReSharper disable once RedundantNameQualifier
     public int K { get; } = System.Math.Max(k, 0);
 
     /// <summary>Gets the list of choices.</summary>
