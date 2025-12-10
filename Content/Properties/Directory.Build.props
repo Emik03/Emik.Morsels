@@ -181,6 +181,7 @@
         <PackageReference Include="Absence.Fody" Version="2.0.10" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="InlineIL.Fody" Version="1.10.1" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="StaticLambda.Fody" Version="1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.8.7" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4" PrivateAssets="all" ExcludeAssets="runtime"/>
@@ -200,7 +201,7 @@
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6581" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.14.1" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.100" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.101" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System" Private="false"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.0.0-1.25277.114" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Xml" Private="false"/>

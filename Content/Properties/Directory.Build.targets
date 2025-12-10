@@ -9,6 +9,7 @@
                 <NullGuard/>
                 <InlineIL/>
                 <Divorce/>
+                <StaticLambda JustPublic="true"/>
                 <InlineMethod/>
                 <LocalsInit Default="false"/>
                 <Absence Except="$(DoNotTrim)"/>
@@ -22,6 +23,7 @@
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
                 <Divorce/>
                 <InlineIL/>
+                <StaticLambda JustPublic="true"/>
                 <InlineMethod/>
                 <LocalsInit Default="false"/>
                 <Absence Except="$(DoNotTrim)"/>
@@ -88,10 +90,14 @@
     <PropertyGroup Condition="$(CelesteLegacy) != '' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">
         <Celeste>$(CelesteLegacy)</Celeste>
     </PropertyGroup>
-    <!-- Properties for Unit Test projects. -->
+    <!-- Properties for Plants vs Zombies: Fusion projects. -->
     <PropertyGroup Condition="'$(IsPlantsVsZombiesFusion)' == 'true'">
         <NoWarn>$(NoWarn);MA0049;NU1903</NoWarn>
-        <DoNotMerge>^(?:(?!(CommunityToolkit)|(ZLinq)|(System\.Collections\.Immutable)).)+$</DoNotMerge>
+        <DoNotMerge>^(?:(?!(CommunityToolkit)|(ZLinq)|(System\.Collections\.Immutable)|(System\.Reflection\.Emit)).)+$</DoNotMerge>
+    </PropertyGroup>
+    <!-- StaticLambda.Fody is currently only needed in Plants vs Zombies: Fusion projects. -->
+    <PropertyGroup Condition="'$(IsPlantsVsZombiesFusion)' != 'true'">
+        <DefineConstants>$(DefineConstants);NO_STATIC_LAMBDA_FODY</DefineConstants>
     </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
@@ -102,7 +108,7 @@
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
-        <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.9.1"/>
+        <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.9.3"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Common" Version="8.4"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Diagnostics" Version="8.4"/>
@@ -152,6 +158,7 @@
         <EmbeddedResource Include="*.bundle"/>
         <EmbeddedResource Include="*.loc.txt"/>
         <PackageReference Remove="FastGenericNew.SourceGenerator"/>
+        <PackageReference Include="System.Reflection.Emit" Version="4.7.0"/>
         <Reference Include="$(PlantsVsZombiesFusion)/MelonLoader/net6/*.dll" Private="false"/>
         <Reference Include="$(PlantsVsZombiesFusion)/MelonLoader/Il2CppAssemblies/*.dll" Private="false"/>
     </ItemGroup>
