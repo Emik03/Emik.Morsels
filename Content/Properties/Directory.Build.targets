@@ -92,7 +92,7 @@
     </PropertyGroup>
     <!-- Properties for Plants vs Zombies: Fusion projects. -->
     <PropertyGroup Condition="'$(IsPlantsVsZombiesFusion)' == 'true'">
-        <NoWarn>$(NoWarn);MA0049;NU1903</NoWarn>
+        <NoWarn>$(NoWarn);CS8785;MA0049;NU1903;RCS1130</NoWarn>
         <DoNotMerge>^(?:(?!(CommunityToolkit)|(ZLinq)|(System\.Collections\.Immutable)|(System\.Reflection\.Emit)).)+$</DoNotMerge>
     </PropertyGroup>
     <!-- StaticLambda.Fody is currently only needed in Plants vs Zombies: Fusion projects. -->
