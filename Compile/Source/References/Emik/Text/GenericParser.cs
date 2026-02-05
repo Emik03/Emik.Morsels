@@ -372,7 +372,7 @@ static partial class GenericParser
 
         [Pure]
         static TDelegate? Make<TDelegate>()
-            where TDelegate : Delegate => // ReSharper disable once NullableWarningSuppressionIsUsed
+            where TDelegate : Delegate =>
             typeof(T)
                .GetMethods(Flags)
                .Where(x => x.Name is nameof(int.TryParse))
@@ -381,7 +381,7 @@ static partial class GenericParser
                .OfType<TDelegate>()
                .FirstOrDefault();
 
-        [MustUseReturnValue]
+        [MustUseReturnValue] // ReSharper disable RedundantNameQualifier
         static System.Reflection.MethodInfo TryCoerce(System.Reflection.MethodInfo x)
         {
             try

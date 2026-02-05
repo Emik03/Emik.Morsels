@@ -80,7 +80,7 @@
             IDISP004;IDISP007;IDISP008;
             NETSDK1138;
             MA0001;MA0004;MA0006;MA0007;MA0009;MA0011;MA0023;MA0029;MA0046;MA0048;MA0071;MA0074;MA0076;MA0077;MA0108;MA0143;
-            Proj0006;Proj0007;Proj0013;Proj0015;Proj0020;Proj0022;Proj0026;Proj0028;Proj0033;Proj0034;Proj0036;Proj0040;Proj0042;Proj0043;Proj0044;Proj0047;Proj0048;Proj0201;Proj0206;Proj0208;Proj0213;Proj0241;Proj0453;Proj0500;Proj0501;Proj0503;Proj1001;Proj1003;Proj1101;Proj1700;Proj3000;
+            Proj0006;Proj0007;Proj0013;Proj0015;Proj0020;Proj0022;Proj0026;Proj0028;Proj0033;Proj0034;Proj0036;Proj0040;Proj0042;Proj0043;Proj0044;Proj0047;Proj0048;Proj0049;Proj0201;Proj0206;Proj0208;Proj0213;Proj0241;Proj0453;Proj0500;Proj0501;Proj0503;Proj1001;Proj1003;Proj1101;Proj1300;Proj1700;Proj3000;
             S101;S108;S125;S127;S907;S927;S1121;S1125;S1133;S1144;S1168;S1172;S1186;S1199;S1854;S1905;S1939;S1994;S2219;S2328;S2345;S2365;S2479;S2583;S2589;S2692;S2696;S2743;S3011;S3218;S3241;S3261;S3264;S3267;S3358;S3427;S3453;S3604;S3869;S3871;S3877;S3903;S3963;S3973;S4136;S4201;S4275;
             SA0001;SA1000;SA1002;SA1008;SA1009;SA1010;SA1011;SA1012;SA1013;SA1101;SA1111;SA1118;SA1119;SA1122;SA1124;SA1132;SA1133;SA1134;SA1135;SA1200;SA1201;SA1202;SA1205;SA1206;SA1300;SA1305;SA1308;SA1309;SA1311;SA1312;SA1313;SA1400;SA1402;SA1407;SA1408;SA1412;SA1414;SA1500;SA1501;SA1502;SA1503;SA1509;SA1512;SA1513;SA1515;SA1516;SA1519;SA1520;SA1601;SA1609;SA1633;SA1648;SA1649;
             SCA0001;SCA0002;SCA0003;SCA1000;SCA1001;SCA1002;SCA1003;SCA1004;
@@ -97,34 +97,38 @@
         <Morsels Condition="$(Morsels) == '' and Exists('Emik.Morsels/')">Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../Emik.Morsels/')">../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../Emik.Morsels/')">../../Emik.Morsels/</Morsels>
-        <AndroidSdkDirectory Condition="Exists('$(HOME)/Android/Sdk/')">$(HOME)/Android/Sdk/</AndroidSdkDirectory>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../Emik.Morsels/')">../../../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../../Emik.Morsels/')">../../../../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../../../Emik.Morsels/')">../../../../../Emik.Morsels/</Morsels>
-        <AndroidSdkDirectory Condition="Exists('$(HOME)/Android/android-sdk/')">$(HOME)/Android/android-sdk/</AndroidSdkDirectory>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../../../../Emik.Morsels/')">../../../../../../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../../../../../Emik.Morsels/')">../../../../../../../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../../../../../../Emik.Morsels/')">../../../../../../../../Emik.Morsels/</Morsels>
+        <AndroidSdkDirectory Condition="$(AndroidSdkDirectory) == '' and Exists('$(HOME)/Android/Sdk/')">$(HOME)/Android/Sdk/</AndroidSdkDirectory>
+        <AndroidSdkDirectory Condition="$(AndroidSdkDirectory) == '' and Exists('$(HOME)/Android/android-sdk/')">$(HOME)/Android/android-sdk/</AndroidSdkDirectory>
+        <AndroidSdkDirectory Condition="$(AndroidSdkDirectory) == '' and Exists('$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/')">$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/</AndroidSdkDirectory>
+        <Peak Condition="$(Peak) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/PEAK/')">$(HOME)/.steam/steam/steamapps/common/PEAK/</Peak>
+        <Peak Condition="$(Peak) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/PEAK/')">$(HOME)/.local/share/Steam/steamapps/common/PEAK/</Peak>
+        <Peak Condition="$(Peak) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\PEAK\')">C:\Program Files (x86)\Steam\steamapps\common\PEAK\</Peak>
+        <Peak Condition="$(Peak) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/PEAK/')">$(HOME)/Library/Application Support/Steam/steamapps/common/PEAK/</Peak>
         <Unity Condition="$(Unity) == '' and Exists('$(HOME)/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('$(HOME)/Unity/Hub/Editor/')[0])</Unity>
-        <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Celeste/')">$(HOME)/.steam/steam/steamapps/common/Celeste/</Celeste>
         <Unity Condition="$(Unity) == '' and Exists('/Applications/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('/Applications/Unity/Hub/Editor/')[0])</Unity>
-        <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Celeste/')">$(HOME)/.local/share/Steam/steamapps/common/Celeste/</Celeste>
-        <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Rain World/')">$(HOME)/.steam/steam/steamapps/common/Rain World/</RainWorld>
-        <Celeste Condition="$(Celeste) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Celeste\')">C:\Program Files (x86)\Steam\steamapps\common\Celeste\</Celeste>
-        <AndroidSdkDirectory Condition="Exists('$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/')">$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/</AndroidSdkDirectory>
         <Unity Condition="$(Unity) == '' and Exists('C:\Program Files\Unity\Hub\Editor\')">$([System.IO.Directory]::GetDirectories('C:\Program Files\Unity\Hub\Editor\')[0])</Unity>
-        <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Rain World/')">$(HOME)/.local/share/Steam/steamapps/common/Rain World/</RainWorld>
-        <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Hollow Knight/')">$(HOME)/.steam/steam/steamapps/common/Hollow Knight/</HollowKnight>
-        <RainWorld Condition="$(RainWorld) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Rain World\')">C:\Program Files (x86)\Steam\steamapps\common\Rain World\</RainWorld>
         <Unity Condition="$(Unity) == '' and $([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*').Length) != 0">$([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*')[0])</Unity>
-        <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Hollow Knight/')">$(HOME)/.local/share/Steam/steamapps/common/Hollow Knight/</HollowKnight>
+        <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Celeste/')">$(HOME)/.steam/steam/steamapps/common/Celeste/</Celeste>
+        <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Celeste/')">$(HOME)/.local/share/Steam/steamapps/common/Celeste/</Celeste>
+        <Celeste Condition="$(Celeste) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Celeste\')">C:\Program Files (x86)\Steam\steamapps\common\Celeste\</Celeste>
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Celeste/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Celeste/</Celeste>
-        <HollowKnight Condition="$(HollowKnight) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\</HollowKnight>
-        <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
+        <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Rain World/')">$(HOME)/.steam/steam/steamapps/common/Rain World/</RainWorld>
+        <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Rain World/')">$(HOME)/.local/share/Steam/steamapps/common/Rain World/</RainWorld>
+        <RainWorld Condition="$(RainWorld) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Rain World\')">C:\Program Files (x86)\Steam\steamapps\common\Rain World\</RainWorld>
         <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Rain World/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Rain World/</RainWorld>
+        <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Hollow Knight/')">$(HOME)/.steam/steam/steamapps/common/Hollow Knight/</HollowKnight>
+        <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Hollow Knight/')">$(HOME)/.local/share/Steam/steamapps/common/Hollow Knight/</HollowKnight>
+        <HollowKnight Condition="$(HollowKnight) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\</HollowKnight>
+        <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Hollow Knight/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Hollow Knight/</HollowKnight>
+        <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\')">C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\</Ktane>
-        <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Hollow Knight/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Hollow Knight/</HollowKnight>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
     </PropertyGroup>
     <!-- The copy command for Windows. -->
@@ -175,7 +179,7 @@
     <!-- Package references. -->
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="AsyncFixer" Version="1.6" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="AsyncFixer" Version="2.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Absence.Fody" Version="2.0.10" PrivateAssets="all" ExcludeAssets="runtime"/>
@@ -188,10 +192,10 @@
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.15" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.264" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Collections.Analyzer" Version="0.2.13" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.279" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="DotNetDoodle.Analyzers" Version="0.0.2" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.3.3" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Collections.Analyzer" Version="0.2.14.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Jubjubnest.Style.DotNet" Version="0.1.54" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Text.Analyzers" Version="5.0.0-1.25277.114" PrivateAssets="all" ExcludeAssets="runtime"/>
@@ -201,7 +205,7 @@
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6581" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.15" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.101" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.102" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System" Private="false"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.0.0-1.25277.114" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Xml" Private="false"/>
@@ -219,7 +223,7 @@
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))" Include="FSharp.Core" Version="4.1.18"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="4.7.2"/>
         <Reference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
-        <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.8" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.8.2" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Condition="($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp')))" Include="FastGenericNew.SourceGenerator" Version="3.3.1" PrivateAssets="all" ExcludeAssets="runtime"/>
     </ItemGroup>
     <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props')" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantUsingDirective
+// ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantNameQualifier RedundantUsingDirective
 #pragma warning disable CA1019, GlobalUsingsAnalyzer
 #if !KTANE && !WAWA
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
@@ -566,7 +566,7 @@ namespace System.Runtime.CompilerServices
 #endif
 #if !NET8_0_OR_GREATER
     /// <summary>Indicates that the instance's storage is sequentially replicated "length" times.</summary>
-    [AttributeUsage(AttributeTargets.Struct), EditorBrowsable(EditorBrowsableState.Never)]
+    [AttributeUsage(AttributeTargets.Struct), ComponentModel.EditorBrowsable(ComponentModel.EditorBrowsableState.Never)]
     sealed class InlineArrayAttribute(int length) : Attribute
     {
         /// <summary>Gets the length of the inlined array.</summary>
@@ -620,7 +620,7 @@ namespace System.Text.RegularExpressions
     /// A bitwise combination of the enumeration values that modify the regular expression.
     /// </param>
     /// <param name="matchTimeoutMilliseconds">
-    /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
+    /// A time-out interval (milliseconds), or <see cref="Threading.Timeout.Infinite"/>
     /// to indicate that the method should not time out.</param>
     /// <param name="cultureName">
     /// The name of a culture to be used for case-sensitive comparisons.
@@ -664,7 +664,7 @@ namespace System.Text.RegularExpressions
             [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
             RegexOptions options
         )
-            : this(pattern, options, Timeout.Infinite) { }
+            : this(pattern, options, Threading.Timeout.Infinite) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
@@ -694,7 +694,7 @@ namespace System.Text.RegularExpressions
             RegexOptions options,
             string cultureName
         )
-            : this(pattern, options, Timeout.Infinite, cultureName) { }
+            : this(pattern, options, Threading.Timeout.Infinite, cultureName) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
@@ -705,7 +705,7 @@ namespace System.Text.RegularExpressions
         /// A bitwise combination of the enumeration values that modify the regular expression.
         /// </param>
         /// <param name="matchTimeoutMilliseconds">
-        /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
+        /// A time-out interval (milliseconds), or <see cref="Threading.Timeout.Infinite"/>
         /// to indicate that the method should not time out.
         /// </param>
         public GeneratedRegexAttribute(
@@ -716,7 +716,7 @@ namespace System.Text.RegularExpressions
             : this(pattern, options, matchTimeoutMilliseconds, "") { }
 
         /// <summary>
-        /// Gets a time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
+        /// Gets a time-out interval (milliseconds), or <see cref="Threading.Timeout.Infinite"/>
         /// to indicate that the method should not time out.
         /// </summary>
         public int MatchTimeoutMilliseconds => matchTimeoutMilliseconds;

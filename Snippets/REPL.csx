@@ -17016,7 +17016,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="path">The path of the manifest resource.</param>
     /// <returns>The <see cref="Stream"/> of the resource <paramref name="path"/> contained in this assembly.</returns>
     [MustDisposeResource]
-    static Stream? GetManifestResourceStream(
+    public static Stream? GetManifestResourceStream(
         [PathReference, StringSyntax(StringSyntaxAttribute.Uri), UriString] string? path
     ) =>
         path is null or ""
