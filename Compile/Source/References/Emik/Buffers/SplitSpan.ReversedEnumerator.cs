@@ -147,7 +147,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ => throw Error,
             };
 
-        /// <inheritdoc cref="System.Collections.IEnumerator.MoveNext"/>
+        /// <inheritdoc cref="global::System.Collections.IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
 
