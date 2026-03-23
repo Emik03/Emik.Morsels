@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable CS8500, IDE0251, MA0102
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantNameQualifier RedundantReadonlyModifier
+#pragma warning disable CS3021, CS8500, IDE0251, MA0102
 namespace Emik.Morsels;
 
-using static CollectionAccessType;
-using static Span;
+using static JetBrains.Annotations.CollectionAccessType;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="Bits{T}"/>
@@ -182,7 +181,8 @@ readonly
         }
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        readonly bool IsNonZero() => (Unsafe.Add(ref Unsafe.As<T, nuint>(ref AsRef(value)), Index) & Mask) is not 0;
+        readonly bool IsNonZero() =>
+            (Unsafe.Add(ref Unsafe.As<T, nuint>(ref Unsafe.AsRef(value)), Index) & Mask) is not 0;
     }
 }
 #endif

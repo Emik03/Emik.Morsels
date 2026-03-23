@@ -4,7 +4,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity RedundantCast StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
-using static Span;
+// ReSharper disable once RedundantNameQualifier
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="Bits{T}"/>
@@ -22,8 +22,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void And(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -124,8 +124,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AndNot(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -225,7 +225,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Not(scoped ref T reference)
     {
-        ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, Unsafe.SizeOf<T>());
+        ref byte x = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(reference)), upper = ref Unsafe.Add(ref x, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
@@ -316,8 +316,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Or(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -418,8 +418,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Xor(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -524,8 +524,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool Eq(scoped in T left, scoped in T right)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(left)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(right)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(left)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(right)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -649,7 +649,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool Eq0(scoped in T reference)
     {
-        ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, 1);
+        ref byte x = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(reference)), upper = ref Unsafe.Add(ref x, 1);
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
@@ -777,7 +777,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref readonly T Max(in T left, in T right)
     {
-        ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
+        ref T l = ref Unsafe.AsRef(left), r = ref Unsafe.AsRef(right), upper = ref Unsafe.Add(ref l, 1);
 
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {
@@ -832,7 +832,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref readonly T Min(in T left, in T right)
     {
-        ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
+        ref T l = ref Unsafe.AsRef(left), r = ref Unsafe.AsRef(right), upper = ref Unsafe.Add(ref l, 1);
 
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {

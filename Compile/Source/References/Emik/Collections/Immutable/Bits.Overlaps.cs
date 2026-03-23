@@ -64,13 +64,13 @@ readonly
         return !Eq0(item);
     }
 
-    /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
 
-        var collection = other.ToICollection();
+        var collection = other as ICollection<T> ?? [..other];
 
         foreach (var next in this)
             if (collection.Contains(next))
@@ -86,7 +86,7 @@ readonly
         return false;
     }
 
-    /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
     {
@@ -102,23 +102,23 @@ readonly
         return !Eq(bits, t);
     }
 
-    /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
     {
-        var collection = other.ToICollection();
+        var collection = other as ICollection<T> ?? [..other];
         return this.All(collection.Contains);
     }
 
-    /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) => other.All(Contains);
 
-    /// <inheritdoc cref="ISet{T}.Overlaps" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.Overlaps" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Any(Contains);
 
-    /// <inheritdoc cref="ISet{T}.SetEquals" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.SetEquals" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool SetEquals([InstantHandle] IEnumerable<T> other)
     {

@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantNameQualifier RedundantReadonlyModifier
 #pragma warning disable CS8500, IDE0251, MA0102
 namespace Emik.Morsels;
 
-using static CollectionAccessType;
-using static Span;
+using static JetBrains.Annotations.CollectionAccessType;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
@@ -121,10 +120,12 @@ readonly
     IEquatable<Bits<T>>,
     IReadOnlyList<T>,
     IReadOnlySet<T>,
-    ISet<T>,
+    System.Collections.Generic.ISet<T>,
     IList<T>
     where T : unmanaged
 {
+    const int BitsInByte = 8;
+
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None)]
     bool ICollection<T>.IsReadOnly
@@ -254,19 +255,19 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.ExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.IntersectWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.UnionWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.UnionWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -274,7 +275,7 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly bool ISet<T>.Add(T item) => false;
+    readonly bool System.Collections.Generic.ISet<T>.Add(T item) => false;
 
     /// <summary>Determines whether the reference of <typeparamref name="T"/> contains all zeros.</summary>
     /// <returns>
@@ -443,9 +444,13 @@ readonly
 
         for (int i = 0, j = Unsafe.SizeOf<T>() * 2; i < Unsafe.SizeOf<T>(); i++, j -= 2)
         {
-            var b = Unsafe.Add(ref Unsafe.As<T, byte>(ref AsRef(bits)), i);
-            Unsafe.Add(ref first, j) = Unsafe.Add(ref AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), (b & 0xf0) >> 4);
-            Unsafe.Add(ref first, j + 1) = Unsafe.Add(ref AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), b & 0x0f);
+            var b = Unsafe.Add(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(bits)), i);
+
+            Unsafe.Add(ref first, j) =
+                Unsafe.Add(ref Unsafe.AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), (b & 0xf0) >> 4);
+
+            Unsafe.Add(ref first, j + 1) =
+                Unsafe.Add(ref Unsafe.AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), b & 0x0f);
         }
 
         return span.ToString();

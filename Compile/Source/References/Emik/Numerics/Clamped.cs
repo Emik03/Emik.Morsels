@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
+#pragma warning disable CS3021 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to clamp numbers.</summary>

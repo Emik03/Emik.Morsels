@@ -3200,7 +3200,7 @@ public
     }
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantNameQualifier RedundantReadonlyModifier
 #pragma warning disable CS8500, IDE0251, MA0102
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
     /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
@@ -3297,10 +3297,11 @@ readonly
     IEquatable<Bits<T>>,
     IReadOnlyList<T>,
     IReadOnlySet<T>,
-    ISet<T>,
+    System.Collections.Generic.ISet<T>,
     IList<T>
     where T : unmanaged
 {
+    const int BitsInByte = 8;
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     bool ICollection<T>.IsReadOnly
@@ -3413,22 +3414,22 @@ readonly
     readonly void IList<T>.RemoveAt(int index) { }
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.ExceptWith(IEnumerable<T>? other) { }
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.IntersectWith(IEnumerable<T>? other) { }
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ISet<T>.UnionWith(IEnumerable<T>? other) { }
+    readonly void System.Collections.Generic.ISet<T>.UnionWith(IEnumerable<T>? other) { }
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool ICollection<T>.Remove(T item) => false;
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly bool ISet<T>.Add(T item) => false;
+    readonly bool System.Collections.Generic.ISet<T>.Add(T item) => false;
     /// <summary>Determines whether the reference of <typeparamref name="T"/> contains all zeros.</summary>
     /// <returns>
     /// The value <see langword="true"/> if this instance is all zeros; otherwise, <see langword="false"/>.
@@ -3574,9 +3575,11 @@ readonly
         Unsafe.Add(ref first, 1) = 'x';
         for (int i = 0, j = Unsafe.SizeOf<T>() * 2; i < Unsafe.SizeOf<T>(); i++, j -= 2)
         {
-            var b = Unsafe.Add(ref Unsafe.As<T, byte>(ref AsRef(bits)), i);
-            Unsafe.Add(ref first, j) = Unsafe.Add(ref AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), (b & 0xf0) >> 4);
-            Unsafe.Add(ref first, j + 1) = Unsafe.Add(ref AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), b & 0x0f);
+            var b = Unsafe.Add(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(bits)), i);
+            Unsafe.Add(ref first, j) =
+                Unsafe.Add(ref Unsafe.AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), (b & 0xf0) >> 4);
+            Unsafe.Add(ref first, j + 1) =
+                Unsafe.Add(ref Unsafe.AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), b & 0x0f);
         }
         return span.ToString();
     }
@@ -5841,8 +5844,8 @@ static class Kvp
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable CS8500, IDE0251, MA0102
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantNameQualifier RedundantReadonlyModifier
+#pragma warning disable CS3021, CS8500, IDE0251, MA0102
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -5985,7 +5988,8 @@ readonly
             return false;
         }
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        readonly bool IsNonZero() => (Unsafe.Add(ref Unsafe.As<T, nuint>(ref AsRef(value)), Index) & Mask) is not 0;
+        readonly bool IsNonZero() =>
+            (Unsafe.Add(ref Unsafe.As<T, nuint>(ref Unsafe.AsRef(value)), Index) & Mask) is not 0;
     }
 }
 #endif
@@ -6872,6 +6876,7 @@ public sealed class Pinnable<T>
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable CS8500, IDE0004, MA0051
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity RedundantCast StructCanBeMadeReadOnly
+// ReSharper disable once RedundantNameQualifier
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -6887,8 +6892,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void And(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -6978,8 +6983,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AndNot(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -7068,7 +7073,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Not(scoped ref T reference)
     {
-        ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, Unsafe.SizeOf<T>());
+        ref byte x = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(reference)), upper = ref Unsafe.Add(ref x, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
@@ -7148,8 +7153,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Or(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -7239,8 +7244,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Xor(scoped in T read, scoped ref T write)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -7334,8 +7339,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool Eq(scoped in T left, scoped in T right)
     {
-        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(left)),
-            r = ref Unsafe.As<T, byte>(ref AsRef(right)),
+        ref byte l = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(left)),
+            r = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(right)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
@@ -7438,7 +7443,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool Eq0(scoped in T reference)
     {
-        ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, 1);
+        ref byte x = ref Unsafe.As<T, byte>(ref Unsafe.AsRef(reference)), upper = ref Unsafe.Add(ref x, 1);
 #if NET8_0_OR_GREATER
         if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
@@ -7544,7 +7549,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref readonly T Max(in T left, in T right)
     {
-        ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
+        ref T l = ref Unsafe.AsRef(left), r = ref Unsafe.AsRef(right), upper = ref Unsafe.Add(ref l, 1);
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {
             if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
@@ -7587,7 +7592,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref readonly T Min(in T left, in T right)
     {
-        ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
+        ref T l = ref Unsafe.AsRef(left), r = ref Unsafe.AsRef(right), upper = ref Unsafe.Add(ref l, 1);
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {
             if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
@@ -15116,6 +15121,7 @@ public ref partial struct ImmutableArrayBuilder<T>
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable CS8500, IDE0004
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
+// ReSharper disable once RedundantNameQualifier
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -17026,7 +17032,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             );
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace
+#pragma warning disable CS3021
 /// <summary>Extension methods to clamp numbers.</summary>
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
@@ -17899,12 +17905,12 @@ readonly
         And(bits, ref item);
         return !Eq0(item);
     }
-    /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
-        var collection = other.ToICollection();
+        var collection = other as ICollection<T> ?? [..other];
         foreach (var next in this)
             if (collection.Contains(next))
                 Or(next, ref t);
@@ -17915,7 +17921,7 @@ readonly
                 return true;
         return false;
     }
-    /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
     {
@@ -17927,20 +17933,20 @@ readonly
                 return false;
         return !Eq(bits, t);
     }
-    /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
     {
-        var collection = other.ToICollection();
+        var collection = other as ICollection<T> ?? [..other];
         return this.All(collection.Contains);
     }
-    /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.IsSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) => other.All(Contains);
-    /// <inheritdoc cref="ISet{T}.Overlaps" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.Overlaps" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Any(Contains);
-    /// <inheritdoc cref="ISet{T}.SetEquals" />
+    /// <inheritdoc cref="global::System.Collections.Generic.ISet{T}.SetEquals" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool SetEquals([InstantHandle] IEnumerable<T> other)
     {
