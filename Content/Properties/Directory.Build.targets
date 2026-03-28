@@ -1,9 +1,9 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
     <!-- Fody weaver configuration for C#. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(WeaverConfiguration)' == ''">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(WeaverConfiguration)' == '' and !$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
         <WeaverConfiguration>
-            <Weavers>
+            <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
                 <JetBrainsAnnotations/>
                 <NullGuard/>
@@ -17,9 +17,9 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Fody weaver configuration for F#. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(WeaverConfiguration)' == ''">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(WeaverConfiguration)' == '' and !$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
         <WeaverConfiguration>
-            <Weavers>
+            <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
                 <Divorce/>
                 <InlineIL/>
@@ -32,20 +32,11 @@
     </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <FileVersion>6.0.1</FileVersion>
+        <FileVersion>6.0.2</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
+        <NoWarn>$(NoWarn);CS0419;IDE0032;IDE0370</NoWarn>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
-        <NoWarn>$(NoWarn);CS0419;CI0003;IDE0032;MA0169;Proj0202;Proj0204;Proj0205</NoWarn>
-        <WeaverConfiguration>
-            <Weavers>
-                <JetBrainsAnnotations/>
-                <NullGuard Mode="Implicit"/>
-                <LocalsInit Default="false"/>
-                <Divorce/>
-                <Absence Except="$(DoNotTrim)"/>
-            </Weavers>
-        </WeaverConfiguration>
     </PropertyGroup>
     <!-- Adds Keep Talking and Nobody Explodes references implicitly, but allow opting-out of the reference. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;)) and '$(IsKtane)' == ''">
@@ -110,9 +101,9 @@
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
         <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.9.3"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Common" Version="8.4.1"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Diagnostics" Version="8.4.1"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.HighPerformance" Version="8.4.1"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Common" Version="8.4.2"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Diagnostics" Version="8.4.2"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.HighPerformance" Version="8.4.2"/>
         <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.6.3" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Celeste references. -->
