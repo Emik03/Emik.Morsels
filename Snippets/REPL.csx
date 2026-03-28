@@ -2,12 +2,15 @@
 #r "nuget: CommunityToolkit.Common"
 #r "nuget: CommunityToolkit.Diagnostics"
 #r "nuget: CommunityToolkit.HighPerformance"
-#r "nuget: FastGenericNew"
 #r "nuget: JetBrains.Annotations"
 #r "nuget: TextCopy"
 #pragma warning disable CS0208
-#define NET8_0
-#define NET80
+#define NET10_0
+#define NET100
+#define NET10_0_OR_GREATER
+#define NET100_OR_GREATER
+#define NET9_0_OR_GREATER
+#define NET90_OR_GREATER
 #define NET8_0_OR_GREATER
 #define NET80_OR_GREATER
 #define NET7_0_OR_GREATER
@@ -27,7 +30,6 @@
 #define NETSTANDARD1_1_OR_GREATER
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
-#define NO_ALLOWS_REF_STRUCT
 #define CSHARPREPL
 #define DEBUG
 global using System;
@@ -160,10 +162,8 @@ global using CommunityToolkit.HighPerformance.Helpers;
 global using CommunityToolkit.HighPerformance.Memory;
 global using CommunityToolkit.HighPerformance.Memory.Views;
 global using CommunityToolkit.HighPerformance.Streams;
-global using FastGenericNew;
 global using JetBrains.Annotations;
 global using TextCopy;
-global using static FastGenericNew.FastNew;
 global using static TextCopy.ClipboardService;
 global using ComptimeString = System.Buffers.SearchValues<char>;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
