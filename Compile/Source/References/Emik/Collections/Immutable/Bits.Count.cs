@@ -8,13 +8,7 @@ namespace Emik.Morsels;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
+partial struct Bits<T>
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(CollectionAccessType.Read)]

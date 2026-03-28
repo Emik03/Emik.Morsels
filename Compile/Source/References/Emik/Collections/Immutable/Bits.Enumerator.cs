@@ -8,13 +8,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
+partial struct Bits<T>
 {
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>

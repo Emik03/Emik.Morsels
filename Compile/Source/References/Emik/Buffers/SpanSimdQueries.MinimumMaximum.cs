@@ -304,9 +304,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-#if CSHARPREPL
-            System.Numerics.Vector.LoadUnsafe(ref AsRef(source));
-#elif NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
             System.Numerics.Vector.LoadUnsafe(source);
 #else
             Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref AsRef(source)));

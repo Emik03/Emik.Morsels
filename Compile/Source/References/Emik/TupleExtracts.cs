@@ -54,10 +54,7 @@ static partial class TupleExtracts
     /// </returns>
     [LinqTunnel, Pure]
     public static IEnumerable<KeyValuePair<TKey, TValue>> KeyValued<TKey, TValue>(
-#if !CSHARPREPL
-        params
-#endif
-            IEnumerable<(TKey Key, TValue Value)> tuples
+        params IEnumerable<(TKey Key, TValue Value)> tuples
     ) =>
         tuples.Select(x => new KeyValuePair<TKey, TValue>(x.Key, x.Value));
 #endif

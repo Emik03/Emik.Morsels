@@ -5,13 +5,7 @@
 namespace Emik.Morsels;
 
 /// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
+partial struct Bits<T>
 {
     /// <summary>Determines whether the item has only a single bit.</summary>
     /// <param name="item">The element to test.</param>

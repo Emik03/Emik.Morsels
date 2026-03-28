@@ -254,7 +254,7 @@ static partial class Span
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NET8_0_OR_GREATER || CSHARPREPL
+#if NET8_0_OR_GREATER
         new(ref AsRef(reference));
 #elif NET7_0_OR_GREATER
         new(AsRef(reference));

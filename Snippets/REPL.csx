@@ -1559,7 +1559,7 @@ public
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NET8_0_OR_GREATER || CSHARPREPL
+#if NET8_0_OR_GREATER
         new(ref AsRef(reference));
 #elif NET7_0_OR_GREATER
         new(AsRef(reference));
@@ -5847,13 +5847,7 @@ static class Kvp
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantNameQualifier RedundantReadonlyModifier
 #pragma warning disable CS3021, CS8500, IDE0251, MA0102
 /// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
+public partial struct Bits<T>
 {
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
@@ -6878,13 +6872,7 @@ public sealed class Pinnable<T>
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity RedundantCast StructCanBeMadeReadOnly
 // ReSharper disable once RedundantNameQualifier
 /// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
+public partial struct Bits<T>
 {
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -10801,10 +10789,7 @@ readonly
     /// </returns>
     [LinqTunnel, Pure]
     public static IEnumerable<KeyValuePair<TKey, TValue>> KeyValued<TKey, TValue>(
-#if !CSHARPREPL
-        params
-#endif
-            IEnumerable<(TKey Key, TValue Value)> tuples
+        params IEnumerable<(TKey Key, TValue Value)> tuples
     ) =>
         tuples.Select(x => new KeyValuePair<TKey, TValue>(x.Key, x.Value));
 #endif
@@ -12169,9 +12154,7 @@ readonly
         where T : struct
 #endif
         =>
-#if CSHARPREPL
-            System.Numerics.Vector.LoadUnsafe(ref AsRef(source));
-#elif NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
             System.Numerics.Vector.LoadUnsafe(source);
 #else
             Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref AsRef(source)));
@@ -15123,13 +15106,7 @@ public ref partial struct ImmutableArrayBuilder<T>
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
 // ReSharper disable once RedundantNameQualifier
 /// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
+public partial struct Bits<T>
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(CollectionAccessType.Read)]
@@ -17848,13 +17825,7 @@ public abstract class FixedGenerator(
 #pragma warning disable CS8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
+public partial struct Bits<T>
 {
     /// <summary>Determines whether the item has only a single bit.</summary>
     /// <param name="item">The element to test.</param>
