@@ -1,5 +1,5 @@
 #!/bin/sh
-:"${1:?line number not specified, run like "$0" <line> [column], or "$0" [line],[column]}"
+: "${1:?line number not specified, run like "$0" <line> [column], or "$0" <line>,<column>}"
 morsels="$(dirname "$(dirname "$(realpath "$0")")")"
 line="$(echo "$1" | cut -d ',' -f 1)"
 column="$(echo "$1" | cut -d ',' -f 2)"
