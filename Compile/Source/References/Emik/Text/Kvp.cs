@@ -281,10 +281,9 @@ static class Kvp
     /// <returns>The deserialized object.</returns>
     [Pure]
     public static T Deserialize<T>(scoped ReadOnlySpan<char> span)
-#if NO_ALLOWS_REF_STRUCT
         where T : new()
-#else
-        where T : new(), allows ref struct
+#if NET9_0_OR_GREATER
+      , allows ref struct
 #endif
     {
         var ret = new T();
