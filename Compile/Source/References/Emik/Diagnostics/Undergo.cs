@@ -12,6 +12,22 @@ static partial class Undergo
 {
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
     /// <param name="action">The action to execute.</param>
+    /// <returns>The exception that was thrown.</returns>
+    public static Exception? Go([InstantHandle] Action action)
+    {
+        try
+        {
+            action();
+            return null;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
+    }
+
+    /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
+    /// <param name="action">The action to execute.</param>
     /// <param name="err">
     /// When this method returns <see langword="true"/>, contains the <see cref="Exception"/> that was thrown.
     /// </param>
