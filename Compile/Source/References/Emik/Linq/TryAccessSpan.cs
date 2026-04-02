@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable CheckNamespace
 namespace Emik.Morsels;
 
@@ -32,3 +32,4 @@ static partial class TryAccessSpan
             _ => !((span = default) is var _),
         };
 }
+#endif

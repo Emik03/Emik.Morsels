@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
-#if NO_SYSTEM_MEMORY
-using Substring = string; // ReSharper disable once MissingBlankLines
-#else
+#if !NO_SYSTEM_MEMORY
 using Substring = System.ReadOnlyMemory<char>;
+
+// -
+#else
+using Substring = string;
 #endif
 
 /// <summary>Provides methods to convert instances to a <see cref="string"/>.</summary>
@@ -35,7 +37,7 @@ static partial class StringFactory
         s = s_singleQuotes.Replace(s, "'…'");
         return s_doubleQuotes.Replace(s, "\"…\"");
     }
-#if !NO_SYSTEM_MEMORY
+
     /// <summary>Collapses the <see cref="string"/> to a single line.</summary>
     /// <param name="expression">The <see cref="string"/> to collapse.</param>
     /// <param name="prefix">The prefix to use.</param>
@@ -44,6 +46,9 @@ static partial class StringFactory
     [return: NotNullIfNotNull(nameof(expression))]
     public static string? CollapseToSingleLine(this string? expression, string? prefix = null)
     {
+#if NO_SYSTEM_MEMORY
+        return expression?.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries).Conjoin("");
+#else
         // ReSharper disable once RedundantUnsafeContext
         static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
@@ -55,12 +60,14 @@ static partial class StringFactory
 
             fixed (char* ptr = trimmed)
                 accumulator.Append(ptr, trimmed.Length);
+
             return accumulator;
         }
 #endif
         return expression?.Collapse().SplitSpanLines().Aggregate(prefix.ToBuilder(), Accumulator).Trim().ToString();
-    }
 #endif
+    }
+
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
     /// <param name="one">The string for the value 1 or -1.</param>
@@ -102,12 +109,12 @@ static partial class StringFactory
 #if NET8_0_OR_GREATER
             ? default
             : path.SplitOn(s_slashes).Last.Trim();
-#elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            ? default
-            : path.SplitOnAny(@"/\".AsMemory()).Last.Trim();
-#else
+#elif NO_SYSTEM_MEMORY
             ? "" // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
             : Path.GetFileName(path).Trim() ?? "";
+#else
+            ? default
+            : path.SplitOnAny(@"/\".AsMemory()).Last.Trim();
 #endif
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
@@ -255,7 +262,7 @@ static partial class StringFactory
             { Revision: <= 0 } => $"v{version.Major}.{version.Minor}.{version.Build}",
             _ => $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}",
         };
-#if !NO_SYSTEM_MEMORY
+
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <remarks><para>The implementation is based on
     /// <a href="https://github.com/CommunityToolkit/dotnet/blob/7b53ae23dfc6a7fb12d0fc058b89b6e948f48448/src/CommunityToolkit.Diagnostics/Extensions/ValueTypeExtensions.cs#L44">
@@ -274,12 +281,12 @@ static partial class StringFactory
 #endif
 #pragma warning disable CS8500
     {
-        var p = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
+        var p = stackalloc char[sizeof(T) * 2 + 2];
         p[0] = '0';
         p[1] = 'x';
 
         fixed (char* rh = "0123456789ABCDEF")
-            for (int i = 0, j = Unsafe.SizeOf<T>() * 2; i < Unsafe.SizeOf<T>(); i++, j -= 2)
+            for (int i = 0, j = sizeof(T) * 2; i < sizeof(T); i++, j -= 2)
             {
                 var b = ((byte*)&value)[i];
                 var low = b & 0x0f;
@@ -288,10 +295,9 @@ static partial class StringFactory
                 p[j] = *(rh + high);
             }
 
-        return new(p, 0, Unsafe.SizeOf<T>() * 2 + 2);
+        return new(p, 0, sizeof(T) * 2 + 2);
     }
 #pragma warning restore CS8500
-#endif
 #if NET6_0_OR_GREATER
     /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>

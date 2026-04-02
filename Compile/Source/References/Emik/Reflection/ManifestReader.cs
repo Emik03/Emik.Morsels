@@ -22,10 +22,18 @@ static partial class ManifestReader
 
         if (stream is null)
             return null;
+#if NETFRAMEWORK && !NET40_OR_GREATER
+        List<byte> memory = [];
 
+        while (stream.ReadByte() is not -1 and var b)
+            memory.Add((byte)b);
+
+        return memory.ToArray();
+#else
         using MemoryStream memory = new();
         stream.CopyTo(memory);
         return memory.ToArray();
+#endif
     }
 
     /// <summary>Reads the manifest resource as a <see cref="string"/>.</summary>

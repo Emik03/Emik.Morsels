@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
 
@@ -71,3 +72,4 @@ static partial class VersionConciseStringFactory
         System.Diagnostics.Debug.Assert(span.IsEmpty, $"span is drained and not {span.Length} characters long");
     }
 }
+#endif

@@ -62,7 +62,7 @@ static partial class SplitFactory
 
         return new(t, f);
     }
-
+#if !NO_SYSTEM_MEMORY
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
@@ -84,6 +84,7 @@ static partial class SplitFactory
 
         return new(t, f);
     }
+#endif
 }
 
 /// <summary>Represents a fixed collection of 2 items.</summary>

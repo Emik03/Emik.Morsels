@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
@@ -22,3 +22,4 @@ static partial class SmallFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
 }
+#endif

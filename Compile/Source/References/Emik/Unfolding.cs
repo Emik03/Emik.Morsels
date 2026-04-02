@@ -58,7 +58,7 @@ static partial class Unfolding
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
         value is { } t ? FindPathToEmptyNullable(t, converter) : [];
-
+#if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToNull<T>(this T? value, Converter<T, T?> converter)
@@ -109,4 +109,5 @@ static partial class Unfolding
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
         value is { } t ? FindSmallPathToEmptyNullable(t, converter) : [];
+#endif
 }

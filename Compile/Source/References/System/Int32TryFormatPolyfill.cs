@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NO_SYSTEM_MEMORY
 // ReSharper disable CheckNamespace RedundantAssignment RedundantNameQualifier UseSymbolAlias
 namespace System;
 #pragma warning disable RCS1163
@@ -69,10 +69,9 @@ static partial class Int32TryFormatPolyfill
 
         fixed (char* b = destination)
         {
-            var buffer = destination.Align(b);
-            var p = buffer + bufferLength;
+            var p = b + bufferLength;
             p = digits <= 1 ? UInt32ToDecChars(p, value) : UInt32ToDecChars(p, value, digits);
-            System.Diagnostics.Debug.Assert(p == buffer, "p == buffer");
+            System.Diagnostics.Debug.Assert(p == b, "p == buffer");
         }
 
         return true;
@@ -103,14 +102,13 @@ static partial class Int32TryFormatPolyfill
 
         fixed (char* b = destination)
         {
-            var buffer = destination.Align(b);
-            var p = UInt32ToDecChars(buffer + bufferLength, (uint)-value, digits);
-            System.Diagnostics.Debug.Assert(p == buffer + sNegative.Length, "p == buffer + sNegative.Length");
+            var p = UInt32ToDecChars(b + bufferLength, (uint)-value, digits);
+            System.Diagnostics.Debug.Assert(p == b + sNegative.Length, "p == buffer + sNegative.Length");
 
             for (var i = sNegative.Length - 1; i >= 0; i--)
                 *--p = sNegative[i];
 
-            System.Diagnostics.Debug.Assert(p == buffer, "p == buffer");
+            System.Diagnostics.Debug.Assert(p == b, "p == buffer");
         }
 
         return true;

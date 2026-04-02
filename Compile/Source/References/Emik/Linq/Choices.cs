@@ -109,9 +109,6 @@ static partial class Choices
 /// <param name="n">The collection to choose from.</param>
 /// <param name="k">The number to choose.</param>
 [StructLayout(LayoutKind.Auto)]
-#if CSHARPREPL
-public
-#endif
 readonly struct Choices<T>(IList<T>? n, int k) : ICollection<IList<T>>, IEquatable<Choices<T>>
 {
     /// <summary>Provides the enumerator for the <see cref="Choices{T}"/> struct.</summary>

@@ -236,18 +236,10 @@ static partial class SplitMemoryFactory
 /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct SplitMemory<TBody, TSeparator, TStrategy>(
-        ReadOnlyMemory<TBody> body,
-        ReadOnlyMemory<TSeparator> separator
-    ) : IEquatable<object>,
-    IEquatable<SplitMemory<TBody, TSeparator, TStrategy>>,
-    ISplitMemory<TBody, TSeparator>
+readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
+    ReadOnlyMemory<TBody> body,
+    ReadOnlyMemory<TSeparator> separator
+) : IEquatable<object>, IEquatable<SplitMemory<TBody, TSeparator, TStrategy>>, ISplitMemory<TBody, TSeparator>
     where TBody : IEquatable<TBody>?
 #if !NET7_0_OR_GREATER
     where TSeparator : IEquatable<TSeparator>?

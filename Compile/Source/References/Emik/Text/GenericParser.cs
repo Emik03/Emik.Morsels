@@ -20,7 +20,7 @@ static partial class GenericParser
         typeof(string) == typeof(T) && (success = true)
             ? (T?)(object?)s
             : FindTryParseFor<T>.WithString(s, out success);
-
+#if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped ReadOnlySpan<byte> s) => Parse<T>(s, out _);
@@ -46,6 +46,7 @@ static partial class GenericParser
         typeof(string) == typeof(T) && (success = true)
             ? (T)(object)s.ToString()
             : FindTryParseFor<T>.WithCharSpan(s, out success);
+#endif
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -163,7 +164,7 @@ static partial class GenericParser
     public static T? TryParse<T>(this string? s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
-
+#if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryParse<T>(this scoped ReadOnlySpan<byte> s)
@@ -175,6 +176,7 @@ static partial class GenericParser
     public static T? TryParse<T>(this scoped ReadOnlySpan<char> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
+#endif
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -214,14 +216,12 @@ static partial class GenericParser
 #endif
     static class FindTryParseFor<T>
     {
+#if !NO_SYSTEM_MEMORY
         [Pure] // ReSharper disable once MemberCanBePrivate.Local
         public delegate T? ByteParser(in ReadOnlySpan<byte> s, out bool success);
 
         [Pure]
         public delegate T? CharParser(in ReadOnlySpan<char> s, out bool success);
-
-        [Pure]
-        public delegate T? Parser(in string? s, out bool success);
 
         [Pure]
         delegate bool InByteParser(ReadOnlySpan<byte> s, CultureInfo info, out T? result);
@@ -236,13 +236,16 @@ static partial class GenericParser
         delegate bool InEnumCharParser(ReadOnlySpan<char> s, bool ignoreCase, out T? result);
 
         [Pure]
-        delegate bool InEnumParser(string? s, bool ignoreCase, out T? result);
-
-        [Pure]
         delegate bool InNumberByteParser(ReadOnlySpan<byte> s, NumberStyles style, CultureInfo info, out T? result);
 
         [Pure]
         delegate bool InNumberCharParser(ReadOnlySpan<char> s, NumberStyles style, CultureInfo info, out T? result);
+#endif
+        [Pure]
+        public delegate T? Parser(in string? s, out bool success);
+
+        [Pure]
+        delegate bool InEnumParser(string? s, bool ignoreCase, out T? result);
 
         [Pure]
         delegate bool InNumberParser(string? s, NumberStyles style, CultureInfo info, out T? result);
@@ -251,7 +254,7 @@ static partial class GenericParser
         delegate bool InParser(string? s, CultureInfo info, out T? result);
 
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-
+#if !NO_SYSTEM_MEMORY
         static readonly InByteParser? s_byteParse = Make<InByteParser>();
 
         static readonly InCharParser? s_charParse = Make<InCharParser>();
@@ -260,11 +263,11 @@ static partial class GenericParser
 
         static readonly InEnumCharParser? s_charParseEnum = Make<InEnumCharParser>();
 
-        static readonly InEnumParser? s_parseEnum = Make<InEnumParser>();
-
         static readonly InNumberByteParser? s_byteParseNumber = Make<InNumberByteParser>();
 
         static readonly InNumberCharParser? s_charParseNumber = Make<InNumberCharParser>();
+#endif
+        static readonly InEnumParser? s_parseEnum = Make<InEnumParser>();
 
         static readonly InNumberParser? s_parseNumber = Make<InNumberParser>();
 
@@ -274,7 +277,7 @@ static partial class GenericParser
             s_parseNumber is not null ? ParseNumberInvoker :
             s_parseEnum is not null ? ParseEnumInvoker :
             s_parse is not null ? ParseInvoker : FailedParseInvoker;
-
+#if !NO_SYSTEM_MEMORY
         public static ByteParser WithByteSpan { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             s_byteParseNumber is not null ? ByteParseNumberInvoker :
             s_byteParseEnum is not null ? ByteParseEnumInvoker :
@@ -341,7 +344,7 @@ static partial class GenericParser
             b = s_charParseNumber!(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var result);
             return result;
         }
-
+#endif
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? FailedParseInvoker(in string? _, out bool b)
         {

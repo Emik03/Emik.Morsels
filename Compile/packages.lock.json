@@ -82,11 +82,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {
@@ -302,11 +302,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {
@@ -564,11 +564,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {
@@ -778,11 +778,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {
@@ -992,11 +992,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {
@@ -1206,11 +1206,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {
@@ -1414,11 +1414,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {
@@ -1617,11 +1617,11 @@
       },
       "InlineIL.Fody": {
         "type": "Direct",
-        "requested": "[1.10.1, )",
-        "resolved": "1.10.1",
-        "contentHash": "t7fTKLi+5tuYzH8PItQm7m0QU6xma7+NPZCDPbn1ebEvtymKmduuueeSOv8Jwm5UmLt1JOUERP/abH4P1AiRLQ==",
+        "requested": "[1.10.2, )",
+        "resolved": "1.10.2",
+        "contentHash": "sJCDXWpPUOPs8uUpbVF5WzT5tsI5ybUI1xM6gzN3CBC4Ckb3J7xcmmrXeUcjbyC9IwFQNyxMir3MyvTzTvCwmw==",
         "dependencies": {
-          "Fody": "6.9.2"
+          "Fody": "6.9.3"
         }
       },
       "InlineMethod.Fody": {

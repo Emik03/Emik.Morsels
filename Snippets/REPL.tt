@@ -276,7 +276,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
     string[] SplitByNewLine(string x) => x.Split(newLines);
 
-    string[] typeDeclarations = ["ref", "sealed", "partial", "class", "delegate", "enum", "struct", "record", "union"];
+    string[] typeDeclarations = ["ref", "sealed", "partial", "class", "delegate", "enum", "struct", "readonly", "record", "union"];
 
     string Publicize(string x) => typeDeclarations.Any(x.StartsWith) ? $"public {x}"  : x;
 

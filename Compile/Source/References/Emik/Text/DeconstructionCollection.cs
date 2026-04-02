@@ -833,7 +833,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #endif
             case Type x: return x.ToString();
             case Pointer x: return ToHexString(x);
+#if !NO_SYSTEM_MEMORY
             case Version x: return x.ToShortString();
+#endif
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary, seen):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
@@ -885,8 +887,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <summary>Returns the <see cref="string"/> representation of this instance without newlines.</summary>
     /// <returns>The <see cref="string"/> representation of this instance.</returns>
     [Pure]
-    public string ToStringWithoutNewLines() => ToString().SplitSpanLines().ToString();
-
+    public string ToStringWithoutNewLines() =>
+#if NO_SYSTEM_MEMORY
+        $"[{ToString().Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries).Conjoin()}]";
+#else
+        ToString().SplitSpanLines().ToString();
+#endif
     /// <summary>Recursively simplifies every value according to <see cref="Simplify"/>.</summary>
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
     public abstract DeconstructionCollection Simplify();
@@ -935,7 +941,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             true => "true",
             false => "false",
             DeconstructionCollection x => x.Simplify(),
+#if !NO_SYSTEM_MEMORY
             Version x => x.ToShortString(),
+#endif
             Pointer x => ToHexString(x),
             Type x => x.ToString(),
             nuint x => x.ToHexString(),

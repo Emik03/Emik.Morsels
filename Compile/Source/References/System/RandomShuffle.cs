@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace
 namespace System;
 #pragma warning disable CS8500

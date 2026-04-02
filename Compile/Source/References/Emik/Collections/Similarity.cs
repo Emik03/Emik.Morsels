@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable CS8500
@@ -233,7 +233,7 @@ static partial class Similarity
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
         left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
-#if !NO_SYSTEM_MEMORY
+
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -463,7 +463,7 @@ static partial class Similarity
         [InstantHandle] Func<T, T, bool>? comparer = null
     ) =>
         left.ReadOnly().JaroWinkler(right, comparer);
-#endif
+
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <typeparam name="TItem">The type of item within the sequence.</typeparam>
@@ -872,10 +872,7 @@ static partial class Similarity
     /// <param name="pointer">The pointer to the first element of the buffer.</param>
     /// <param name="length">The number of elements in the buffer.</param>
     [StructLayout(LayoutKind.Auto)]
-#if !NO_READONLY_STRUCTS
-    readonly
-#endif
-        unsafe partial struct Fat<T>(void* pointer, [NonNegativeValue] int length)
+    readonly unsafe partial struct Fat<T>(void* pointer, [NonNegativeValue] int length)
     {
         /// <summary>Takes the element corresponding to the passed in index.</summary>
         /// <remarks><para>No bounds check is performed. Going out of bounds is undefined behavior.</para></remarks>
@@ -898,3 +895,4 @@ static partial class Similarity
         }
     }
 }
+#endif

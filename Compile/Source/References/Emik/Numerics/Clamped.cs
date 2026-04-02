@@ -144,13 +144,13 @@ static partial class Clamped
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     // ReSharper disable once RedundantUnsafeContext
-    public static nuint RoundUpToPowerOf2(this nuint value) =>
+    public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
 #if NET6_0_OR_GREATER
 #pragma warning disable IDE0004 // ReSharper disable once RedundantCast
         (nuint)BitOperations.RoundUpToPowerOf2(value);
 #pragma warning restore IDE0004
 #else
-        Unsafe.SizeOf<nuint>() is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
+        sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 #endif
 #if NET7_0_OR_GREATER
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>

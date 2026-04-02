@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 namespace Emik.Morsels;
 #pragma warning disable CS8631, IDE0032, RCS1158
@@ -68,16 +68,14 @@ static partial class SplitSpanFactory
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-        where T : IEquatable<T>
-        =>
-            new(span, separator);
+        where T : IEquatable<T> =>
+        new(span, separator);
 
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
-        where T : IEquatable<T>
-        =>
-            span.ReadOnly().SplitOnAny(separator);
+        where T : IEquatable<T> =>
+        span.ReadOnly().SplitOnAny(separator);
 
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
@@ -86,16 +84,14 @@ static partial class SplitSpanFactory
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAll> SplitOn<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-        where T : IEquatable<T>
-        =>
-            new(span, separator);
+        where T : IEquatable<T> =>
+        new(span, separator);
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAll> SplitOn<T>(this Span<T> span, ReadOnlySpan<T> separator)
-        where T : IEquatable<T>
-        =>
-            span.ReadOnly().SplitOn(separator);
+        where T : IEquatable<T> =>
+        span.ReadOnly().SplitOn(separator);
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -118,16 +114,14 @@ static partial class SplitSpanFactory
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
-        where T : IEquatable<T>?
-        =>
-            new(span, In(separator));
+        where T : IEquatable<T>? =>
+        new(span, In(separator));
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this Span<T> span, in T separator)
-        where T : IEquatable<T>?
-        =>
-            span.ReadOnly().SplitOn(separator);
+        where T : IEquatable<T>? =>
+        span.ReadOnly().SplitOn(separator);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -355,16 +349,10 @@ static partial class SplitSpanFactory
 /// <param name="separator">The separator.</param>
 [StructLayout(LayoutKind.Auto)]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-#if !NO_REF_STRUCTS
-    ref
-#endif
-    partial struct SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
+readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
+    ReadOnlySpan<TBody> body,
+    ReadOnlySpan<TSeparator> separator
+)
     where TBody : IEquatable<TBody>?
 #if !NET7_0_OR_GREATER
     where TSeparator : IEquatable<TSeparator>?
@@ -379,7 +367,7 @@ readonly
 #if NET9_0_OR_GREATER
         where TAccumulator : allows ref struct
 #endif
-    ;
+        ;
 
     readonly ReadOnlySpan<TBody> _body = body;
 
@@ -811,18 +799,17 @@ readonly
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
         fixed (TBody* pin = span)
         {
-            var ptr = span.Align(pin);
-
             for (var i = 0; i < span.Length; i++)
-                builder.Append(((char*)ptr)[i]);
+                builder.Append(((char*)pin)[i]);
         }
 
         return builder;
 #else
         fixed (TBody* ptr = span)
-            return builder.Append((char*)span.Align(ptr), span.Length);
+            return builder.Append((char*)ptr, span.Length);
 #endif
 #pragma warning restore CS8500
     }
 #endif
 }
+#endif

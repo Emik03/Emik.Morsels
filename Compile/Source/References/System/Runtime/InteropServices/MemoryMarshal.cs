@@ -43,7 +43,7 @@ static partial class MemoryMarshal
             (int)(fromLength / toSize);
 
         fixed (TFrom* ptr = span)
-            return new(span.Align(ptr), toLength);
+            return new(ptr, toLength);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ static partial class MemoryMarshal
             (int)(fromLength / toSize);
 
         fixed (TFrom* ptr = span)
-            return new(span.Align(ptr), toLength);
+            return new(ptr, toLength);
     }
 
     /// <summary>
@@ -147,6 +147,7 @@ static partial class MemoryMarshal
 
             ReadOnlySpan = Make<ReadOnlySpanFactory<T>>() ?? InefficientReadOnlySpanFallback;
             Span = Make<SpanFactory<T>>() ?? InefficientSpanFallback;
+            return;
 
             static MethodInfo? Factory(Type? type) =>
                 type

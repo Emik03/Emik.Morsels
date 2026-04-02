@@ -46,9 +46,6 @@ static partial class OnceFactory
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="value">The item to use.</param>
 [StructLayout(LayoutKind.Auto)]
-#if CSHARPREPL
-public
-#endif
 partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
     IEquatable<Once<T>>,
     IList<T>,
@@ -321,4 +318,3 @@ partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
         public void Reset() => _canMove = _hasValue;
     }
 }
-#endif

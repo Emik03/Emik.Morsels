@@ -40,7 +40,7 @@ static partial class RandomizedGetters
 
         return list;
     }
-
+#if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
     public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
     {
@@ -61,7 +61,7 @@ static partial class RandomizedGetters
 
         return iterable;
     }
-
+#endif
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
@@ -89,7 +89,7 @@ static partial class RandomizedGetters
             _ => Fallback(iterable, selector),
         };
     }
-
+#if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]
     public static T PickRandom<T>([InstantHandle] this scoped Span<T> iterable, Func<int, int, int>? selector = null) =>
@@ -102,4 +102,5 @@ static partial class RandomizedGetters
         Func<int, int, int>? selector = null
     ) =>
         iterable[(selector ?? s_rng)(0, iterable.Length)];
+#endif
 }

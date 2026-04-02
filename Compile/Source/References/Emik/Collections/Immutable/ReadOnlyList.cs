@@ -70,7 +70,9 @@ static partial class ReadOnlyFactory
 
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
-        public override string ToString() => list.ToString() ?? "";
+        public override string ToString() =>
+            list.ToString() ?? // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+            "";
     }
 
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to a read-only list.</summary>
@@ -86,4 +88,3 @@ static partial class ReadOnlyFactory
             : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? [.. iterable]);
 #pragma warning restore IDE0028
 }
-#endif

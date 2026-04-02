@@ -64,7 +64,7 @@ static partial class Permuted
             } while (index >= lists[pos].Count);
         }
     }
-
+#if !NO_SYSTEM_MEMORY
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
     /// <param name="lists">The input to generate combinations of.</param>
@@ -117,5 +117,6 @@ static partial class Permuted
             } while (index >= lists[pos].Count);
         }
     }
+#endif
 }
 #endif

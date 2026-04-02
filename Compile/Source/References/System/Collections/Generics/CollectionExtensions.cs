@@ -150,6 +150,7 @@ static class CollectionExtensions
         where TKey : notnull =>
         new(dictionary);
 #endif
+#if !NO_SYSTEM_MEMORY
     /// <summary>Adds the elements of the specified span to the end of the <see cref="List{T}"/>.</summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>
     /// <param name="list">The list to which the elements should be added.</param>
@@ -205,5 +206,6 @@ static class CollectionExtensions
         for (var i = 0; i < list.Count; i++)
             destination[i] = list[i];
     }
+#endif
 }
 #endif

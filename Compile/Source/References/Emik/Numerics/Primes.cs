@@ -5,10 +5,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Provides prime numbers.</summary>
-#if CSHARPREPL
-public
-#endif
-    static class Primes
+readonly partial struct Primes
 {
     /// <summary>The smallest prime number.</summary>
     public const short Min = 2;
