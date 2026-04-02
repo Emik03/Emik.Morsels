@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
-#if NET20 || NET30 // ReSharper disable TypeParameterCanBeVariant
+#if NETFRAMEWORK && !NET35_OR_GREATER // ReSharper disable TypeParameterCanBeVariant
 /// <summary>Encapsulates a method that has no parameters and does not return a value.</summary>
 delegate void Action();
 

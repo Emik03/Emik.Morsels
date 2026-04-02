@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
+
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable IDE0180 // ReSharper disable SwapViaDeconstruction
@@ -7,11 +7,9 @@ namespace Emik.Morsels;
 static partial class RandomizedGetters
 {
     static readonly Func<int, int, int> s_rng =
-#if KTANE
-        UnityEngine.Random.Range;
-#elif NET6_0_OR_GREATER
+#if NET6_0_OR_GREATER
         System.Random.Shared.Next;
-#else // ReSharper disable once RedundantNameQualifier
+#else
         new Random().Next;
 #endif
     /// <summary>Shuffles a collection.</summary>
@@ -105,4 +103,3 @@ static partial class RandomizedGetters
     ) =>
         iterable[(selector ?? s_rng)(0, iterable.Length)];
 }
-#endif

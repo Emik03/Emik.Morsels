@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD1_0
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable CS8500
 using static Span;
@@ -233,7 +233,7 @@ static partial class Similarity
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
         left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
-
+#if !NO_SYSTEM_MEMORY
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -245,12 +245,8 @@ static partial class Similarity
         this scoped ReadOnlySpan<T> left,
         scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.Jaro(right, comparer is null ? null : comparer.Equals);
+    ) =>
+        left.Jaro(right, comparer is null ? null : comparer.Equals);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -259,12 +255,12 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this scoped Span<T> left, scoped ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.ReadOnly().Jaro(right, comparer);
+    public static double Jaro<T>(
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    ) =>
+        left.ReadOnly().Jaro(right, comparer);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -278,15 +274,12 @@ static partial class Similarity
         scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
     {
         fixed (T* l = left)
         fixed (T* r = right)
             return Jaro(
-                new Fat<T>(left.Align(l), left.Length),
-                new(right.Align(r), right.Length),
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -304,12 +297,8 @@ static partial class Similarity
         this scoped Span<T> left,
         scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.ReadOnly().Jaro(right, comparer);
+    ) =>
+        left.ReadOnly().Jaro(right, comparer);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -326,12 +315,8 @@ static partial class Similarity
         this scoped ReadOnlySpan<T> left,
         scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.JaroEmik(right, comparer is null ? null : comparer.Equals);
+    ) =>
+        left.JaroEmik(right, comparer is null ? null : comparer.Equals);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -348,12 +333,8 @@ static partial class Similarity
         this scoped Span<T> left,
         scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.ReadOnly().JaroEmik(right, comparer);
+    ) =>
+        left.ReadOnly().JaroEmik(right, comparer);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -371,15 +352,12 @@ static partial class Similarity
         scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
     {
         fixed (T* l = left)
         fixed (T* r = right)
             return JaroEmik(
-                new Fat<T>(left.Align(l), left.Length),
-                new(right.Align(r), right.Length),
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -401,12 +379,8 @@ static partial class Similarity
         this scoped Span<T> left,
         scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.ReadOnly().JaroEmik(right, comparer);
+    ) =>
+        left.ReadOnly().JaroEmik(right, comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -423,12 +397,8 @@ static partial class Similarity
         this scoped ReadOnlySpan<T> left,
         scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
+    ) =>
+        left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -445,12 +415,8 @@ static partial class Similarity
         this scoped Span<T> left,
         scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            left.ReadOnly().JaroWinkler(right, comparer);
+    ) =>
+        left.ReadOnly().JaroWinkler(right, comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -468,15 +434,12 @@ static partial class Similarity
         scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
     {
         fixed (T* l = left)
         fixed (T* r = right)
             return JaroWinkler(
-                new Fat<T>(left.Align(l), left.Length),
-                new(right.Align(r), right.Length),
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -498,13 +461,9 @@ static partial class Similarity
         this scoped Span<T> left,
         scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
+    ) =>
+        left.ReadOnly().JaroWinkler(right, comparer);
 #endif
-        =>
-            left.ReadOnly().JaroWinkler(right, comparer);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <typeparam name="TItem">The type of item within the sequence.</typeparam>
@@ -917,9 +876,6 @@ static partial class Similarity
     readonly
 #endif
         unsafe partial struct Fat<T>(void* pointer, [NonNegativeValue] int length)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
     {
         /// <summary>Takes the element corresponding to the passed in index.</summary>
         /// <remarks><para>No bounds check is performed. Going out of bounds is undefined behavior.</para></remarks>
@@ -942,4 +898,3 @@ static partial class Similarity
         }
     }
 }
-#endif

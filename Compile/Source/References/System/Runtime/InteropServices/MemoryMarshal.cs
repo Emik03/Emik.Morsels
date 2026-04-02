@@ -4,7 +4,7 @@
 // ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
 namespace System.Runtime.InteropServices;
 #pragma warning disable CS8500, SA1137
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NO_SYSTEM_RUNTIME_INTEROPSERVICES_MEMORYMARSHAL
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NO_SYSTEM_MEMORY
 #pragma warning disable CS1574 // Reference to System.Memory may not exist.
 /// <summary>
 /// Provides a collection of methods for interoperating with <see cref="Memory{T}"/>, <see cref="ReadOnlyMemory{T}"/>,
@@ -103,7 +103,7 @@ static partial class MemoryMarshal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ReadOnlySpan<T> CreateReadOnlySpan<T>(scoped ref T reference, int length) =>
         Cache<T>.ReadOnlySpan(ref reference, length);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <summary>Returns a reference to the element of the read-only span at index 0.</summary>
     /// <remarks><para>
     /// If the read-only span is empty, this method returns a reference to the location where the
@@ -129,13 +129,7 @@ static partial class MemoryMarshal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ref T GetReference<T>(Span<T> span) =>
         ref Unsafe.AsRef(span.GetPinnableReference());
-#else
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
-    public static T GetReference<T>(Span<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
-    public static T GetReference<T>(ReadOnlySpan<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
-#endif
     static class Cache<T>
     {
         static Cache()

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 namespace Emik.Morsels;
 #pragma warning disable CS8631, IDE0032
@@ -98,7 +98,7 @@ static partial class SplitMemoryFactory
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this Memory<byte> span, byte separator) =>
@@ -153,7 +153,7 @@ static partial class SplitMemoryFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this string? span, char separator) =>
         new(span.AsMemory(), separator.AsMemory());
-#endif
+
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAny> SplitOnAny(this string? span, string? separator) =>
@@ -255,7 +255,7 @@ readonly
 {
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator}"/>
     public delegate TAccumulator RefAccumulator<TAccumulator>(TAccumulator accumulator, ReadOnlyMemory<TBody> next)
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where TAccumulator : allows ref struct
 #endif
     ;
@@ -554,7 +554,7 @@ readonly
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] RefAccumulator<TAccumulator> func
     )
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where TAccumulator : allows ref struct
 #endif
     {
@@ -572,7 +572,7 @@ readonly
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<TBody>, TAccumulator> func
     )
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where TAccumulator : allows ref struct
 #endif
     {
@@ -874,3 +874,4 @@ readonly
         void IEnumerator.Reset() => _body = _original;
     }
 }
+#endif

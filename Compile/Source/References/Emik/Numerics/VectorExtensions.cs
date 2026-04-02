@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NET5_0_OR_GREATER
+#if NET8_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for <see cref="Vector{T}"/>.</summary>
 static partial class NumberInterfaceExtensions
 {
-#if NET8_0_OR_GREATER
     /// <inheritdoc cref="IFloatingPoint{TSelf}.Ceiling"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> Ceiling<T>(this Vector<T> x) =>
@@ -20,7 +19,6 @@ static partial class NumberInterfaceExtensions
         typeof(T) == typeof(float) ? (Vector<T>)(object)Vector.Floor((Vector<float>)(object)x) :
         typeof(T) == typeof(double) ? (Vector<T>)(object)Vector.Floor((Vector<double>)(object)x) :
         default;
-#endif
 #if NET9_0_OR_GREATER
     /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.Cos"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

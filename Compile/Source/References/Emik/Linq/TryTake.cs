@@ -30,7 +30,7 @@ static partial class TryTake
 
         return last;
     }
-#if !(NET20 || NET30)
+
     /// <summary>Takes the first item, or a fallback value.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -79,7 +79,7 @@ static partial class TryTake
             _ when iterable.TryCount() is { } count => count is 0 ? fallback : iterable.Last(),
             _ => iterable.EnumerateOr(fallback),
         };
-#endif
+
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="TKey">The key item in the collection.</typeparam>
     /// <typeparam name="TValue">The value item in the collection.</typeparam>
@@ -90,7 +90,7 @@ static partial class TryTake
     public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : notnull =>
         dictionary.TryGetValue(key, out var value) ? value : default;
-#if !NET20 && !NET30
+
     /// <summary>Returns the item, or a fallback.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="self">The item to potentially return.</param>
@@ -138,7 +138,8 @@ static partial class TryTake
     /// <param name="array">The array to potentially return.</param>
     /// <returns>The parameter <paramref name="array"/>, or <see cref="ImmutableArray{T}.Empty"/>.</returns>
     [Pure]
-    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) => array.IsDefault ? [] : array;
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
+        array.IsDefault ? ImmutableArray<T>.Empty : array;
 #endif
     /// <summary>Gets a specific character from a string.</summary>
     /// <param name="str">The string to get the character from.</param>
@@ -206,5 +207,4 @@ static partial class TryTake
             _ => iterable.Reverse().Skip(index).FirstOrDefault(),
         };
     }
-#endif
 }

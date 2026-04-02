@@ -2,7 +2,7 @@
 
 // ReSharper disable CheckNamespace EmptyNamespace
 namespace System.Collections.Generic;
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
 /// <summary>Provides extension methods for generic collections.</summary>
 static class CollectionExtensions
 {

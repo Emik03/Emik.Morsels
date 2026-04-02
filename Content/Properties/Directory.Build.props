@@ -9,6 +9,7 @@
         <Authors>Emik</Authors>
         <Company>Emik</Company>
         <Nullable>enable</Nullable>
+        <CopyCommand>cp</CopyCommand>
         <IsPackable>true</IsPackable>
         <NuGetAudit>true</NuGetAudit>
         <FileVersion>1.0</FileVersion>
@@ -36,6 +37,7 @@
         <OptimizationPreference>speed</OptimizationPreference>
         <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
         <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
+        <DoNotMerge>^(?:(?!(CommunityToolkit)).)+$</DoNotMerge>
         <EnablePackageValidation>true</EnablePackageValidation>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
@@ -45,7 +47,6 @@
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <DoNotMerge>^(?:(?!(CommunityToolkit)|(ZLinq)).)+$</DoNotMerge>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
@@ -73,13 +74,12 @@
             CM0001;
             DOC203;
             GU0009;GU0011;GU0017;GU0073;
-            IDE0005;IDE0008;IDE0010;IDE0011;IDE0021;IDE0022;IDE0023;IDE0024;IDE0036;IDE0040;IDE0046;IDE0052;IDE0048;IDE0051;IDE0055;IDE0058;IDE0060;IDE0061;IDE0065;IDE0072;IDE0130;IDE0160;IDE0290;IDE0301;IDE1006;
+            IDE0005;IDE0008;IDE0010;IDE0011;IDE0021;IDE0022;IDE0023;IDE0024;IDE0036;IDE0040;IDE0046;IDE0052;IDE0048;IDE0051;IDE0055;IDE0058;IDE0060;IDE0061;IDE0065;IDE0072;IDE0130;IDE0160;IDE0290;IDE0301;IDE0370;IDE0380;IDE1006;
             IDISP004;IDISP007;IDISP008;
             NETSDK1138;
             NU1701;NU5128;
             NX0001;NX0002;NX0003;
             RS1035;
-            UEA0006;
             XA0101;
         </NoWarn>
     </PropertyGroup>
@@ -126,10 +126,6 @@
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
         <CopyCommand>xcopy</CopyCommand>
     </PropertyGroup>
-    <!-- The copy command for Mac/Linux. -->
-    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-        <CopyCommand>cp</CopyCommand>
-    </PropertyGroup>
     <!-- Benchmarks do not like being run from the artifacts path. -->
     <PropertyGroup Condition="!$(MSBuildProjectName.Contains('Benchmark'))">
         <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
@@ -161,7 +157,6 @@
         <AdditionalFiles Include="*.??proj" Visible="false"/>
         <AdditionalFiles Include="$(Morsels)/Content/Properties/**" Link="Properties/**"/>
         <Content Include="$(Morsels)/Content/Properties/**" Link="Properties/**" Pack="false"/>
-        <Compile Condition="'$(MSBuildProjectExtension)' == '.csproj'" Include="$(Morsels)/Compile/**/*.cs"/>
         <Compile Condition="'$(MSBuildProjectExtension)' == '.fsproj'" Include="$(Morsels)/Compile/**/*.fs" Link="Emik.Morsels/*.fs"/>
         <None Condition="Exists('Images/icon.png')" Include="Images/icon.png" Link="Images/icon.png" Pack="true" PackagePath="icon.png"/>
         <None Include="$([MSBuild]::GetPathOfFileAbove('README.md', '$(MSBuildProjectFullPath)../'))" Link="README.md" Pack="true" PackagePath="/"/>
@@ -174,7 +169,7 @@
         <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Absence.Fody" Version="2.0.10" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="InlineIL.Fody" Version="1.10.1" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="InlineIL.Fody" Version="1.10.2" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="StaticLambda.Fody" Version="1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.8.7" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4" PrivateAssets="all" ExcludeAssets="runtime"/>

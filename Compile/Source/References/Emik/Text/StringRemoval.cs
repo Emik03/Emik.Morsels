@@ -89,7 +89,7 @@ static partial class StringRemoval
     public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
     {
         range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         popped = string.Create(
             length,
             (builder, startIndex),

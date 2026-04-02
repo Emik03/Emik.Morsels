@@ -12,6 +12,7 @@ static partial class RandomGeneration
     /// <typeparam name="T">The type of the random value.</typeparam>
     /// <param name="random">The random number generator.</param>
     /// <returns>The random value.</returns>
+    // ReSharper disable once RedundantNameQualifier
     public static T Next<T>(this System.Random random)
         where T : unmanaged
     {

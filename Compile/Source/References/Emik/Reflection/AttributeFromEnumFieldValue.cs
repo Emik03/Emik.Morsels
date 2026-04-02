@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -16,4 +15,3 @@ static partial class AttributeFromEnumFieldValue
         where T : Attribute =>
         value.GetType().GetMember($"{value}", BindingFlags.Static | BindingFlags.Public)[0].GetCustomAttribute<T>();
 }
-#endif

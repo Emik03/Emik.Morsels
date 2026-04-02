@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -106,7 +105,7 @@ static partial class Headless
             return -1;
         }
     }
-#endif
+
     /// <summary>Separates the head from the tail of an <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="collection">The enumerable to split.</param>

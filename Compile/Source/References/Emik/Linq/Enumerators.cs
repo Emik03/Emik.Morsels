@@ -103,7 +103,7 @@ static partial class EnumeratorToEnumerable
     [MustDisposeResource, Pure]
     public static Enumerable<T> AsEnumerable<T>([HandlesResourceDisposal] this IEnumerator<T> enumerator) =>
         new(enumerator);
-#if !NET20 && !NET30 && !NET35
+#if !NETFRAMEWORK || NET40_OR_GREATER
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>

@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Numerics;
-#if !NETCOREAPP3_0_OR_GREATER
+#if !NETCOREAPP
 /// <summary>
 /// Utility methods for intrinsic bit-twiddling operations.
 /// The methods use hardware intrinsics when available on the underlying platform,

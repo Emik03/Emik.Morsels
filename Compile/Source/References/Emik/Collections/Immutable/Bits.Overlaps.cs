@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY
 #pragma warning disable CS8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
@@ -15,7 +15,6 @@ partial struct Bits<T>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsSingle(scoped in T item) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         0 switch
         {
             _ when typeof(T) == typeof(sbyte) => unchecked((uint)(sbyte)(object)item).IsPow2(),
@@ -44,9 +43,7 @@ partial struct Bits<T>
                 _ => (Enumerator)item is var e && e.MoveNext() && !e.MoveNext(),
             },
         };
-#else
-        (Enumerator)item is var e && e.MoveNext() && !e.MoveNext();
-#endif
+
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Contains(T item)

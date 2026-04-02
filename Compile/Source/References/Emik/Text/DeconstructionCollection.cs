@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantCallerArgumentExpressionDefaultValue RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
 namespace Emik.Morsels;
-#if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+
 /// <summary>Contains methods for deconstructing objects.</summary>
 #pragma warning disable CA1031, CS9107
 static partial class DeconstructionCollectionExtensions
@@ -98,7 +98,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         public int GetHashCode(object? obj) =>
             IsScalar(obj)
                 ? unchecked(_unique--)
-#if NETFRAMEWORK && !NET35_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
                 : RuntimeHelpers.GetHashCode(obj);
 #else // RuntimeHelpers.GetHashCode eventually calls an external function that I have no idea how to replicate.
                 : 0;
@@ -229,7 +229,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
             return TryCollect(e, str, ref visit, out list, seen);
         }
-#if !NET20 && !NET30 && !NET35
+#if !NETFRAMEWORK || NET40_OR_GREATER
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="comparable">The comparable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -575,7 +575,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             {
                 if (next.IsStatic)
                     continue;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
                 if (next.FieldType.IsByRefLike)
                     continue;
 #endif
@@ -595,7 +595,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 if (next.GetGetMethod() is { } getter &&
                     (getter.IsStatic || next.GetGetMethod()?.GetParameters() is not []))
                     continue;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
                 if (next.PropertyType.IsByRefLike)
                     continue;
 #endif
@@ -827,7 +827,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         {
             case not null when value.GetType().GetCustomAttributes().Any(IsChoiceAttribute): return value.ToString();
             case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY
             case Memory<char> m: return m.ToString();
             case ReadOnlyMemory<char> m: return m.ToString();
 #endif
@@ -847,7 +847,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var e, seen):
                 return Ok(e, out any);
             case IEnumerator: goto default;
-#if !NET20 && !NET30 && !NET35
+#if !NETFRAMEWORK || NET40_OR_GREATER
             case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var cmp, seen):
                 return Ok(cmp, out any);
             case IStructuralComparable: goto default;
@@ -948,4 +948,3 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     [Pure]
     static unsafe string ToHexString(Pointer x) => ((nint)Pointer.Unbox(x)).ToHexString();
 }
-#endif

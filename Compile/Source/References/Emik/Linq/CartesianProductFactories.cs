@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -110,4 +109,3 @@ static partial class CartesianProductFactories
             (sum, next) => sum.SelectMany(_ => next, (s, n) => s.Concat(Enumerable.Repeat(n, 1)))
         );
 }
-#endif

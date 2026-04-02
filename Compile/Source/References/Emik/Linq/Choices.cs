@@ -112,10 +112,7 @@ static partial class Choices
 #if CSHARPREPL
 public
 #endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    struct Choices<T>(IList<T>? n, int k) : ICollection<IList<T>>, IEquatable<Choices<T>>
+readonly struct Choices<T>(IList<T>? n, int k) : ICollection<IList<T>>, IEquatable<Choices<T>>
 {
     /// <summary>Provides the enumerator for the <see cref="Choices{T}"/> struct.</summary>
     /// <param name="n">The collection to choose from.</param>

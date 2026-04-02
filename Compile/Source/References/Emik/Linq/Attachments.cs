@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if !NET20 && !NET30 && !NET471_OR_GREATER && !NETSTANDARD1_6_OR_GREATER && !NETCOREAPP
+#if NETFRAMEWORK && !NET471_OR_GREATER
 /// <summary>Adds support for Append and Prepend in lower frameworks.</summary>
 static partial class Attachments
 {

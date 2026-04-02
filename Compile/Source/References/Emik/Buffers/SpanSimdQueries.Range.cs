@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace RedundantUsingDirective
 namespace Emik.Morsels;
 
@@ -16,7 +16,7 @@ static partial class SpanSimdQueries
     /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNumericPrimitive<T>()
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
         =>

@@ -15,6 +15,7 @@ global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNul
 global using FieldInfo = System.Reflection.FieldInfo;
 global using MemberInfo = System.Reflection.MemberInfo;
 global using OpCodes = System.Reflection.Emit.OpCodes;
+global using Timer = System.Threading.Timer;
 global using Version = System.Version;
 #if ANDROID
 global using Array = System.Array;
@@ -35,7 +36,7 @@ global using Range = System.Range;
 global using StringBuilder = System.Text.StringBuilder;
 global using Trace = System.Diagnostics.Trace;
 global using Type = System.Type;
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP_3_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
 global using Vector = System.Numerics.Vector;
 #endif
 #endif
@@ -69,7 +70,7 @@ global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicit
 #else
 global using Debug = System.Diagnostics.Debug;
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
 global using Vector = System.Numerics.Vector;
 #endif
 #if KTANE && !WAWA || XNA && !ANDROID
@@ -81,9 +82,6 @@ global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
-#endif
-#if !NETSTANDARD || NETSTANDARD1_2_OR_GREATER
-global using Timer = System.Threading.Timer;
 #endif
 #if XNA
 global using Color = Microsoft.Xna.Framework.Color;
@@ -97,7 +95,7 @@ global using Vector3 = Microsoft.Xna.Framework.Vector3;
 global using Vector4 = Microsoft.Xna.Framework.Vector4;
 #endif // ReSharper disable once RedundantUsingDirective
 using static System.AttributeTargets;
-#if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
+#if NETFRAMEWORK && !NET40_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System.Diagnostics.Contracts
 {

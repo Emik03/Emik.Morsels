@@ -13,11 +13,7 @@ static partial class YesFactory
     /// <typeparam name="T">The type of the item to yield.</typeparam>
     /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
-    public
-#if !NO_READONLY_STRUCTS
-        readonly
-#endif
-        partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+    public readonly partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
     {
         /// <inheritdoc />
         [CollectionAccess(Read), ProvidesContext, Pure]

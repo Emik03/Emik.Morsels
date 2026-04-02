@@ -1,6 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
 #pragma warning disable GlobalUsingsAnalyzer
 using SecurityAction = System.Security.Permissions.SecurityAction;
 
@@ -9,12 +8,13 @@ using SecurityAction = System.Security.Permissions.SecurityAction;
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
 using static SecurityAction;
 using static SecurityPermissionFlag;
 #endif
 
 /// <summary>Provides methods for exiting the program.</summary>
+// ReSharper disable WrongIndentSize
 static partial class Exit
 {
     /// <remarks><para>This method represents the exit code 0, indicating success.</para></remarks>
@@ -22,7 +22,7 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
@@ -33,7 +33,7 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
@@ -44,7 +44,7 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
@@ -55,7 +55,7 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
@@ -66,7 +66,7 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
@@ -77,7 +77,7 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
@@ -92,7 +92,7 @@ static partial class Exit
     /// </exception>
     /// <returns>This method does not return. Specified to allow <see langword="throw"/> expressions.</returns>
     [ContractAnnotation("=> halt"), DoesNotReturn, SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
@@ -105,4 +105,3 @@ static partial class Exit
         throw Unreachable;
     }
 }
-#endif

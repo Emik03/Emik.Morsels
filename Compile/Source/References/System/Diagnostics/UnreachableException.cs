@@ -4,9 +4,7 @@
 namespace System.Diagnostics;
 #pragma warning disable CA1064
 /// <summary>Exception thrown when the program executes an instruction that was thought to be unreachable.</summary>
-#if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 [Serializable]
-#endif
 sealed class UnreachableException : Exception
 {
     const string Arg = "The program executed an instruction that was thought to be unreachable.";

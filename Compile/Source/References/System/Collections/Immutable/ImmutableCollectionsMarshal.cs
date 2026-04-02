@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETCOREAPP && !NET8_0_OR_GREATER || ROSLYN
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Runtime.InteropServices;
-#if !NET8_0_OR_GREATER && (NETCOREAPP || ROSLYN)
 using Unsafe = CompilerServices.Unsafe;
 
 /// <summary>

@@ -6,7 +6,6 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static partial class Collected
 {
-#if !NETFRAMEWORK || NET35_OR_GREATER
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -15,7 +14,7 @@ static partial class Collected
     [return: NotNullIfNotNull(nameof(iterable))]
     public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as T[] ?? [..iterable];
-#endif
+
     /// <summary>Wraps the <see cref="IEnumerable{T}"/> in a known-size collection type.</summary>
     /// <remarks><para>The parameter <paramref name="count"/> is assumed to be correct.</para></remarks>
     /// <typeparam name="T">The item in the collection.</typeparam>

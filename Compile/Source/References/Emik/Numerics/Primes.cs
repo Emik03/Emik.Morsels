@@ -19,11 +19,11 @@ public
     /// <summary>Gets all <see langword="short"/> prime numbers.</summary>
     public static
 #if NETCOREAPP || ROSLYN
-        ImmutableArray
+        ImmutableArray<short>
 #else // ReSharper disable once RedundantNameQualifier
-        System.Collections.ObjectModel.ReadOnlyCollection
+        System.Collections.ObjectModel.ReadOnlyCollection<short>
 #endif
-        <short> Int16 { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        Int16 { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if NETCOREAPP || ROSLYN // ReSharper disable once ArrangeStaticMemberQualifier
         ImmutableCollectionsMarshal.AsImmutableArray<short>(
 #else
@@ -268,5 +268,5 @@ public
 #endif
     /// <inheritdoc cref="Index(int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(Min, MaxInt16)]
-    internal static short Index(Index index) => Index(index.IsFromEnd ? -index.Value - 1 : index.Value);
+    public static short Index(Index index) => Index(index.IsFromEnd ? -index.Value - 1 : index.Value);
 }

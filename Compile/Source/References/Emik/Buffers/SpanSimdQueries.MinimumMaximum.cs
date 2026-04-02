@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable once RedundantUsingDirective
 using static Span;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
@@ -32,9 +32,7 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -52,9 +50,7 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -81,9 +77,7 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -101,9 +95,7 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -148,9 +140,7 @@ static partial class SpanSimdQueries
         this scoped Span<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -180,9 +170,7 @@ static partial class SpanSimdQueries
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -227,9 +215,7 @@ static partial class SpanSimdQueries
         this scoped Span<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -259,9 +245,7 @@ static partial class SpanSimdQueries
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -311,9 +295,7 @@ static partial class SpanSimdQueries
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
     {
@@ -381,9 +363,6 @@ static partial class SpanSimdQueries
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
     {
         if (enumerable.IsEmpty)
             return default!;

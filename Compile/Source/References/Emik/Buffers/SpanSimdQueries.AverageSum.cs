@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable once RedundantUsingDirective
 using static OperatorCaching;
 using static Span;
@@ -14,9 +14,7 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped Span<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -37,9 +35,7 @@ static partial class SpanSimdQueries
     /// <returns>The average of <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped ReadOnlySpan<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -48,9 +44,7 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped Span<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
@@ -71,9 +65,7 @@ static partial class SpanSimdQueries
     /// <returns>The sum of <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped ReadOnlySpan<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
     {
@@ -103,30 +95,24 @@ static partial class SpanSimdQueries
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
         =>
             Average(span.ReadOnly(), converter);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
         =>
             Average(span.Span, converter);
-#endif
+
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -138,9 +124,6 @@ static partial class SpanSimdQueries
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
@@ -153,30 +136,24 @@ static partial class SpanSimdQueries
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
         =>
             span.ReadOnly().Sum(converter);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
         =>
             span.Span.Sum(converter);
-#endif
+
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -188,9 +165,6 @@ static partial class SpanSimdQueries
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
@@ -245,9 +219,6 @@ static partial class SpanSimdQueries
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
@@ -260,9 +231,6 @@ static partial class SpanSimdQueries
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
@@ -275,9 +243,6 @@ static partial class SpanSimdQueries
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
@@ -290,9 +255,6 @@ static partial class SpanSimdQueries
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
 #if !NET8_0_OR_GREATER
         where TResult : struct
 #endif
@@ -312,12 +274,8 @@ static partial class SpanSimdQueries
     }
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
-#pragma warning restore MA0051
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
+#if !NET8_0_OR_GREATER
         where T : struct
 #endif
     {

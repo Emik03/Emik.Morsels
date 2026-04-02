@@ -29,7 +29,7 @@ static partial class GenericParser
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped ReadOnlySpan<byte> s, out bool success) =>
         typeof(string) == typeof(T) && (success = true)
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
             ? (T)(object)Encoding.UTF8.GetString(s)
 #else
             ? (T)(object)Encoding.UTF8.GetString(s.ToArray())

@@ -50,12 +50,8 @@ static partial class MethodImplOptions
 
     /// <summary>The method should be inlined if possible.</summary>
     [ComVisible(false)]
-    public const Options AggressiveInlining =
-#if NO_AGGRESSIVE_INLINING
-        0;
-#else
-        (Options)(1 << 8);
-#endif
+    public const Options AggressiveInlining = (Options)(1 << 8);
+
     /// <summary>The method contains code that should always be optimized by the just-in-time (JIT) compiler.</summary>
     /// <remarks><para>
     /// Use this attribute if running an unoptimized version of the method has undesirable effects,

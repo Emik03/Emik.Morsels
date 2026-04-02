@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -47,3 +47,4 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override Span<T> GetSpan() => Ref(ref _value);
 }
+#endif

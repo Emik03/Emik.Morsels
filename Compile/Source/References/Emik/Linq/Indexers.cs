@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
 // ReSharper disable CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
 
@@ -132,4 +131,3 @@ static partial class Indexers
     static Range RangeStart(Range range, int length) =>
         new(IndexStart(range.Start, length), IndexStart(range.End, length));
 }
-#endif

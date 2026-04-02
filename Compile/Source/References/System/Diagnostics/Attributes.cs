@@ -336,7 +336,7 @@ namespace System.Runtime.CompilerServices
     /// This class should not be used by developers in source code.
     /// </summary>
     [
-#if !(NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
+#if !NETFRAMEWORK || NET40_OR_GREATER
         ExcludeFromCodeCoverage,
 #endif
         DebuggerNonUserCode]
@@ -364,7 +364,7 @@ namespace System.Runtime.CompilerServices
         public Type BuilderType => builderType;
     }
 #endif
-#if NET20 || NET30
+#if NETFRAMEWORK && !NET35_OR_GREATER
     /// <summary>
     /// Indicates that a method is an extension method, or that a class or assembly contains extension methods.
     /// </summary>

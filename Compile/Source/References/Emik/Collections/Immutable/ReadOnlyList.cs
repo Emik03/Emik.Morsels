@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#if !NET20 && !NET30
+
 using static CollectionAccessType;
 
 /// <summary>Extension methods that act as factories for read-only lists.</summary>

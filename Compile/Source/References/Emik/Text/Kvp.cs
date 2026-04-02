@@ -7,7 +7,7 @@ namespace Emik.Morsels;
 static class Kvp
 {
     static class KvpCache<T>
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
@@ -267,7 +267,7 @@ static class Kvp
     /// <returns>The serialized object.</returns>
     [Pure]
     public static string Serialize<T>(scoped in T value)
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
@@ -298,7 +298,7 @@ static class Kvp
     /// <param name="writer">The object to write to.</param>
     /// <returns>The deserialized object.</returns>
     public static void Deserialize<T>(scoped ReadOnlySpan<char> span, scoped ref T writer)
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {
@@ -319,7 +319,7 @@ static class Kvp
         Deserialize(span, ref writer);
 
     static void ProcessLine<T>(scoped ReadOnlySpan<char> span, scoped ref T writer)
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
     {

@@ -37,7 +37,7 @@ static partial class CharacterInvariance
     /// <inheritdoc cref="string.IsNullOrEmpty(string)"/>
     [Pure]
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
-#if NET35
+#if NETFRAMEWORK && !NET40_OR_GREATER
     /// <summary>
     /// Indicates whether a specified string is <see langword="null"/>,
     /// empty, or consists only of white-space characters.
@@ -50,7 +50,7 @@ static partial class CharacterInvariance
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) =>
         value?.All(char.IsWhiteSpace) != false;
-#elif !NET20 && !NET30
+#else
     /// <inheritdoc cref="string.IsNullOrWhiteSpace(string)"/>
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
@@ -150,9 +150,8 @@ static partial class CharacterInvariance
 
         return "";
     }
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+
     /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
     [Pure]
     public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
-#endif
 }

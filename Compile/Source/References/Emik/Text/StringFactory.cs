@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-using Substring = System.ReadOnlyMemory<char>; // ReSharper disable once MissingBlankLines
+#if NO_SYSTEM_MEMORY
+using Substring = string; // ReSharper disable once MissingBlankLines
 #else
-using Substring = string;
+using Substring = System.ReadOnlyMemory<char>;
 #endif
 
 /// <summary>Provides methods to convert instances to a <see cref="string"/>.</summary>
@@ -36,7 +35,7 @@ static partial class StringFactory
         s = s_singleQuotes.Replace(s, "'…'");
         return s_doubleQuotes.Replace(s, "\"…\"");
     }
-
+#if !NO_SYSTEM_MEMORY
     /// <summary>Collapses the <see cref="string"/> to a single line.</summary>
     /// <param name="expression">The <see cref="string"/> to collapse.</param>
     /// <param name="prefix">The prefix to use.</param>
@@ -47,25 +46,21 @@ static partial class StringFactory
     {
         // ReSharper disable once RedundantUnsafeContext
         static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
             =>
                 accumulator.Append(next.Trim());
 #else
         {
             var trimmed = next.Trim();
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
             fixed (char* ptr = trimmed)
-                accumulator.Append(trimmed.Align(ptr), trimmed.Length);
-#else
-            foreach (var t in trimmed)
-                accumulator.Append(t);
-#endif
+                accumulator.Append(ptr, trimmed.Length);
             return accumulator;
         }
 #endif
         return expression?.Collapse().SplitSpanLines().Aggregate(prefix.ToBuilder(), Accumulator).Trim().ToString();
     }
-
+#endif
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
     /// <param name="one">The string for the value 1 or -1.</param>
@@ -98,7 +93,7 @@ static partial class StringFactory
     /// <param name="path">The path to extract the file name from.</param>
     /// <returns>The file name.</returns>
     [Pure]
-#if !ROSLYN && !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+#if !ROSLYN && !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
     // ReSharper disable once RedundantNullableFlowAttribute
     [return: NotNullIfNotNull(nameof(path))]
 #endif
@@ -138,18 +133,29 @@ static partial class StringFactory
         string indent = "    "
     )
     {
-        var seen = false;
+        [MustUseReturnValue]
+        static StringBuilder Indent(StringBuilder sb, string indent, int nest)
+        {
+            sb.AppendLine();
+
+            for (var i = 0; i < nest && nest >= 0; i++)
+                sb.Append(indent);
+
+            return sb;
+        }
+
         var nest = 0;
+        var seen = false;
         StringBuilder sb = new();
 
         for (var i = 0; i < s.Length; i++)
             (seen, nest, sb) = s[i] switch
             {
-                not ' ' when seen && sb.Indent(indent, nest) is var _ && (seen = false) => throw Unreachable,
+                not ' ' when seen && Indent(sb, indent, nest) is var _ && (seen = false) => throw Unreachable,
                 _ when start.Contains(s[i]) && (s.Nth(i + 1) is not { } next || !end.Contains(next)) =>
-                    (seen, ++nest, sb.Append(s[i]).Indent(indent, nest)),
+                    (seen, ++nest, Indent(sb.Append(s[i]), indent, nest)),
                 _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>
-                    (seen, --nest, sb.Indent(indent, nest).Append(s[i])),
+                    (seen, --nest, Indent(sb, indent, nest).Append(s[i])),
                 _ when separator.Contains(s[i]) => (true, nest, sb.Append(s[i])),
                 ' ' when seen && nest > 0 ||
                     s.Nth(i - 1) is { } prev && start.Contains(prev) ||
@@ -159,7 +165,7 @@ static partial class StringFactory
 
         return $"{sb}";
     }
-#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
+#if !NETFRAMEWORK || NET40_OR_GREATER
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using <see cref="Conjoin{T}(IEnumerable{T}, string)"/>
@@ -249,7 +255,7 @@ static partial class StringFactory
             { Revision: <= 0 } => $"v{version.Major}.{version.Minor}.{version.Build}",
             _ => $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}",
         };
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <remarks><para>The implementation is based on
     /// <a href="https://github.com/CommunityToolkit/dotnet/blob/7b53ae23dfc6a7fb12d0fc058b89b6e948f48448/src/CommunityToolkit.Diagnostics/Extensions/ValueTypeExtensions.cs#L44">
@@ -414,16 +420,4 @@ static partial class StringFactory
 
         return builder;
     }
-
-    [MustUseReturnValue]
-    static StringBuilder Indent(this StringBuilder sb, string indent, int nest)
-    {
-        sb.AppendLine();
-
-        for (var i = 0; i < nest && nest >= 0; i++)
-            sb.Append(indent);
-
-        return sb;
-    }
 }
-#endif

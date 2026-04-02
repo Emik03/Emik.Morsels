@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
@@ -50,10 +49,7 @@ static partial class OnceFactory
 #if CSHARPREPL
 public
 #endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
+partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
     IEquatable<Once<T>>,
     IList<T>,
     IOrderedEnumerable<T>,

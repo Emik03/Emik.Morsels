@@ -655,16 +655,13 @@ namespace System
             EqualityComparer<T2>.Default.Equals(Item2, other.Item2);
 
         [Pure]
-        int IComparable.CompareTo(object? other)
-        {
-            if (other is null)
-                return 1;
-
-            if (other is not ValueTuple<T1, T2>)
-                throw new ArgumentException();
-
-            return CompareTo((ValueTuple<T1, T2>)other);
-        }
+        int IComparable.CompareTo(object? other) =>
+            other switch
+            {
+                null => 1,
+                not ValueTuple<T1, T2> => throw new ArgumentException(),
+                _ => CompareTo((ValueTuple<T1, T2>)other),
+            };
 
         /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
         /// <param name="other">An instance to compare.</param>
@@ -854,16 +851,13 @@ namespace System
             EqualityComparer<T3>.Default.Equals(Item3, other.Item3);
 
         [Pure]
-        int IComparable.CompareTo(object? other)
-        {
-            if (other is null)
-                return 1;
-
-            if (other is not ValueTuple<T1, T2, T3>)
-                throw new ArgumentException();
-
-            return CompareTo((ValueTuple<T1, T2, T3>)other);
-        }
+        int IComparable.CompareTo(object? other) =>
+            other switch
+            {
+                null => 1,
+                not ValueTuple<T1, T2, T3> => throw new ArgumentException(),
+                _ => CompareTo((ValueTuple<T1, T2, T3>)other),
+            };
 
         /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
         /// <param name="other">An instance to compare.</param>
@@ -1073,16 +1067,13 @@ namespace System
             EqualityComparer<T4>.Default.Equals(Item4, other.Item4);
 
         [Pure]
-        int IComparable.CompareTo(object? other)
-        {
-            if (other is null)
-                return 1;
-
-            if (other is not ValueTuple<T1, T2, T3, T4>)
-                throw new ArgumentException();
-
-            return CompareTo((ValueTuple<T1, T2, T3, T4>)other);
-        }
+        int IComparable.CompareTo(object? other) =>
+            other switch
+            {
+                null => 1,
+                not ValueTuple<T1, T2, T3, T4> => throw new ArgumentException(),
+                _ => CompareTo((ValueTuple<T1, T2, T3, T4>)other),
+            };
 
         /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
         /// <param name="other">An instance to compare.</param>
@@ -1315,16 +1306,13 @@ namespace System
             EqualityComparer<T5>.Default.Equals(Item5, other.Item5);
 
         [Pure]
-        int IComparable.CompareTo(object? other)
-        {
-            if (other is null)
-                return 1;
-
-            if (other is not ValueTuple<T1, T2, T3, T4, T5>)
-                throw new ArgumentException();
-
-            return CompareTo((ValueTuple<T1, T2, T3, T4, T5>)other);
-        }
+        int IComparable.CompareTo(object? other) =>
+            other switch
+            {
+                null => 1,
+                not ValueTuple<T1, T2, T3, T4, T5> => throw new ArgumentException(),
+                _ => CompareTo((ValueTuple<T1, T2, T3, T4, T5>)other),
+            };
 
         /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
         /// <param name="other">An instance to compare.</param>
@@ -1579,16 +1567,13 @@ namespace System
             EqualityComparer<T6>.Default.Equals(Item6, other.Item6);
 
         [Pure]
-        int IComparable.CompareTo(object? other)
-        {
-            if (other is null)
-                return 1;
-
-            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6>)
-                throw new ArgumentException();
-
-            return CompareTo((ValueTuple<T1, T2, T3, T4, T5, T6>)other);
-        }
+        int IComparable.CompareTo(object? other) =>
+            other switch
+            {
+                null => 1,
+                not ValueTuple<T1, T2, T3, T4, T5, T6> => throw new ArgumentException(),
+                _ => CompareTo((ValueTuple<T1, T2, T3, T4, T5, T6>)other),
+            };
 
         /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
         /// <param name="other">An instance to compare.</param>
@@ -1875,16 +1860,13 @@ namespace System
             EqualityComparer<T7>.Default.Equals(Item7, other.Item7);
 
         [Pure]
-        int IComparable.CompareTo(object? other)
-        {
-            if (other is null)
-                return 1;
-
-            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7>)
-                throw new ArgumentException();
-
-            return CompareTo((ValueTuple<T1, T2, T3, T4, T5, T6, T7>)other);
-        }
+        int IComparable.CompareTo(object? other) =>
+            other switch
+            {
+                null => 1,
+                not ValueTuple<T1, T2, T3, T4, T5, T6, T7> => throw new ArgumentException(),
+                _ => CompareTo((ValueTuple<T1, T2, T3, T4, T5, T6, T7>)other),
+            };
 
         /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
         /// <param name="other">An instance to compare.</param>
@@ -2199,16 +2181,13 @@ namespace System
             EqualityComparer<TRest>.Default.Equals(Rest, other.Rest);
 
         [Pure]
-        int IComparable.CompareTo(object? other)
-        {
-            if (other is null)
-                return 1;
-
-            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> tuple)
-                throw new ArgumentException();
-
-            return CompareTo(tuple);
-        }
+        int IComparable.CompareTo(object? other) =>
+            other switch
+            {
+                null => 1,
+                ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> tuple => CompareTo(tuple),
+                _ => throw new ArgumentException(),
+            };
 
         /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
         /// <param name="other">An instance to compare.</param>
@@ -2506,30 +2485,20 @@ namespace System
         /// Get the element at position <param name="index"/>.
         /// </summary>
         [Pure]
-        object? ITuple.this[[NonNegativeValue] int index]
-        {
-            get
+        object? ITuple.this[[NonNegativeValue] int index] =>
+            index switch
             {
-                switch (index)
-                {
-                    case 0: return Item1;
-                    case 1: return Item2;
-                    case 2: return Item3;
-                    case 3: return Item4;
-                    case 4: return Item5;
-                    case 5: return Item6;
-                    case 6: return Item7;
-                }
-
-                if (Rest is IValueTupleInternal rest)
-                    return rest[index - 7];
-
-                if (index == 7)
-                    return Rest;
-
-                throw new ArgumentOutOfRangeException(nameof(index), index, null);
-            }
-        }
+                0 => Item1,
+                1 => Item2,
+                2 => Item3,
+                3 => Item4,
+                4 => Item5,
+                5 => Item6,
+                6 => Item7,
+                _ when Rest is IValueTupleInternal rest => rest[index - 7],
+                7 => Rest,
+                _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
+            };
     }
 #endif
 }

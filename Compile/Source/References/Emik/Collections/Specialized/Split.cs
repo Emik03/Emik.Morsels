@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#if !NET20 && !NET30
+
 using static SplitFactory;
 
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
@@ -85,7 +85,6 @@ static partial class SplitFactory
         return new(t, f);
     }
 }
-#endif
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
 /// <typeparam name="T">The type of item in the collection.</typeparam>

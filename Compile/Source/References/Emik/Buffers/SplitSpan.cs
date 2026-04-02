@@ -68,22 +68,14 @@ static partial class SplitSpanFactory
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
         where T : IEquatable<T>
-#endif
         =>
             new(span, separator);
 
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
         where T : IEquatable<T>
-#endif
         =>
             span.ReadOnly().SplitOnAny(separator);
 
@@ -94,22 +86,14 @@ static partial class SplitSpanFactory
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAll> SplitOn<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
         where T : IEquatable<T>
-#endif
         =>
             new(span, separator);
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAll> SplitOn<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
         where T : IEquatable<T>
-#endif
         =>
             span.ReadOnly().SplitOn(separator);
 #if NET8_0_OR_GREATER
@@ -134,22 +118,14 @@ static partial class SplitSpanFactory
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
         where T : IEquatable<T>?
-#endif
         =>
             new(span, In(separator));
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this Span<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
         where T : IEquatable<T>?
-#endif
         =>
             span.ReadOnly().SplitOn(separator);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -389,11 +365,7 @@ readonly
     ref
 #endif
     partial struct SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
-#if UNMANAGED_SPAN
-    where TBody : unmanaged, IEquatable<TBody>?
-#else
     where TBody : IEquatable<TBody>?
-#endif
 #if !NET7_0_OR_GREATER
     where TSeparator : IEquatable<TSeparator>?
 #endif
@@ -404,7 +376,7 @@ readonly
     /// <param name="next">The next slice from the enumeration.</param>
     /// <returns>The final accumulator value.</returns>
     public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, ReadOnlySpan<TBody> next)
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where TAccumulator : allows ref struct
 #endif
     ;
@@ -497,14 +469,16 @@ readonly
     }
 
     /// <summary>Gets the specified range.</summary>
-    /// <param name="range">The range to get.</param>
-    public readonly SplitSpan<TBody, TSeparator, TStrategy> this[Range range]
+    /// <param name="r">The range to get.</param>
+    public readonly SplitSpan<TBody, TSeparator, TStrategy> this[Range r]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get =>
             new(
-                _body.OffsetOf(this[range.Start]) is not -1 and var start &&
-                this[Decrement(range.End)] is var slice &&
+                _body.OffsetOf(this[r.Start]) is not -1 and var start &&
+                this[r.End is { Value: 0, IsFromEnd: false }
+                    ? new Index(0, true)
+                    : new(r.End.IsFromEnd ? r.End.Value + 1 : r.End.Value - 1, r.End.IsFromEnd)] is var slice &&
                 _body.OffsetOf(slice) is not -1 and var end &&
                 end + slice.Length - start is > 0 and var length
                     ? _body.UnsafelySlice(start, length)
@@ -761,7 +735,7 @@ readonly
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
     )
-#if !NO_ALLOWS_REF_STRUCT
+#if NET9_0_OR_GREATER
         where TAccumulator : allows ref struct
 #endif
     {
@@ -851,15 +825,4 @@ readonly
 #pragma warning restore CS8500
     }
 #endif
-    /// <summary>Decrements the index. If already <c>0</c>, flips the "from end" boolean.</summary>
-    /// <param name="index">The index to decrement.</param>
-    /// <returns>The decremented index.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static Index Decrement(Index index) =>
-#if NET8_0_OR_GREATER
-        Unsafe.SizeOf<Index>() is sizeof(int) ?
-            Unsafe.BitCast<int, Index>(Unsafe.BitCast<Index, int>(index) - 1) : // Branchless (assumes bit layout)
-#endif // ReSharper disable BadIndent MissingLinebreak RedundantLinebreak
-            index is { Value: 0, IsFromEnd: false } ? new(0, true) :
-                new(index.IsFromEnd ? index.Value + 1 : index.Value - 1, index.IsFromEnd);
 }

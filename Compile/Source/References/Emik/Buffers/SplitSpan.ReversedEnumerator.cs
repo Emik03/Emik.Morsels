@@ -34,11 +34,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public
-#if !NO_REF_STRUCTS
-        ref
-#endif
-        partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
+    public ref partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
         readonly ReadOnlySpan<TSeparator> _separator = separator;
 

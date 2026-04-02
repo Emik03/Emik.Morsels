@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -142,4 +141,3 @@ static partial class NegatedEnumerable
         while (--count > 0 && e.MoveNext());
     }
 }
-#endif

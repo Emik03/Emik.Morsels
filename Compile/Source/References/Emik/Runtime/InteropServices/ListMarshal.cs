@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable RedundantNameQualifier
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
@@ -14,15 +13,12 @@ static partial class ListMarshal
     {
         /// <summary>Gets the converter.</summary>
         public static Converter<List<T>, T[]> Converter { get; } =
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             typeof(List<T>)
                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                .FirstOrDefault(x => x.FieldType == typeof(T[])) is { } method
                 ? CreateGetter(method)
-                :
-#endif
-                x => [.. x];
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+                : x => [.. x];
+
         /// <summary>Creates the getter to the inner array.</summary>
         /// <param name="field">The field to the list's array.</param>
         /// <exception cref="InvalidOperationException">The field has no declaring type.</exception>
@@ -35,7 +31,6 @@ static partial class ListMarshal
             var param = System.Linq.Expressions.Expression.Parameter(declaringType, field.Name);
             var access = System.Linq.Expressions.Expression.Field(param, field);
             return System.Linq.Expressions.Expression.Lambda<Converter<List<T>, T[]>>(access, param).Compile();
-#endif
         }
     }
 #endif

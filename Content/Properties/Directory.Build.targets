@@ -10,7 +10,6 @@
                 <InlineIL/>
                 <Divorce/>
                 <StaticLambda JustPublic="true"/>
-                <InlineMethod/>
                 <LocalsInit Default="false"/>
                 <Absence Except="$(DoNotTrim)"/>
             </Weavers>
@@ -24,7 +23,6 @@
                 <Divorce/>
                 <InlineIL/>
                 <StaticLambda JustPublic="true"/>
-                <InlineMethod/>
                 <LocalsInit Default="false"/>
                 <Absence Except="$(DoNotTrim)"/>
             </Weavers>

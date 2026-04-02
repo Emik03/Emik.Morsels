@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantNameQualifier RedundantReadonlyModifier
 #pragma warning disable CS8500, IDE0251, MA0102
 namespace Emik.Morsels;
@@ -109,10 +109,7 @@ static partial class BitsFactory
 #if CSHARPREPL
 public
 #endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>([ProvidesContext] T bits) :
+readonly partial struct Bits<T>([ProvidesContext] T bits) :
 #if NET7_0_OR_GREATER
     IBitwiseOperators<Bits<T>, Bits<T>, Bits<T>>,
     IEqualityOperators<Bits<T>, Bits<T>, bool>,
