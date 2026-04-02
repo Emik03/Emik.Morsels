@@ -16,6 +16,8 @@ static class Kvp
 
         public delegate void DeserializeWriter(scoped ReadOnlySpan<char> reader, scoped ref T writer);
 
+        delegate string SpanFunc(ReadOnlySpan<int> span);
+
         static readonly ImmutableArray<MemberInfo> s_members = MakeMembers();
 
         [Pure]
@@ -61,9 +63,9 @@ static class Kvp
             if (values.Count is 0)
                 return "";
 
+            var enumerator = values.GetEnumerator();
             var literalLength = (values.Count - 1) * 2;
             DefaultInterpolatedStringHandler dish = new(literalLength, values.Count, CultureInfo.InvariantCulture);
-            var enumerator = values.GetEnumerator();
 
             try
             {
@@ -84,6 +86,29 @@ static class Kvp
             {
                 (enumerator as IDisposable)?.Dispose();
             }
+        }
+
+        static string ToString<TSpan>(ReadOnlySpan<TSpan> values)
+        {
+            if (values.Length is 0)
+                return "";
+
+            var enumerator = values.GetEnumerator();
+            var literalLength = (values.Length - 1) * 2;
+            DefaultInterpolatedStringHandler dish = new(literalLength, values.Length, CultureInfo.InvariantCulture);
+
+            if (enumerator.MoveNext())
+                dish.AppendFormatted(enumerator.Current);
+            else
+                return dish.ToStringAndClear();
+
+            while (enumerator.MoveNext())
+            {
+                dish.AppendFormatted(", ");
+                dish.AppendFormatted(enumerator.Current);
+            }
+
+            return dish.ToStringAndClear();
         }
 
         [MustUseReturnValue]
@@ -198,6 +223,8 @@ static class Kvp
                 Assignment = " = ",
                 Separator = "\n";
 
+            const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
+
             [MustUseReturnValue]
             static int ConstantLength(MemberInfo m) => m.Name.Length + Assignment.Length + Separator.Length;
 
@@ -236,9 +263,21 @@ static class Kvp
                     exWriter,
                     AppendFormatted,
                     [isCollection ? typeof(string) : underlyingType],
-                    isCollection
-                        ? Expression.Call(((Converter<ICollection, string>)ToString).Method, exMember)
-                        : exMember
+                    underlyingType.IsGenericType &&
+                    (underlyingType.GetGenericTypeDefinition() == typeof(ReadOnlySpan<>) ||
+                        underlyingType.GetGenericTypeDefinition() == typeof(Span<>)) ? Expression.Call(
+                        ((SpanFunc)ToString).Method.GetGenericMethodDefinition()
+                       .MakeGenericMethod(underlyingType.GetGenericArguments()[0]),
+                        underlyingType.GetGenericTypeDefinition() == typeof(Span<>)
+                            ? Expression.Call(
+                                typeof(Span<>).MakeGenericType(underlyingType.GetGenericArguments()[0])
+                                   .GetMethod("op_Equality", Flags)!,
+                                exMember
+                            )
+                            : exMember
+                    ) :
+                    isCollection ? Expression.Call(((Converter<ICollection, string>)ToString).Method, exMember) :
+                    exMember
                 );
 
                 exBlockArgs.Add(exFormatted);

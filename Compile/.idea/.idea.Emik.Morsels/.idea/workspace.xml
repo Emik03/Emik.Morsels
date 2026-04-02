@@ -11,6 +11,8 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/468a9fc5b3904039877652321136dd84e26400/46/a81d29ba/Span`1.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/468a9fc5b3904039877652321136dd84e26400/df/1e6dc6fb/SpanMarshaller`2.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/c28a86ac98994084a29d1009e48b7ad81afe00/29/664cc673/Object.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/e5bcd7cdebf7415b8946836b5593900923718/f7/efbc500f/SpanHelpers.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="mock:///home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Collections/Similarity.cs" root0="SKIP_HIGHLIGHTING" />
@@ -20,7 +22,7 @@
     <setting file="mock:///home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Collections/Similarity.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="Toolset" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 6
