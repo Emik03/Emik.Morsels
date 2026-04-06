@@ -213,7 +213,7 @@ namespace System.Diagnostics.CodeAnalysis
         public const string Xml = nameof(Xml);
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StringSyntaxAttribute"/> class
+        /// Initializes a new instance of the <see cref="CodeAnalysis.StringSyntaxAttribute"/> class
         /// with the identifier of the syntax used.
         /// </summary>
         /// <param name="syntax">The syntax identifier.</param>
@@ -285,6 +285,29 @@ namespace System.Diagnostics.CodeAnalysis
 
 namespace System.Runtime.CompilerServices
 {
+    /// <summary>Defines a closed type.</summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = false)]
+    public sealed class ClosedAttribute : Attribute;
+
+    /// <summary>Defines a closed subtype.</summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    public sealed class ClosedSubtypeAttribute(Type subtypeType) : Attribute
+    {
+        /// <summary>Gets the subtype.</summary>
+        public Type SubtypeType => subtypeType;
+    }
+
+    /// <summary>Defines a union.</summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+    public sealed class UnionAttribute : Attribute { }
+
+    /// <summary>Generic interface for unions.</summary>
+    public interface IUnion
+    {
+        /// <summary>Gets the boxed value.</summary>
+        object? Value { get; }
+    }
+
     /// <summary>Indicates that a location is intercepted by this method.</summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 #pragma warning disable CS9113
