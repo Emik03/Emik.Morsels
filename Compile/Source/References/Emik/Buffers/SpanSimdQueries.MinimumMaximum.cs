@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable once RedundantUsingDirective
-using static Span;
+#if !NO_SYSTEM_MEMORY // ReSharper disable once RedundantUsingDirective
+using static Span; // ReSharper disable RedundantNameQualifier UseSymbolAlias
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable RedundantNameQualifier UseSymbolAlias
 static partial class SpanSimdQueries
 {
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
@@ -284,14 +281,12 @@ static partial class SpanSimdQueries
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
 #if NET8_0_OR_GREATER
+        =>
             System.Numerics.Vector.LoadUnsafe(source);
 #else
-            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref AsRef(source)));
+        where T : struct =>
+        Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
@@ -325,11 +320,11 @@ static partial class SpanSimdQueries
         ref var current = ref MemoryMarshal.GetReference(span);
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
-        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!;
+        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count);
 
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
-            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
+            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count))
             best = 0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(current)),

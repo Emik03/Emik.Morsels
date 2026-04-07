@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 namespace Emik.Morsels;
-#pragma warning disable CS8631, IDE0032
+#if !NO_SYSTEM_MEMORY
 using static Span;
 using static SplitSpanFactory;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
@@ -13,13 +11,13 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly Enumerator GetEnumerator() => new(this);
+    public Enumerator GetEnumerator() => new(this);
 
     /// <summary>Returns itself but with the number of elements specified skipped. This is evaluated eagerly.</summary>
     /// <param name="count">The number of elements to skip.</param>
     /// <returns>Itself but skipping the parameter <paramref name="count"/> number of elements.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly SplitSpan<TBody, TSeparator, TStrategy> Skipped([NonNegativeValue] int count)
+    public SplitSpan<TBody, TSeparator, TStrategy> Skipped([NonNegativeValue] int count)
     {
         Enumerator e = this;
 
@@ -166,7 +164,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
@@ -223,7 +221,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
@@ -454,7 +452,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (!reader.SequenceEqual(otherReader))
@@ -490,7 +488,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (!reader.SequenceEqual(otherReader, comparer))

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace RedundantUsingDirective
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 using static OperatorCaching;
-using static Span;
+using static Span; // ReSharper disable RedundantNameQualifier UseSymbolAlias
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Contains extension methods for fast SIMD operations.</summary>
@@ -149,7 +148,18 @@ static partial class SpanSimdQueries
     static class InAscendingOrder<T>
     {
         // Vector512<T> is the largest vector type.
-        const int InitialCapacity = 512;
+        static readonly int s_initialCapacity = 0 switch
+        {
+#if NET8_0_OR_GREATER
+            _ when Vector512.IsHardwareAccelerated => 512,
+#endif
+#if NET7_0_OR_GREATER
+            _ when Vector256.IsHardwareAccelerated => 256,
+            _ when Vector128.IsHardwareAccelerated => 128,
+            _ when Vector64.IsHardwareAccelerated => 64,
+#endif
+            _ => 32,
+        };
 
         static T[] s_values = [];
 
@@ -170,7 +180,7 @@ static partial class SpanSimdQueries
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
 
-            var replacement = new T[System.Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
+            var replacement = new T[System.Math.Max(length.RoundUpToPowerOf2(), s_initialCapacity / Unsafe.SizeOf<T>())];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));
@@ -188,14 +198,16 @@ static partial class SpanSimdQueries
         public static ReadOnlyMemory<T> Memory(int length)
         {
             if (typeof(T) == typeof(char))
-                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(ref AsRef(length.MemoryRange<ushort>()));
+                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(
+                    ref Unsafe.AsRef(LValue(length.MemoryRange<ushort>()))
+                );
 
             _ = Span(length);
             return new(s_values, 0, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Populate(scoped Span<T> span)
+        static void Populate(params Span<T> span)
         {
             ref var start = ref MemoryMarshal.GetReference(span);
             ref var last = ref Unsafe.Add(ref start, span.Length);

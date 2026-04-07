@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 using static Span;
 
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
@@ -21,7 +20,7 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDISP010 // You cannot call abstract base methods.
+#pragma warning disable IDISP010 // https://github.com/DotNetAnalyzers/IDisposableAnalyzers/issues/575
     protected override void Dispose(bool disposing)
 #pragma warning restore IDISP010
     {

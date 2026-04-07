@@ -291,9 +291,9 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         .Select(InlineStaticPartialClasses)
         .Select(RemoveRemainingStaticPartialClasses)
         .SelectMany(SplitByNewLine)
+        .Select(RemoveComments)
         .Select(ToFullName)
         .Select(Publicize)
-        .Select(RemoveComments)
         .Where(HasContent)
         .OrderByDescending(IsUsingStatement)
         .ThenByDescending(IsGlobal);

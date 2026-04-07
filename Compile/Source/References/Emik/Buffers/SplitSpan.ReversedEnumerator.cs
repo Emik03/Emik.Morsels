@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 namespace Emik.Morsels;
-#pragma warning disable CS8631, IDE0032
+#if !NO_SYSTEM_MEMORY
 using static Span;
 using static SplitSpanFactory;
 
@@ -12,7 +10,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
+    public ReversedEnumerator GetReversedEnumerator() => new(this);
 
     /// <summary>
     /// Returns itself but with the number of elements from the end specified skipped. This is evaluated eagerly.
@@ -20,7 +18,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// <param name="count">The number of elements to skip from the end.</param>
     /// <returns>Itself but skipping from the end the parameter <paramref name="count"/> number of elements.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly SplitSpan<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
+    public SplitSpan<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
     {
         Enumerator e = this;
 

@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace EmptyNamespace
+namespace Emik.Morsels; // ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective UseSymbolAlias
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
-// ReSharper disable once CheckNamespace
-namespace Emik.Morsels;
-#pragma warning disable CS8500, CS8631, RCS1175
-// ReSharper disable RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
@@ -131,7 +128,7 @@ static partial class Span
     /// </param>
     /// <param name="address">The number to set.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
+    public static void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
         Unsafe.SkipInit(out reference);
@@ -170,11 +167,7 @@ static partial class Span
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(
-        this Memory<T> span,
-        ReadOnlyMemory<T> other,
-        IEqualityComparer<T>? comparer
-    ) =>
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other, IEqualityComparer<T>? comparer) =>
         span.Span.SequenceEqual(other.Span, comparer);
 
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
@@ -189,13 +182,13 @@ static partial class Span
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
+        where T : IEquatable<T> =>
         span.Span.SequenceEqual(other.Span);
 
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
+        where T : IEquatable<T> =>
         span.Span.SequenceEqual(other.Span);
 
     /// <summary>Reads the raw memory of the object.</summary>
@@ -203,12 +196,12 @@ static partial class Span
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe byte[] Raw<T>(T value)
+    public static byte[] Raw<T>(T value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
         =>
-            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
+            MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
 
     /// <summary>Returns the memory address of a given reference object.</summary>
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
@@ -235,12 +228,10 @@ static partial class Span
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NET8_0_OR_GREATER
-        new(ref AsRef(reference));
-#elif NET7_0_OR_GREATER
-        new(AsRef(reference));
+#if NET7_0_OR_GREATER
+        new(LValue(Unsafe.AsRef(reference)));
 #elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
 #else
         new([reference]);
 #endif
@@ -291,17 +282,11 @@ static partial class Span
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 
-    /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
-    /// <typeparam name="T">The underlying type of the reference.</typeparam>
-    /// <param name="source">The read-only reference to reinterpret.</param>
-    /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ref T AsRef<T>(in T source)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
-        =>
-            ref Unsafe.AsRef(source);
+    /// <summary>Turns the expression into an lvalue.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="expression">The value to return.</param>
+    /// <returns>The parameter <paramref name="expression"/> by reference.</returns>
+    public static ref readonly T LValue<T>(in T expression) => ref expression;
 
     /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -396,7 +381,7 @@ static partial class Span
     /// <param name="value">The reference to the target item to get the index for.</param>
     /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOf<T>(this scoped ReadOnlySpan<T> span, scoped ref T value) =>
+    public static int IndexOf<T>(this scoped ReadOnlySpan<T> span, scoped ref T value) =>
         Unsafe.ByteOffset(ref MemoryMarshal.GetReference(span), ref value) is var byteOffset &&
         byteOffset / (nint)(uint)Unsafe.SizeOf<T>() is var elementOffset &&
         (nuint)elementOffset < (uint)span.Length
@@ -423,10 +408,10 @@ static partial class Span
     /// <param name="values">The set of values to search for.</param>
     /// <returns>The first index of the occurrence of the values in the span. If not found, returns -1.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe int IndexOfAny<T>(this scoped ReadOnlySpan<T> span, scoped ReadOnlySpan<T> values)
+    public static int IndexOfAny<T>(this scoped ReadOnlySpan<T> span, scoped ReadOnlySpan<T> values)
         where T : IEquatable<T>?
     {
-        static unsafe int Of(ref T search, T value, int length)
+        static int Of(ref T search, T value, int length)
         {
             T obj;
             nint elementOffset = 0;
@@ -502,7 +487,7 @@ static partial class Span
                 var other5 = Unsafe.Add(ref search, elementOffset + 4);
 
                 if (local5!.Equals(other5))
-                    return (int)(void*)(elementOffset + 4);
+                    return (int)(elementOffset + 4);
 
                 ref var local6 = ref value;
                 obj = default!;
@@ -516,7 +501,7 @@ static partial class Span
                 var other6 = Unsafe.Add(ref search, elementOffset + 5);
 
                 if (local6!.Equals(other6))
-                    return (int)(void*)(elementOffset + 5);
+                    return (int)(elementOffset + 5);
 
                 ref var local7 = ref value;
                 obj = default!;
@@ -530,7 +515,7 @@ static partial class Span
                 var other7 = Unsafe.Add(ref search, elementOffset + 6);
 
                 if (local7!.Equals(other7))
-                    return (int)(void*)(elementOffset + 6);
+                    return (int)(elementOffset + 6);
 
                 ref var local8 = ref value;
                 obj = default!;
@@ -544,7 +529,7 @@ static partial class Span
                 var other8 = Unsafe.Add(ref search, elementOffset + 7);
 
                 if (local8!.Equals(other8))
-                    return (int)(void*)(elementOffset + 7);
+                    return (int)(elementOffset + 7);
 
                 elementOffset += 8;
             }
@@ -633,16 +618,16 @@ static partial class Span
             return -1;
 
         Found1:
-            return (int)(void*)elementOffset;
+            return (int)elementOffset;
 
         Found2:
-            return (int)(void*)(elementOffset + 1);
+            return (int)(elementOffset + 1);
 
         Found3:
-            return (int)(void*)(elementOffset + 2);
+            return (int)(elementOffset + 2);
 
         Found4:
-            return (int)(void*)(elementOffset + 3);
+            return (int)(elementOffset + 3);
         }
 
         static int OfAny(in T search, int searchLength, in T value, int valueLength)
@@ -673,7 +658,7 @@ static partial class Span
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
+    public static int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
         origin.IndexOf(ref MemoryMarshal.GetReference(target));
 
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
@@ -687,7 +672,7 @@ static partial class Span
     /// <param name="memory">The bounds.</param>
     /// <returns>The parameter <paramref name="span"/> as <see cref="ReadOnlyMemory{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
+    public static ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is not -1 and var i
             ? memory.Slice(i, span.Length)
             : default;

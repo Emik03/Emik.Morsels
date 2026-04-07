@@ -1005,10 +1005,9 @@ public readonly partial struct Primes
     ) =>
         new Enumerable<T, TExternal>(iterable, external, action);
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace RedundantUsingDirective
+#if !NO_SYSTEM_MEMORY
 /// <summary>Contains extension methods for fast SIMD operations.</summary>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
     /// <summary>Determines whether the type is a numeric primitive.</summary>
     /// <typeparam name="T">The type to test.</typeparam>
     /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
@@ -1126,7 +1125,18 @@ public readonly partial struct Primes
     public static ReadOnlySpan<T> SpanRange<T>(this int length) => InAscendingOrder<T>.Span(length);
     static class InAscendingOrder<T>
     {
-        const int InitialCapacity = 512;
+        static readonly int s_initialCapacity = 0 switch
+        {
+#if NET8_0_OR_GREATER
+            _ when Vector512.IsHardwareAccelerated => 512,
+#endif
+#if NET7_0_OR_GREATER
+            _ when Vector256.IsHardwareAccelerated => 256,
+            _ when Vector128.IsHardwareAccelerated => 128,
+            _ when Vector64.IsHardwareAccelerated => 64,
+#endif
+            _ => 32,
+        };
         static T[] s_values = [];
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
@@ -1142,7 +1152,7 @@ public readonly partial struct Primes
             ReadOnlySpan<T> original = s_values;
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
-            var replacement = new T[System.Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
+            var replacement = new T[System.Math.Max(length.RoundUpToPowerOf2(), s_initialCapacity / Unsafe.SizeOf<T>())];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));
@@ -1159,12 +1169,14 @@ public readonly partial struct Primes
         public static ReadOnlyMemory<T> Memory(int length)
         {
             if (typeof(T) == typeof(char))
-                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(ref AsRef(length.MemoryRange<ushort>()));
+                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(
+                    ref Unsafe.AsRef(LValue(length.MemoryRange<ushort>()))
+                );
             _ = Span(length);
             return new(s_values, 0, length);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Populate(scoped Span<T> span)
+        static void Populate(params Span<T> span)
         {
             ref var start = ref MemoryMarshal.GetReference(span);
             ref var last = ref Unsafe.Add(ref start, span.Length);
@@ -1344,11 +1356,8 @@ public readonly partial struct Primes
         iterable[(selector ?? s_rng)(0, iterable.Length)];
 #endif
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace EmptyNamespace
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
-// ReSharper disable once CheckNamespace
-#pragma warning disable CS8500, CS8631, RCS1175
-// ReSharper disable RedundantNameQualifier RedundantUsingDirective
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <summary>Provides reinterpret span methods.</summary>
@@ -1457,7 +1466,7 @@ public readonly partial struct Primes
     /// </param>
     /// <param name="address">The number to set.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
+    public static void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
         Unsafe.SkipInit(out reference);
@@ -1490,11 +1499,7 @@ public readonly partial struct Primes
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(
-        this Memory<T> span,
-        ReadOnlyMemory<T> other,
-        IEqualityComparer<T>? comparer
-    ) =>
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other, IEqualityComparer<T>? comparer) =>
         span.Span.SequenceEqual(other.Span, comparer);
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -1508,24 +1513,24 @@ public readonly partial struct Primes
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
+        where T : IEquatable<T> =>
         span.Span.SequenceEqual(other.Span);
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
+        where T : IEquatable<T> =>
         span.Span.SequenceEqual(other.Span);
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe byte[] Raw<T>(T value)
+    public static byte[] Raw<T>(T value)
 #if NET9_0_OR_GREATER
         where T : allows ref struct
 #endif
         =>
-            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
+            MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
     /// <summary>Returns the memory address of a given reference object.</summary>
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
@@ -1547,12 +1552,10 @@ public readonly partial struct Primes
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NET8_0_OR_GREATER
-        new(ref AsRef(reference));
-#elif NET7_0_OR_GREATER
-        new(AsRef(reference));
+#if NET7_0_OR_GREATER
+        new(LValue(Unsafe.AsRef(reference)));
 #elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
 #else
         new([reference]);
 #endif
@@ -1599,17 +1602,11 @@ public readonly partial struct Primes
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
-    /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
-    /// <typeparam name="T">The underlying type of the reference.</typeparam>
-    /// <param name="source">The read-only reference to reinterpret.</param>
-    /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ref T AsRef<T>(in T source)
-#if NET9_0_OR_GREATER
-        where T : allows ref struct
-#endif
-        =>
-            ref Unsafe.AsRef(source);
+    /// <summary>Turns the expression into an lvalue.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="expression">The value to return.</param>
+    /// <returns>The parameter <paramref name="expression"/> by reference.</returns>
+    public static ref readonly T LValue<T>(in T expression) => ref expression;
     /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="memory">The memory to split.</param>
@@ -1694,7 +1691,7 @@ public readonly partial struct Primes
     /// <param name="value">The reference to the target item to get the index for.</param>
     /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOf<T>(this scoped ReadOnlySpan<T> span, scoped ref T value) =>
+    public static int IndexOf<T>(this scoped ReadOnlySpan<T> span, scoped ref T value) =>
         Unsafe.ByteOffset(ref MemoryMarshal.GetReference(span), ref value) is var byteOffset &&
         byteOffset / (nint)(uint)Unsafe.SizeOf<T>() is var elementOffset &&
         (nuint)elementOffset < (uint)span.Length
@@ -1719,10 +1716,10 @@ public readonly partial struct Primes
     /// <param name="values">The set of values to search for.</param>
     /// <returns>The first index of the occurrence of the values in the span. If not found, returns -1.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe int IndexOfAny<T>(this scoped ReadOnlySpan<T> span, scoped ReadOnlySpan<T> values)
+    public static int IndexOfAny<T>(this scoped ReadOnlySpan<T> span, scoped ReadOnlySpan<T> values)
         where T : IEquatable<T>?
     {
-        static unsafe int Of(ref T search, T value, int length)
+        static int Of(ref T search, T value, int length)
         {
             T obj;
             nint elementOffset = 0;
@@ -1778,7 +1775,7 @@ public readonly partial struct Primes
                 }
                 var other5 = Unsafe.Add(ref search, elementOffset + 4);
                 if (local5!.Equals(other5))
-                    return (int)(void*)(elementOffset + 4);
+                    return (int)(elementOffset + 4);
                 ref var local6 = ref value;
                 obj = default!;
                 if (ReferenceEquals(obj, null))
@@ -1788,7 +1785,7 @@ public readonly partial struct Primes
                 }
                 var other6 = Unsafe.Add(ref search, elementOffset + 5);
                 if (local6!.Equals(other6))
-                    return (int)(void*)(elementOffset + 5);
+                    return (int)(elementOffset + 5);
                 ref var local7 = ref value;
                 obj = default!;
                 if (ReferenceEquals(obj, null))
@@ -1798,7 +1795,7 @@ public readonly partial struct Primes
                 }
                 var other7 = Unsafe.Add(ref search, elementOffset + 6);
                 if (local7!.Equals(other7))
-                    return (int)(void*)(elementOffset + 6);
+                    return (int)(elementOffset + 6);
                 ref var local8 = ref value;
                 obj = default!;
                 if (ReferenceEquals(obj, null))
@@ -1808,7 +1805,7 @@ public readonly partial struct Primes
                 }
                 var other8 = Unsafe.Add(ref search, elementOffset + 7);
                 if (local8!.Equals(other8))
-                    return (int)(void*)(elementOffset + 7);
+                    return (int)(elementOffset + 7);
                 elementOffset += 8;
             }
             if (length >= 4)
@@ -1874,13 +1871,13 @@ public readonly partial struct Primes
             }
             return -1;
         Found1:
-            return (int)(void*)elementOffset;
+            return (int)elementOffset;
         Found2:
-            return (int)(void*)(elementOffset + 1);
+            return (int)(elementOffset + 1);
         Found3:
-            return (int)(void*)(elementOffset + 2);
+            return (int)(elementOffset + 2);
         Found4:
-            return (int)(void*)(elementOffset + 3);
+            return (int)(elementOffset + 3);
         }
         static int OfAny(in T search, int searchLength, in T value, int valueLength)
         {
@@ -1904,7 +1901,7 @@ public readonly partial struct Primes
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
+    public static int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
         origin.IndexOf(ref MemoryMarshal.GetReference(target));
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1916,7 +1913,7 @@ public readonly partial struct Primes
     /// <param name="memory">The bounds.</param>
     /// <returns>The parameter <paramref name="span"/> as <see cref="ReadOnlyMemory{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
+    public static ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is not -1 and var i
             ? memory.Slice(i, span.Length)
             : default;
@@ -3650,8 +3647,8 @@ public enum MouseButtons : byte
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace EmptyNamespace
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable once CheckNamespace
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
 /// <typeparam name="T">The type of value.</typeparam>
 /// <param name="value">The value to encapsulate.</param>
@@ -4051,7 +4048,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     }
 // SPDX-License-Identifier: MPL-2.0
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
@@ -5679,8 +5675,8 @@ static class Kvp
             while (Unsafe.IsAddressLessThan(real, end))
             {
                 max = max.Max(real = real.Hypot(imaginary));
-                real = ref Unsafe.Add(ref real, 1)!;
-                imaginary = ref Unsafe.Add(ref imaginary, 1)!;
+                real = ref Unsafe.Add(ref real, 1);
+                imaginary = ref Unsafe.Add(ref imaginary, 1);
             }
             return max;
         }
@@ -5688,13 +5684,13 @@ static class Kvp
         ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
         ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
         StoreUnsafe(ref real, imaginary, ref maxVector);
-        real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
-        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+        real = ref Unsafe.Add(ref real, Vector<T>.Count);
+        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
         while (Unsafe.IsAddressLessThan(real, realLast))
         {
             StoreUnsafe(ref real, imaginary, ref maxVector);
-            real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
-            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+            real = ref Unsafe.Add(ref real, Vector<T>.Count);
+            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
         }
         StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
         for (var index = 0; index < Vector<T>.Count; index++)
@@ -8104,8 +8100,6 @@ public enum KeyMods : ushort
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-// ReSharper disable RedundantUsingDirective
-// ReSharper disable CheckNamespace NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 // ReSharper disable once RedundantNameQualifier
 /// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
     /// <summary>Increments the value.</summary>
@@ -8349,7 +8343,7 @@ public enum KeyMods : ushort
     public static UnreachableException Unreachable { get; } = new();
 // SPDX-License-Identifier: MPL-2.0
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
+// ReSharper disable RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
@@ -8367,7 +8361,7 @@ public enum KeyMods : ushort
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable ArrangeStaticMemberQualifier NullableWarningSuppressionIsUsed
+// ReSharper disable ArrangeStaticMemberQualifier
 // ReSharper disable once CheckNamespace
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
     /// <summary>
@@ -8952,9 +8946,8 @@ public enum KeyMods : ushort
     } = new(SearchValues.Create(Combined));
 #endif
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable CheckNamespace ConvertToAutoPropertyWhenPossible EmptyNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable CS8631, IDE0032, RCS1158
 #if NET8_0_OR_GREATER
 // -
 #else
@@ -8984,8 +8977,8 @@ public enum KeyMods : ushort
         StringComparison comparison
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>
+        where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
     {
         if (left.GetEnumerator() is var e && right.GetEnumerator() is var otherE && !e.MoveNext())
@@ -9046,12 +9039,12 @@ public enum KeyMods : ushort
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
-        where T : IEquatable<T>? =>
+        where T : IEquatable<T> =>
         new(span, In(separator));
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this Span<T> span, in T separator)
-        where T : IEquatable<T>? =>
+        where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
@@ -9180,8 +9173,8 @@ public enum KeyMods : ushort
         out bool ret
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>
+        where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
     {
         if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
@@ -9218,8 +9211,8 @@ public enum KeyMods : ushort
         out bool ret
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>
+        where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
     {
         if (!reader.Equals(otherReader, comparison))
@@ -9254,9 +9247,9 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     ReadOnlySpan<TBody> body,
     ReadOnlySpan<TSeparator> separator
 )
-    where TBody : IEquatable<TBody>?
+    where TBody : IEquatable<TBody>
 #if !NET7_0_OR_GREATER
-    where TSeparator : IEquatable<TSeparator>?
+    where TSeparator : IEquatable<TSeparator>
 #endif
 {
     /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
@@ -9268,7 +9261,7 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
 #if NET9_0_OR_GREATER
         where TAccumulator : allows ref struct
 #endif
-        ;
+    ;
     readonly ReadOnlySpan<TBody> _body = body;
     readonly ReadOnlySpan<TSeparator> _separator = separator;
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
@@ -9283,36 +9276,36 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
         get => new($"Unrecognized type: {typeof(TStrategy).Name}");
     }
     /// <summary>Gets the line to split.</summary>
-    public readonly ReadOnlySpan<TBody> Body
+    public ReadOnlySpan<TBody> Body
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
     }
     /// <summary>Gets the first element.</summary>
-    public readonly ReadOnlySpan<TBody> First
+    public ReadOnlySpan<TBody> First
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
     }
     /// <summary>Gets the last element.</summary>
-    public readonly ReadOnlySpan<TBody> Last
+    public ReadOnlySpan<TBody> Last
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
     }
     /// <summary>Gets the separator.</summary>
-    public readonly ReadOnlySpan<TSeparator> Separator
+    public ReadOnlySpan<TSeparator> Separator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
     }
     /// <summary>Gets the single element.</summary>
-    public readonly ReadOnlySpan<TBody> Single
+    public ReadOnlySpan<TBody> Single
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
     }
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
-    public readonly ReadOnlySpan<TBody> this[[NonNegativeValue] int index]
+    public ReadOnlySpan<TBody> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
@@ -9326,7 +9319,7 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     }
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
-    public readonly ReadOnlySpan<TBody> this[Index index]
+    public ReadOnlySpan<TBody> this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
@@ -9342,7 +9335,7 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     }
     /// <summary>Gets the specified range.</summary>
     /// <param name="r">The range to get.</param>
-    public readonly SplitSpan<TBody, TSeparator, TStrategy> this[Range r]
+    public SplitSpan<TBody, TSeparator, TStrategy> this[Range r]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get =>
@@ -9394,7 +9387,7 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void Deconstruct(out ReadOnlySpan<TBody> head, out SplitSpan<TBody, TSeparator, TStrategy> tail)
+    public void Deconstruct(out ReadOnlySpan<TBody> head, out SplitSpan<TBody, TSeparator, TStrategy> tail)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
         {
@@ -9413,11 +9406,11 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
         SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
     {
         if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
@@ -9439,12 +9432,12 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
         SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
         IEqualityComparer<TBody> comparer
     )
 #if !NET7_0_OR_GREATER
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
     {
         if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
@@ -9459,10 +9452,10 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
 #endif
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
-    public readonly override bool Equals(object? obj) => false;
+    public override bool Equals(object? obj) => false;
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool Equals(scoped SplitSpan<TBody, TSeparator, TStrategy> other) =>
+    public bool Equals(scoped SplitSpan<TBody, TSeparator, TStrategy> other) =>
         _body.SequenceEqual(other._body) && _separator.SequenceEqual(other._separator);
     /// <summary>Determines whether both splits are equal.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
@@ -9472,11 +9465,11 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+    public bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
         scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
     {
         Enumerator e = this;
@@ -9496,12 +9489,12 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+    public bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
         scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
         IEqualityComparer<TBody> comparer
     )
 #if !NET7_0_OR_GREATER
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
     {
         Enumerator e = this;
@@ -9515,7 +9508,7 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly int Count()
+    public int Count()
     {
         var count = 0;
         for (var e = GetEnumerator(); e.MoveNext(); count++) { }
@@ -9523,10 +9516,10 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     }
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
+    public override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override string ToString() =>
+    public override string ToString() =>
         typeof(TBody) == typeof(char)
             ? Aggregate(new StringBuilder(), StringBuilderAccumulator).ToString()
             : $"[[{ToArrays().Conjoin("], [")}]]";
@@ -9537,12 +9530,12 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <param name="divider">The divider to insert between elements.</param>
     /// <returns>A <see cref="string"/> representation of the collection.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly string ToString(scoped ReadOnlySpan<TBody> divider)
+    public string ToString(params ReadOnlySpan<TBody> divider)
     {
         var e = GetEnumerator();
         if (!e.MoveNext())
             return "";
-        IList<TBody> ret = [];
+        ICollection<TBody> ret = [];
         foreach (var next in e.Current)
             ret.Add(next);
         while (e.MoveNext())
@@ -9557,9 +9550,9 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <summary>Copies the values to a new <see cref="string"/> array.</summary>
     /// <returns>The <see cref="string"/> array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly string[] ToStringArray()
+    public string[] ToStringArray()
     {
-        IList<string> ret = [];
+        ICollection<string> ret = [];
         foreach (var next in this)
             ret.Add(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
         return [..ret];
@@ -9570,7 +9563,7 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <param name="func">An accumulator function to be invoked on each element.</param>
     /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public readonly TAccumulator Aggregate<TAccumulator>(
+    public TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
     )
@@ -9586,9 +9579,9 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <summary>Copies the values to a new flattened array.</summary>
     /// <returns>The array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TBody[] ToArray()
+    public TBody[] ToArray()
     {
-        IList<TBody> ret = [];
+        ICollection<TBody> ret = [];
         foreach (var next in this)
             foreach (var element in next)
                 ret.Add(element);
@@ -9598,11 +9591,11 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <param name="divider">The separator between each element.</param>
     /// <returns>The array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TBody[] ToArray(scoped ReadOnlySpan<TBody> divider)
+    public TBody[] ToArray(params ReadOnlySpan<TBody> divider)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-        IList<TBody> ret = [];
+        ICollection<TBody> ret = [];
         foreach (var next in e.Current)
             ret.Add(next);
         while (e.MoveNext())
@@ -9617,9 +9610,9 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// <summary>Copies the values to a new nested array.</summary>
     /// <returns>The nested array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TBody[][] ToArrays()
+    public TBody[][] ToArrays()
     {
-        IList<TBody[]> ret = [];
+        ICollection<TBody[]> ret = [];
         foreach (var next in this)
             ret.Add(next.ToArray());
         return [..ret];
@@ -9629,10 +9622,8 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         =>
             builder.Append(To<char>.From(span));
-#else
+#elif NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
     {
-#pragma warning disable CS8500
-#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
         fixed (TBody* pin = span)
         {
             for (var i = 0; i < span.Length; i++)
@@ -9640,10 +9631,11 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
         }
         return builder;
 #else
+    {
+#pragma warning disable CS8500
         fixed (TBody* ptr = span)
-            return builder.Append((char*)ptr, span.Length);
-#endif
 #pragma warning restore CS8500
+            return builder.Append((char*)ptr, span.Length);
     }
 #endif
 }
@@ -11699,9 +11691,7 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable once RedundantUsingDirective
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -11964,14 +11954,12 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         };
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
 #if NET8_0_OR_GREATER
+        =>
             System.Numerics.Vector.LoadUnsafe(source);
 #else
-            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref AsRef(source)));
+        where T : struct =>
+        Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
@@ -11999,10 +11987,10 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         ref var current = ref MemoryMarshal.GetReference(span);
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
-        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!;
+        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count);
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
-            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
+            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count))
             best = 0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(current)),
@@ -12409,7 +12397,6 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
 /// <summary>The basic wrapper around <see cref="Game"/> that handles letterboxing for a 2D game.</summary>
-// ReSharper disable NullableWarningSuppressionIsUsed
 [CLSCompliant(false)]
 public abstract partial class Letterboxed2DGame : Game
 {
@@ -13527,22 +13514,21 @@ public readonly struct Choices<T>(IList<T>? n, int k) : ICollection<IList<T>>, I
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable CS8631, IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
+    public ReversedEnumerator GetReversedEnumerator() => new(this);
     /// <summary>
     /// Returns itself but with the number of elements from the end specified skipped. This is evaluated eagerly.
     /// </summary>
     /// <param name="count">The number of elements to skip from the end.</param>
     /// <returns>Itself but skipping from the end the parameter <paramref name="count"/> number of elements.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly SplitSpan<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
+    public SplitSpan<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
     {
         Enumerator e = this;
         for (; count > 0 && e.MoveNext(); count--) { }
@@ -13838,9 +13824,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable once RedundantUsingDirective
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped Span<T> span)
@@ -14078,7 +14062,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     }
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
+    static T SumVectorized<T>(params ReadOnlySpan<T> span)
 #if !NET8_0_OR_GREATER
         where T : struct
 #endif
@@ -14139,7 +14123,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         return result;
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T UnderlyingSum<T>(scoped ReadOnlySpan<T> span) =>
+    static T UnderlyingSum<T>(params ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
         {
             var x when x == typeof(sbyte) => (T)(object)To<sbyte>.From(span).Sum(),
@@ -18156,20 +18140,19 @@ public partial struct Bits<T>
         return builder;
     }
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable CS8631, IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly Enumerator GetEnumerator() => new(this);
+    public Enumerator GetEnumerator() => new(this);
     /// <summary>Returns itself but with the number of elements specified skipped. This is evaluated eagerly.</summary>
     /// <param name="count">The number of elements to skip.</param>
     /// <returns>Itself but skipping the parameter <paramref name="count"/> number of elements.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly SplitSpan<TBody, TSeparator, TStrategy> Skipped([NonNegativeValue] int count)
+    public SplitSpan<TBody, TSeparator, TStrategy> Skipped([NonNegativeValue] int count)
     {
         Enumerator e = this;
         for (; count > 0 && e.MoveNext(); count--) { }
@@ -18301,7 +18284,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
@@ -18354,7 +18337,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
@@ -18563,7 +18546,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (!reader.SequenceEqual(otherReader))
@@ -18596,7 +18579,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             out bool ret
         )
 #if !NET7_0_OR_GREATER
-            where TOtherSeparator : IEquatable<TOtherSeparator>?
+            where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
         {
             if (!reader.SequenceEqual(otherReader, comparer))

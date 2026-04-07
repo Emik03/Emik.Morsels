@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable once RedundantUsingDirective
+#if !NO_SYSTEM_MEMORY // ReSharper disable once RedundantUsingDirective
 using static OperatorCaching;
-using static Span;
+using static Span; // ReSharper disable RedundantNameQualifier UseSymbolAlias
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable RedundantNameQualifier UseSymbolAlias
 static partial class SpanSimdQueries
 {
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
@@ -274,7 +272,7 @@ static partial class SpanSimdQueries
     }
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
+    static T SumVectorized<T>(params ReadOnlySpan<T> span)
 #if !NET8_0_OR_GREATER
         where T : struct
 #endif
@@ -354,7 +352,7 @@ static partial class SpanSimdQueries
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T UnderlyingSum<T>(scoped ReadOnlySpan<T> span) =>
+    static T UnderlyingSum<T>(params ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
         {
             var x when x == typeof(sbyte) => (T)(object)To<sbyte>.From(span).Sum(),
