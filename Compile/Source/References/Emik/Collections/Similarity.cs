@@ -10,229 +10,207 @@ static partial class Similarity
 {
     const StringComparison DefaultCharComparer = StringComparison.Ordinal;
 
-    /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double Jaro(this string? left, string? right) =>
-        string.Equals(left, right, DefaultCharComparer) ? 1 : left.Jaro(right, EqualityComparer<char>.Default);
+    extension(string? left)
+    {
+        /// <summary>Calculates the Jaro similarity between two strings.</summary>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double Jaro(string? right) =>
+            string.Equals(left, right, DefaultCharComparer) ? 1 : left.Jaro(right, EqualityComparer<char>.Default);
 
-    /// <summary>Calculates the Jaro similarity between two strings.</summary>
+        /// <summary>Calculates the Jaro similarity between two strings.</summary>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double Jaro(string? right, [InstantHandle] Func<char, char, bool>? comparer) =>
+            ReferenceEquals(left, right) ? 1 :
+            left is null || right is null ? 0 :
+            Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer);
+
+        /// <summary>Calculates the Jaro similarity between two strings.</summary>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double Jaro(string? right, IEqualityComparer<char>? comparer) =>
+            left.Jaro(right, comparer is null ? null : comparer.Equals);
+
+        /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
+        /// <remarks><para>Like <see cref="Jaro(string, string)"/>, but with a bias to common sub-slices.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroEmik(string? right) =>
+            string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroEmik(right, EqualityComparer<char>.Default);
+
+        /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro(string, string, Func{char, char, bool})"/>, but with a bias to common sub-slices.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroEmik(string? right, [InstantHandle] Func<char, char, bool>? comparer) =>
+            ReferenceEquals(left, right) ? 1 :
+            left is null || right is null ? 0 :
+            JaroEmik(left, right, static x => x.Length, static (x, i) => x[i], comparer);
+
+        /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro(string, string, IEqualityComparer{char})"/>, but with a bias to common sub-slices.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroEmik(string? right, IEqualityComparer<char>? comparer) =>
+            left.JaroEmik(right, comparer is null ? null : comparer.Equals);
+
+        /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
+        /// <remarks><para>Like <see cref="Jaro(string, string)"/>, but with a bias to common prefixes.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroWinkler(string? right) =>
+            string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroWinkler(right, EqualityComparer<char>.Default);
+
+        /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro(string, string, Func{char, char, bool})"/>, but with a bias to common prefixes.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroWinkler(
+            string? right,
+            [InstantHandle] Func<char, char, bool>? comparer
+        ) =>
+            ReferenceEquals(left, right) ? 1 :
+            left is null || right is null ? 0 :
+            JaroWinkler(left, right, static x => x.Length, static (x, i) => x[i], comparer);
+
+        /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro(string, string, IEqualityComparer{char})"/>, but with a bias to common prefixes.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroWinkler(
+            string? right,
+            IEqualityComparer<char>? comparer
+        ) =>
+            left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
+    }
+
     /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double Jaro(this string? left, string? right, [InstantHandle] Func<char, char, bool>? comparer) =>
-        ReferenceEquals(left, right) ? 1 :
-        left is null || right is null ? 0 :
-        Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer);
-
-    /// <summary>Calculates the Jaro similarity between two strings.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double Jaro(this string? left, string? right, IEqualityComparer<char>? comparer) =>
-        left.Jaro(right, comparer is null ? null : comparer.Equals);
-
-    /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
-    /// <remarks><para>Like <see cref="Jaro(string, string)"/>, but with a bias to common sub-slices.</para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroEmik(this string? left, string? right) =>
-        string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroEmik(right, EqualityComparer<char>.Default);
-
-    /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro(string, string, Func{char, char, bool})"/>, but with a bias to common sub-slices.
-    /// </para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroEmik(this string? left, string? right, [InstantHandle] Func<char, char, bool>? comparer) =>
-        ReferenceEquals(left, right) ? 1 :
-        left is null || right is null ? 0 :
-        JaroEmik(left, right, static x => x.Length, static (x, i) => x[i], comparer);
-
-    /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro(string, string, IEqualityComparer{char})"/>, but with a bias to common sub-slices.
-    /// </para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroEmik(this string? left, string? right, IEqualityComparer<char>? comparer) =>
-        left.JaroEmik(right, comparer is null ? null : comparer.Equals);
-
-    /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
-    /// <remarks><para>Like <see cref="Jaro(string, string)"/>, but with a bias to common prefixes.</para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroWinkler(this string? left, string? right) =>
-        string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroWinkler(right, EqualityComparer<char>.Default);
-
-    /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro(string, string, Func{char, char, bool})"/>, but with a bias to common prefixes.
-    /// </para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroWinkler(
-        this string? left,
-        string? right,
-        [InstantHandle] Func<char, char, bool>? comparer
-    ) =>
-        ReferenceEquals(left, right) ? 1 :
-        left is null || right is null ? 0 :
-        JaroWinkler(left, right, static x => x.Length, static (x, i) => x[i], comparer);
-
-    /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro(string, string, IEqualityComparer{char})"/>, but with a bias to common prefixes.
-    /// </para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroWinkler(
-        this string? left,
-        string? right,
-        IEqualityComparer<char>? comparer
-    ) =>
-        left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
-
-    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this IList<T>? left, IList<T>? right) => left.Jaro(right, EqualityComparer<T>.Default);
+    extension<T>(IList<T>? left)
+    {
+        /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double Jaro(IList<T>? right) => left.Jaro(right, EqualityComparer<T>.Default);
 
-    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this IList<T>? left, IList<T>? right, [InstantHandle] Func<T, T, bool>? comparer) =>
-        ReferenceEquals(left, right) ? 1 :
-        left is null || right is null ? 0 :
-        Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
+        /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double Jaro(IList<T>? right, [InstantHandle] Func<T, T, bool>? comparer) =>
+            ReferenceEquals(left, right) ? 1 :
+            left is null || right is null ? 0 :
+            Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
 
-    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
-        left.Jaro(right, comparer is null ? null : comparer.Equals);
+        /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double Jaro(IList<T>? right, IEqualityComparer<T>? comparer) =>
+            left.Jaro(right, comparer is null ? null : comparer.Equals);
 
-    /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro{T}(IList{T}, IList{T})"/>, but with a bias to common sub-slices.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroEmik<T>(this IList<T>? left, IList<T>? right) =>
-        left.Jaro(right, EqualityComparer<T>.Default);
+        /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro{T}(IList{T}, IList{T})"/>, but with a bias to common sub-slices.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroEmik(IList<T>? right) =>
+            left.Jaro(right, EqualityComparer<T>.Default);
 
-    /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro{T}(IList{T}, IList{T}, Func{T, T, bool})"/>, but with a bias to common sub-slices.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroEmik<T>(
-        this IList<T>? left,
-        IList<T>? right,
-        [InstantHandle] Func<T, T, bool>? comparer
-    ) =>
-        ReferenceEquals(left, right) ? 1 :
-        left is null || right is null ? 0 :
-        Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
+        /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro{T}(IList{T}, IList{T}, Func{T, T, bool})"/>, but with a bias to common sub-slices.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroEmik(
+            IList<T>? right,
+            [InstantHandle] Func<T, T, bool>? comparer
+        ) =>
+            ReferenceEquals(left, right) ? 1 :
+            left is null || right is null ? 0 :
+            Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
 
-    /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro{T}(IList{T}, IList{T}, IEqualityComparer{T})"/>, but with a bias to common sub-slices.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroEmik<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
-        left.Jaro(right, comparer is null ? null : comparer.Equals);
+        /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro{T}(IList{T}, IList{T}, IEqualityComparer{T})"/>, but with a bias to common sub-slices.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroEmik(IList<T>? right, IEqualityComparer<T>? comparer) =>
+            left.Jaro(right, comparer is null ? null : comparer.Equals);
 
-    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro{T}(IList{T}, IList{T})"/>, but with a bias to common prefixes.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right) =>
-        left.JaroWinkler(right, EqualityComparer<T>.Default);
+        /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro{T}(IList{T}, IList{T})"/>, but with a bias to common prefixes.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroWinkler(IList<T>? right) =>
+            left.JaroWinkler(right, EqualityComparer<T>.Default);
 
-    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro{T}(IList{T}, IList{T}, Func{T, T, bool})"/>, but with a bias to common prefixes.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroWinkler<T>(
-        this IList<T>? left,
-        IList<T>? right,
-        [InstantHandle] Func<T, T, bool>? comparer
-    ) =>
-        ReferenceEquals(left, right) ? 1 :
-        left is null || right is null ? 0 :
-        JaroWinkler(left, right, static x => x.Count, static (x, i) => x[i], comparer);
+        /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro{T}(IList{T}, IList{T}, Func{T, T, bool})"/>, but with a bias to common prefixes.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroWinkler(
+            IList<T>? right,
+            [InstantHandle] Func<T, T, bool>? comparer
+        ) =>
+            ReferenceEquals(left, right) ? 1 :
+            left is null || right is null ? 0 :
+            JaroWinkler(left, right, static x => x.Count, static (x, i) => x[i], comparer);
 
-    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
-    /// <remarks><para>
-    /// Like <see cref="Jaro{T}(IList{T}, IList{T}, IEqualityComparer{T})"/>, but with a bias to common prefixes.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure, ValueRange(0, 1)]
-    public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
-        left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
+        /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+        /// <remarks><para>
+        /// Like <see cref="Jaro{T}(IList{T}, IList{T}, IEqualityComparer{T})"/>, but with a bias to common prefixes.
+        /// </para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+        /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+        [Pure, ValueRange(0, 1)]
+        public double JaroWinkler(IList<T>? right, IEqualityComparer<T>? comparer) =>
+            left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
+    }
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>

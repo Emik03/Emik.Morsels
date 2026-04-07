@@ -12,33 +12,60 @@ static partial class RandomizedGetters
 #else
         new Random().Next;
 #endif
-    /// <summary>Shuffles a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with.</param>
-    /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
-    public static IList<T> Shuffle<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<int, int, int>? selector = null
-    )
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    extension<T>([InstantHandle] IEnumerable<T> iterable)
     {
-        selector ??= s_rng;
-        var list = iterable.ToIList();
-
-        for (var j = list.Count; j >= 1; j--)
+        /// <summary>Shuffles a collection.</summary>
+        /// <param name="selector">The indices to swap with.</param>
+        /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
+        public IList<T> Shuffle(
+            [InstantHandle] Func<int, int, int>? selector = null
+        )
         {
-            var item = selector(0, j);
+            selector ??= s_rng;
+            var list = iterable.ToIList();
 
-            if (item >= j - 1)
-                continue;
+            for (var j = list.Count; j >= 1; j--)
+            {
+                var item = selector(0, j);
 
-            // Tuples might not necessarily be imported.
-            var t = list[item];
-            list[item] = list[j - 1];
-            list[j - 1] = t;
+                if (item >= j - 1)
+                    continue;
+
+                // Tuples might not necessarily be imported.
+                var t = list[item];
+                list[item] = list[j - 1];
+                list[j - 1] = t;
+            }
+
+            return list;
         }
 
-        return list;
+        /// <summary>Shuffles a collection.</summary>
+        /// <param name="selector">The indices to swap with.</param>
+        /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
+        [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+        public T PickRandom(
+            [InstantHandle] Func<int, int, int>? selector = null
+        )
+        {
+            static T Fallback(IEnumerable<T> iterable, Func<int, int, int> selector)
+            {
+                IReadOnlyList<T> list = [..iterable];
+                return list[selector(0, list.Count)];
+            }
+
+            selector ??= s_rng;
+
+            return iterable switch
+            {
+                IList<T> list => list[selector(0, list.Count)],
+                IReadOnlyList<T> list => list[selector(0, list.Count)],
+                _ when iterable.TryCount() is { } count => iterable.ElementAt(selector(0, count)),
+                _ => Fallback(iterable, selector),
+            };
+        }
     }
 #if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
@@ -62,33 +89,6 @@ static partial class RandomizedGetters
         return iterable;
     }
 #endif
-    /// <summary>Shuffles a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with.</param>
-    /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static T PickRandom<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<int, int, int>? selector = null
-    )
-    {
-        static T Fallback(IEnumerable<T> iterable, Func<int, int, int> selector)
-        {
-            IReadOnlyList<T> list = [..iterable];
-            return list[selector(0, list.Count)];
-        }
-
-        selector ??= s_rng;
-
-        return iterable switch
-        {
-            IList<T> list => list[selector(0, list.Count)],
-            IReadOnlyList<T> list => list[selector(0, list.Count)],
-            _ when iterable.TryCount() is { } count => iterable.ElementAt(selector(0, count)),
-            _ => Fallback(iterable, selector),
-        };
-    }
 #if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]

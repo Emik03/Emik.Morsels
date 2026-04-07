@@ -6,20 +6,24 @@ namespace Emik.Morsels;
 /// <summary>Provides extension methods to convert representations of text into destination types.</summary>
 static partial class GenericParser
 {
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this string? s) => Parse<T>(s, out _);
-
-    /// <summary>Parses the <see cref="string"/> into a <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">The type to parse into.</typeparam>
     /// <param name="s">The buffer source.</param>
-    /// <param name="success">Whether the parsing was successful.</param>
-    /// <returns>The parsed value.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this string? s, out bool success) =>
-        typeof(string) == typeof(T) && (success = true)
-            ? (T?)(object?)s
-            : FindTryParseFor<T>.WithString(s, out success);
+    extension(string? s)
+    {
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Parse<T>() => s.Parse<T>(out _);
+
+        /// <summary>Parses the <see cref="string"/> into a <typeparamref name="T"/>.</summary>
+        /// <typeparam name="T">The type to parse into.</typeparam>
+        /// <param name="success">Whether the parsing was successful.</param>
+        /// <returns>The parsed value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Parse<T>(out bool success) =>
+            typeof(string) == typeof(T) && (success = true)
+                ? (T?)(object?)s
+                : FindTryParseFor<T>.WithString(s, out success);
+    }
+
 #if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -36,16 +40,20 @@ static partial class GenericParser
 #endif
             : FindTryParseFor<T>.WithByteSpan(s, out success);
 
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped ReadOnlySpan<char> s) => Parse<T>(s, out _);
+    extension(scoped ReadOnlySpan<char> s)
+    {
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Parse<T>() => Parse<T>(s, out _);
 
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped ReadOnlySpan<char> s, out bool success) =>
-        typeof(string) == typeof(T) && (success = true)
-            ? (T)(object)s.ToString()
-            : FindTryParseFor<T>.WithCharSpan(s, out success);
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Parse<T>(out bool success) =>
+            typeof(string) == typeof(T) && (success = true)
+                ? (T)(object)s.ToString()
+                : FindTryParseFor<T>.WithCharSpan(s, out success);
+    }
+
 #endif
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
@@ -67,11 +75,6 @@ static partial class GenericParser
         where T : IParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
 
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this string? s, IFormatProvider? provider, out bool success)
-        where T : IParsable<T> =>
-        (success = T.TryParse(s, provider, out var result)) ? result : default;
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -97,73 +100,118 @@ static partial class GenericParser
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped ReadOnlySpan<char> s)
-        where T : ISpanParsable<T> =>
-        Into<T>(s, out _);
 
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider)
-        where T : ISpanParsable<T> =>
-        Into<T>(s, provider, out _);
-
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped ReadOnlySpan<char> s, out bool success)
-        where T : ISpanParsable<T> =>
-        (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
-
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
-        where T : ISpanParsable<T> =>
-        (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
-    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">The type to parse into.</typeparam>
     /// <param name="s">The buffer source.</param>
-    /// <param name="ignoreCase">Whether to ignore case.</param>
-    /// <returns>The parsed value.</returns>
-    public static T IntoEnum<T>(this string? s, bool ignoreCase = true)
-        where T : struct =>
-        Enum.TryParse(s, ignoreCase, out T result) ? result : default;
+    extension(string? s)
+    {
+        /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+        /// <typeparam name="T">The type to parse into.</typeparam>
+        /// <param name="ignoreCase">Whether to ignore case.</param>
+        /// <returns>The parsed value.</returns>
+        public T IntoEnum<T>(bool ignoreCase = true)
+            where T : struct =>
+            Enum.TryParse(s, ignoreCase, out T result) ? result : default;
 
-    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">The type to parse into.</typeparam>
-    /// <param name="s">The buffer source.</param>
-    /// <param name="ignoreCase">Whether to ignore case.</param>
-    /// <returns>The parsed value.</returns>
-    public static T? TryIntoEnum<T>(this string? s, bool ignoreCase = true)
-        where T : struct =>
-        Enum.TryParse(s, ignoreCase, out T result) ? result : null;
+        /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+        /// <typeparam name="T">The type to parse into.</typeparam>
+        /// <param name="ignoreCase">Whether to ignore case.</param>
+        /// <returns>The parsed value.</returns>
+        public T? TryIntoEnum<T>(bool ignoreCase = true)
+            where T : struct =>
+            Enum.TryParse(s, ignoreCase, out T result) ? result : null;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? TryParse<T>()
+            where T : struct =>
+            Parse<T>(s, out var success) is var value && success ? value : null;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Into<T>(IFormatProvider? provider, out bool success)
+            where T : IParsable<T> =>
+            (success = T.TryParse(s, provider, out var result)) ? result : default;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? TryInto<T>()
+            where T : struct, IParsable<T> =>
+            T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? TryInto<T>(IFormatProvider? provider)
+            where T : struct, IParsable<T> =>
+            T.TryParse(s, provider, out var result) ? result : null;
+    }
+
 #endif
 #if NET6_0_OR_GREATER
-    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">The type to parse into.</typeparam>
     /// <param name="s">The buffer source.</param>
-    /// <param name="ignoreCase">Whether to ignore case.</param>
-    /// <returns>The parsed value.</returns>
-    public static T IntoEnum<T>(this scoped ReadOnlySpan<char> s, bool ignoreCase = true)
-        where T : struct =>
-        Enum.TryParse(s, ignoreCase, out T result) ? result : default;
+    extension(scoped ReadOnlySpan<char> s)
+    {
+        /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+        /// <typeparam name="T">The type to parse into.</typeparam>
+        /// <param name="ignoreCase">Whether to ignore case.</param>
+        /// <returns>The parsed value.</returns>
+        public T IntoEnum<T>(bool ignoreCase = true)
+            where T : struct =>
+            Enum.TryParse(s, ignoreCase, out T result) ? result : default;
 
-    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">The type to parse into.</typeparam>
-    /// <param name="s">The buffer source.</param>
-    /// <param name="ignoreCase">Whether to ignore case.</param>
-    /// <returns>The parsed value.</returns>
-    public static T? TryIntoEnum<T>(this scoped ReadOnlySpan<char> s, bool ignoreCase = true)
-        where T : struct =>
-        Enum.TryParse(s, ignoreCase, out T result) ? result : null;
+        /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+        /// <typeparam name="T">The type to parse into.</typeparam>
+        /// <param name="ignoreCase">Whether to ignore case.</param>
+        /// <returns>The parsed value.</returns>
+        public T? TryIntoEnum<T>(bool ignoreCase = true)
+            where T : struct =>
+            Enum.TryParse(s, ignoreCase, out T result) ? result : null;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Into<T>()
+            where T : ISpanParsable<T> =>
+            Into<T>(s, out _);
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Into<T>(IFormatProvider? provider)
+            where T : ISpanParsable<T> =>
+            Into<T>(s, provider, out _);
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Into<T>(out bool success)
+            where T : ISpanParsable<T> =>
+            (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Into<T>(IFormatProvider? provider, out bool success)
+            where T : ISpanParsable<T> =>
+            (success = T.TryParse(s, provider, out var result)) ? result : default;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? TryParse<T>()
+            where T : struct =>
+            Parse<T>(s, out var success) is var value && success ? value : null;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? TryInto<T>()
+            where T : struct, ISpanParsable<T> =>
+            T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
+
+        /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? TryInto<T>(IFormatProvider? provider)
+            where T : struct, ISpanParsable<T> =>
+            T.TryParse(s, provider, out var result) ? result : null;
+    }
+
 #endif
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this string? s)
-        where T : struct =>
-        Parse<T>(s, out var success) is var value && success ? value : null;
 #if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -171,24 +219,9 @@ static partial class GenericParser
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
 
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this scoped ReadOnlySpan<char> s)
-        where T : struct =>
-        Parse<T>(s, out var success) is var value && success ? value : null;
 #endif
 #if NET7_0_OR_GREATER
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this string? s)
-        where T : struct, IParsable<T> =>
-        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
 
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this string? s, IFormatProvider? provider)
-        where T : struct, IParsable<T> =>
-        T.TryParse(s, provider, out var result) ? result : null;
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -202,17 +235,7 @@ static partial class GenericParser
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
 #endif
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped ReadOnlySpan<char> s)
-        where T : struct, ISpanParsable<T> =>
-        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
 
-    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider)
-        where T : struct, ISpanParsable<T> =>
-        T.TryParse(s, provider, out var result) ? result : null;
 #endif
     static class FindTryParseFor<T>
     {

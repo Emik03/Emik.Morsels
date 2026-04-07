@@ -8,99 +8,101 @@ using Range = System.Range;
 /// <summary>Provides extension methods for <see cref="char"/>.</summary>
 static partial class StringRemoval
 {
-    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
     /// <param name="str">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, int index, out char popped)
+    extension(string str)
     {
-        if (index >= 0 && index < str.Length)
+        /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
+        /// <param name="index">The index to remove.</param>
+        /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+        /// <returns>The parameter <paramref name="str"/>.</returns>
+        public string Pop(int index, out char popped)
         {
-            popped = str[index];
-            return str.Remove(index, 1);
-        }
-
-        popped = '\0';
-        return str;
-    }
-
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static string Pop(this string str, Index index, out char popped) =>
-        str.Pop(index.GetOffset(str.Length), out popped);
-
-    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, Range range, out string popped)
-    {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        popped = str[range];
-        return str.Remove(startIndex, length);
-    }
-
-    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Remove(this string str, Range range)
-    {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        return str.Remove(startIndex, length);
-    }
-
-    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, int index, out char popped)
-    {
-        if (index >= 0 && index < builder.Length)
-        {
-            popped = builder[index];
-            return builder.Remove(index, 1);
-        }
-
-        popped = '\0';
-        return builder;
-    }
-
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
-        builder.Pop(index.GetOffset(builder.Length), out popped);
-
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
-    {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        popped = string.Create(
-            length,
-            (builder, startIndex),
-            static (span, tuple) =>
+            if (index >= 0 && index < str.Length)
             {
-                var (builder, startIndex) = tuple;
-
-                for (var i = 0; i < span.Length; i++)
-                    span[i] = builder[i + startIndex];
+                popped = str[index];
+                return str.Remove(index, 1);
             }
-        );
+
+            popped = '\0';
+            return str;
+        }
+
+        /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+        public string Pop(Index index, out char popped) =>
+            str.Pop(index.GetOffset(str.Length), out popped);
+
+        /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
+        /// <param name="range">The range to remove.</param>
+        /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+        /// </exception>
+        /// <returns>The parameter <paramref name="str"/>.</returns>
+        public string Pop(Range range, out string popped)
+        {
+            range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+            popped = str[range];
+            return str.Remove(startIndex, length);
+        }
+
+        /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
+        /// <param name="range">The range to remove.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+        /// </exception>
+        /// <returns>The parameter <paramref name="str"/>.</returns>
+        public string Remove(Range range)
+        {
+            range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+            return str.Remove(startIndex, length);
+        }
+    }
+
+    /// <param name="builder">The builder to take the character from.</param>
+    extension(StringBuilder builder)
+    {
+        /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
+        /// <param name="index">The index to remove.</param>
+        /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+        /// <returns>The parameter <paramref name="builder"/>.</returns>
+        public StringBuilder Pop(int index, out char popped)
+        {
+            if (index >= 0 && index < builder.Length)
+            {
+                popped = builder[index];
+                return builder.Remove(index, 1);
+            }
+
+            popped = '\0';
+            return builder;
+        }
+
+        /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+        public StringBuilder Pop(Index index, out char popped) =>
+            builder.Pop(index.GetOffset(builder.Length), out popped);
+
+        /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+        /// <param name="range">The range to remove.</param>
+        /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+        /// </exception>
+        /// <returns>The parameter <paramref name="builder"/>.</returns>
+        public StringBuilder Pop(Range range, out string popped)
+        {
+            range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+            popped = string.Create(
+                length,
+                (builder, startIndex),
+                static (span, tuple) =>
+                {
+                    var (builder, startIndex) = tuple;
+
+                    for (var i = 0; i < span.Length; i++)
+                        span[i] = builder[i + startIndex];
+                }
+            );
 #else
         StringBuilder poppedBuilder = new(length);
 
@@ -109,20 +111,20 @@ static partial class StringRemoval
 
         popped = $"{poppedBuilder}";
 #endif
-        return builder.Remove(startIndex, length);
-    }
+            return builder.Remove(startIndex, length);
+        }
 
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Remove(this StringBuilder builder, Range range)
-    {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-        return builder.Remove(startIndex, length);
+        /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+        /// <param name="range">The range to remove.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+        /// </exception>
+        /// <returns>The parameter <paramref name="builder"/>.</returns>
+        public StringBuilder Remove(Range range)
+        {
+            range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+            return builder.Remove(startIndex, length);
+        }
     }
 
     /// <summary>Creates the <see cref="StringBuilder"/> around the provided <see cref="string"/>.</summary>
@@ -185,26 +187,29 @@ static partial class StringRemoval
         return default;
     }
 #endif
-    /// <inheritdoc cref="string.Trim()"/>
-    public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
-
-    /// <inheritdoc cref="string.TrimEnd(char[])"/>
-    public static StringBuilder TrimEnd(this StringBuilder builder)
+    extension(StringBuilder builder)
     {
-        for (var i = builder.Length - 1; i >= 0; i--)
-            if (!char.IsWhiteSpace(builder[i]))
-                return builder.Remove(i + 1, builder.Length - i - 1);
+        /// <inheritdoc cref="string.Trim()"/>
+        public StringBuilder Trim() => builder.TrimStart().TrimEnd();
 
-        return builder.Remove(0, builder.Length);
-    }
+        /// <inheritdoc cref="string.TrimEnd(char[])"/>
+        public StringBuilder TrimEnd()
+        {
+            for (var i = builder.Length - 1; i >= 0; i--)
+                if (!char.IsWhiteSpace(builder[i]))
+                    return builder.Remove(i + 1, builder.Length - i - 1);
 
-    /// <inheritdoc cref="string.TrimStart(char[])"/>
-    public static StringBuilder TrimStart(this StringBuilder builder)
-    {
-        for (var i = 0; i < builder.Length; i++)
-            if (!char.IsWhiteSpace(builder[i]))
-                return builder.Remove(0, i);
+            return builder.Remove(0, builder.Length);
+        }
 
-        return builder.Remove(0, builder.Length);
+        /// <inheritdoc cref="string.TrimStart(char[])"/>
+        public StringBuilder TrimStart()
+        {
+            for (var i = 0; i < builder.Length; i++)
+                if (!char.IsWhiteSpace(builder[i]))
+                    return builder.Remove(0, i);
+
+            return builder.Remove(0, builder.Length);
+        }
     }
 }

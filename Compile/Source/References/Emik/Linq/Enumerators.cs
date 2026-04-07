@@ -74,21 +74,23 @@ static partial class EnumeratorToEnumerable
         public bool MoveNext() => enumerator.MoveNext();
     }
 
-    /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
-    /// <returns>
-    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
-    /// </returns>
-    [MustDisposeResource, Pure]
-    public static IEnumerator<object?> AsGeneric([HandlesResourceDisposal] this IEnumerator enumerator) =>
-        new Enumerator(enumerator);
+    extension([HandlesResourceDisposal] IEnumerator enumerator)
+    {
+        /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
+        /// <returns>
+        /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
+        /// </returns>
+        [MustDisposeResource, Pure]
+        public IEnumerator<object?> AsGeneric() =>
+            new Enumerator(enumerator);
 
-    /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
-    /// <param name="enumerator">The enumerator to encapsulate.</param>
-    /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
-    [MustDisposeResource, Pure]
-    public static IEnumerable<object?> AsEnumerable([HandlesResourceDisposal] this IEnumerator enumerator) =>
-        AsEnumerable(AsGeneric(enumerator));
+        /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
+        /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
+        [MustDisposeResource, Pure]
+        public IEnumerable<object?> AsEnumerable() =>
+            AsEnumerable(AsGeneric(enumerator));
+    }
 
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>

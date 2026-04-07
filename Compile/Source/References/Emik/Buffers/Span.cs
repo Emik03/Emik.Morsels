@@ -254,20 +254,6 @@ static partial class Span
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(In(reference));
 
-    /// <summary>Converts the <see cref="Memory{T}"/> to the <see cref="ReadOnlyMemory{T}"/>.</summary>
-    /// <typeparam name="T">The type of memory.</typeparam>
-    /// <param name="memory">The memory to convert.</param>
-    /// <returns>The <see cref="ReadOnlyMemory{T}"/> of the parameter <paramref name="memory"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlyMemory<T> ReadOnly<T>(this Memory<T> memory) => memory;
-
-    /// <summary>Converts the <see cref="Span{T}"/> to the <see cref="ReadOnlySpan{T}"/>.</summary>
-    /// <typeparam name="T">The type of span.</typeparam>
-    /// <param name="span">The span to convert.</param>
-    /// <returns>The <see cref="ReadOnlySpan{T}"/> of the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> ReadOnly<T>(this Span<T> span) => span;
-
     /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -309,25 +295,6 @@ static partial class Span
     /// <param name="head">The first element of the parameter <paramref name="memory"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="memory"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this Memory<T> memory, out T? head, out Memory<T> tail)
-    {
-        if (memory.IsEmpty)
-        {
-            head = default;
-            tail = default;
-            return;
-        }
-
-        head = memory.Span.UnsafelyIndex(0);
-        tail = memory[1..];
-    }
-
-    /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="memory">The memory to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="memory"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="memory"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Deconstruct<T>(this ReadOnlyMemory<T> memory, out T? head, out ReadOnlyMemory<T> tail)
     {
         if (memory.IsEmpty)
@@ -341,44 +308,6 @@ static partial class Span
         tail = memory[1..];
     }
 
-    /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
-    {
-        if (span.IsEmpty)
-        {
-            head = default;
-            tail = default;
-            return;
-        }
-
-        head = span.UnsafelyIndex(0);
-        tail = span.UnsafelySkip(1);
-    }
-
-    /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
-    {
-        if (span.IsEmpty)
-        {
-            head = default;
-            tail = default;
-            return;
-        }
-
-        head = span.UnsafelyIndex(0);
-        tail = span.UnsafelySkip(1);
-    }
-
     /// <summary>
     /// Gets the index of an element of a given <see cref="Memory{T}"/> from its <see cref="Span{T}"/>.
     /// </summary>
@@ -390,23 +319,6 @@ static partial class Span
     public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
 
-    /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
-    /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
-    /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
-    /// <param name="value">The reference to the target item to get the index for.</param>
-    /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOf<T>(this scoped ReadOnlySpan<T> span, scoped ref T value) =>
-        Unsafe.ByteOffset(ref MemoryMarshal.GetReference(span), ref value) is var byteOffset &&
-        byteOffset / (nint)(uint)Unsafe.SizeOf<T>() is var elementOffset &&
-        (nuint)elementOffset < (uint)span.Length
-            ? (int)elementOffset
-            : -1;
-
-    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T>(this scoped Span<T> origin, scoped ref T target) =>
-        origin.ReadOnly().IndexOf(ref target);
 #if !NET7_0_OR_GREATER
     /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -671,26 +583,6 @@ static partial class Span
         return OfAny(span[0], span.Length, values[0], span.Length);
     }
 #endif
-    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
-        origin.IndexOf(ref MemoryMarshal.GetReference(target));
-
-    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int OffsetOf<T>(this scoped Span<T> origin, scoped ReadOnlySpan<T> target) =>
-        origin.ReadOnly().OffsetOf(target);
-
-    /// <summary>Converts the provided <see cref="Span{T}"/> to the <see cref="Memory{T}"/>.</summary>
-    /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to convert.</param>
-    /// <param name="memory">The bounds.</param>
-    /// <returns>The parameter <paramref name="span"/> as <see cref="ReadOnlyMemory{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
-        memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is not -1 and var i
-            ? memory.Slice(i, span.Length)
-            : default;
 
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
@@ -707,15 +599,6 @@ static partial class Span
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<T> Nth<T>(this ReadOnlyMemory<T> span, Range range) =>
-        range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.Slice(off, len) : default;
-
-    /// <summary>Gets the specific slice from the memory.</summary>
-    /// <typeparam name="T">The type of item in the memory.</typeparam>
-    /// <param name="span">The <see cref="Memory{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Memory<T> Nth<T>(this Memory<T> span, Range range) =>
         range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.Slice(off, len) : default;
 
     /// <summary>Gets a specific item from the memory.</summary>
@@ -771,177 +654,281 @@ static partial class Span
     public static T? NthLast<T>(this ReadOnlyMemory<T> memory, [NonNegativeValue] int index) =>
         (uint)(index - 1) < (uint)memory.Length ? memory.Span[memory.Length - index] : default;
 
-    /// <summary>Gets a specific item from the memory.</summary>
-    /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this Memory<T> memory, [NonNegativeValue] int index) =>
-        (uint)index < (uint)memory.Length ? memory.Span.UnsafelyIndex(index) : default;
-
-    /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
-    /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this Memory<T> memory, Index index) =>
-        index.GetOffset(memory.Length) is var off && (uint)off < (uint)memory.Length
-            ? memory.Span.UnsafelyIndex(off)
-            : default;
+    extension<T>(Memory<T> memory)
+    {
+        /// <summary>Gets a specific item from the memory.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Nth([NonNegativeValue] int index) =>
+            (uint)index < (uint)memory.Length ? memory.Span.UnsafelyIndex(index) : default;
 
-    /// <summary>Gets a specific item from the memory.</summary>
-    /// <typeparam name="T">The type of item in the memory.</typeparam>
-    /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this Memory<T> memory, [NonNegativeValue] int index) =>
-        (uint)(index - 1) < (uint)memory.Length ? memory.Span.UnsafelyIndex(memory.Length - index) : default;
+        /// <summary>Gets a specific item from the memory.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Nth(Index index) =>
+            index.GetOffset(memory.Length) is var off && (uint)off < (uint)memory.Length
+                ? memory.Span.UnsafelyIndex(off)
+                : default;
 
-    /// <summary>Gets the specific slice from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
+        /// <summary>Gets a specific item from the memory.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? NthLast([NonNegativeValue] int index) =>
+            (uint)(index - 1) < (uint)memory.Length ? memory.Span.UnsafelyIndex(memory.Length - index) : default;
+
+        /// <summary>Converts the <see cref="Memory{T}"/> to the <see cref="ReadOnlyMemory{T}"/>.</summary>
+        /// <returns>The <see cref="ReadOnlyMemory{T}"/> of the parameter <paramref name="memory"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlyMemory<T> ReadOnly() => memory;
+
+        /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
+        /// <param name="head">The first element of the parameter <paramref name="memory"/>.</param>
+        /// <param name="tail">The rest of the parameter <paramref name="memory"/>.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Deconstruct(out T? head, out Memory<T> tail)
+        {
+            if (memory.IsEmpty)
+            {
+                head = default;
+                tail = default;
+                return;
+            }
+
+            head = memory.Span.UnsafelyIndex(0);
+            tail = memory[1..];
+        }
+
+        /// <summary>Gets the specific slice from the memory.</summary>
+        /// <param name="range">The index to get.</param>
+        /// <returns>A slice from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public Memory<T> Nth(Range range) =>
+            range.TryGetOffsetAndLength(memory.Length, out var off, out var len) ? memory.Slice(off, len) : default;
+    }
+
     /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range) =>
-        range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.UnsafelySlice(off, len) : default;
-
-    /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
+    extension<T>(scoped ReadOnlySpan<T> span)
+    {
+        /// <summary>Gets a specific item from the span.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Nth([NonNegativeValue] int index) =>
+            (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
+
+        /// <summary>Gets a specific item from the span.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Nth(Index index) =>
+            index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
+
+        /// <summary>Gets a specific item from the span.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? NthLast([NonNegativeValue] int index) =>
+            (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
+
+        /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
+        /// <param name="value">The reference to the target item to get the index for.</param>
+        /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe int IndexOf(scoped ref T value) =>
+            Unsafe.ByteOffset(ref MemoryMarshal.GetReference(span), ref value) is var byteOffset &&
+            byteOffset / (nint)(uint)Unsafe.SizeOf<T>() is var elementOffset &&
+            (nuint)elementOffset < (uint)span.Length
+                ? (int)elementOffset
+                : -1;
+
+        /// <inheritdoc cref="Span.IndexOf{T}(System.ReadOnlySpan{T},ref T)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe int OffsetOf(scoped ReadOnlySpan<T> target) =>
+            span.IndexOf(ref MemoryMarshal.GetReference(target));
+
+        /// <summary>Converts the provided <see cref="Span{T}"/> to the <see cref="Memory{T}"/>.</summary>
+        /// <param name="memory">The bounds.</param>
+        /// <returns>The parameter <paramref name="span"/> as <see cref="ReadOnlyMemory{T}"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public unsafe ReadOnlyMemory<T> AsMemory(ReadOnlyMemory<T> memory) =>
+            memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is not -1 and var i
+                ? memory.Slice(i, span.Length)
+                : default;
+
+        /// <inheritdoc cref="Span{T}.this"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T UnsafelyIndex([NonNegativeValue] int index)
+        {
+            System.Diagnostics.Debug.Assert((uint)index < (uint)span.Length, "index is in range");
+            return Unsafe.Add(ref MemoryMarshal.GetReference(span), index);
+        }
+    }
+
     /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Nth<T>(this Span<T> span, Range range) =>
-        range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.UnsafelySlice(off, len) : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index) =>
-        index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, Index index) =>
-        index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
-
-    /// <inheritdoc cref="Span{T}.this"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, [NonNegativeValue] int index)
+    extension<T>(scoped Span<T> span)
     {
-        System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
-        return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+        /// <summary>Gets a specific item from the span.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Nth([NonNegativeValue] int index) =>
+            (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
+
+        /// <summary>Gets a specific item from the span.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? Nth(Index index) =>
+            index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
+
+        /// <summary>Gets a specific item from the span.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T? NthLast([NonNegativeValue] int index) =>
+            (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
+
+        /// <inheritdoc cref="Span.IndexOf{T}(System.ReadOnlySpan{T},ref T)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int IndexOf(scoped ref T target) =>
+            span.ReadOnly().IndexOf(ref target);
+
+        /// <inheritdoc cref="Span.IndexOf{T}(System.ReadOnlySpan{T},ref T)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int OffsetOf(scoped ReadOnlySpan<T> target) =>
+            span.ReadOnly().OffsetOf(target);
+
+        /// <inheritdoc cref="Span{T}.this"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T UnsafelyIndex([NonNegativeValue] int index)
+        {
+            System.Diagnostics.Debug.Assert((uint)index < (uint)span.Length, "index is in range");
+            return Unsafe.Add(ref MemoryMarshal.GetReference(span), index);
+        }
     }
 
-    /// <inheritdoc cref="Enumerable.Skip{T}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelySkip<T>(this ReadOnlySpan<T> body, [NonNegativeValue] int start)
+    /// <param name="body">The span to split.</param>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    extension<T>(ReadOnlySpan<T> body)
     {
-        System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
-        return UnsafelySlice(body, start, body.Length - start);
+        /// <inheritdoc cref="Enumerable.Skip{T}"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> UnsafelySkip([NonNegativeValue] int start)
+        {
+            System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
+            return UnsafelySlice(body, start, body.Length - start);
+        }
+
+        /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> UnsafelySlice(
+            [NonNegativeValue] int start,
+            [NonNegativeValue] int length
+        )
+        {
+            System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
+            return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+        }
+
+        /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> UnsafelyTake([NonNegativeValue] int end)
+        {
+            System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
+            return UnsafelySlice(body, 0, end);
+        }
+
+        /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
+        /// <param name="head">The first element of the parameter <paramref name="body"/>.</param>
+        /// <param name="tail">The rest of the parameter <paramref name="body"/>.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Deconstruct(out T? head, out ReadOnlySpan<T> tail)
+        {
+            if (body.IsEmpty)
+            {
+                head = default;
+                tail = default;
+                return;
+            }
+
+            head = body.UnsafelyIndex(0);
+            tail = body.UnsafelySkip(1);
+        }
+
+        /// <summary>Gets the specific slice from the span.</summary>
+        /// <param name="range">The index to get.</param>
+        /// <returns>A slice from the parameter <paramref name="body"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> Nth(Range range) =>
+            range.TryGetOffsetAndLength(body.Length, out var off, out var len) ? body.UnsafelySlice(off, len) : default;
     }
 
-    /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelySlice<T>(
-        this ReadOnlySpan<T> body,
-        [NonNegativeValue] int start,
-        [NonNegativeValue] int length
-    )
+    /// <param name="body">The span to convert.</param>
+    /// <typeparam name="T">The type of span.</typeparam>
+    extension<T>(Span<T> body)
     {
-        System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-        return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
-    }
+        /// <inheritdoc cref="Enumerable.Skip{T}"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public Span<T> UnsafelySkip([NonNegativeValue] int start)
+        {
+            System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
+            return UnsafelySlice(body, start, body.Length - start);
+        }
 
-    /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelyTake<T>(this ReadOnlySpan<T> body, [NonNegativeValue] int end)
-    {
-        System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
-        return UnsafelySlice(body, 0, end);
-    }
+        /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public Span<T> UnsafelySlice(
+            [NonNegativeValue] int start,
+            [NonNegativeValue] int length
+        )
+        {
+            System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
+            return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+        }
 
-    /// <inheritdoc cref="Span{T}.this"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped Span<T> body, [NonNegativeValue] int index)
-    {
-        System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
-        return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
-    }
+        /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public Span<T> UnsafelyTake([NonNegativeValue] int end)
+        {
+            System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
+            return UnsafelySlice(body, 0, end);
+        }
 
-    /// <inheritdoc cref="Enumerable.Skip{T}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelySkip<T>(this Span<T> body, [NonNegativeValue] int start)
-    {
-        System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
-        return UnsafelySlice(body, start, body.Length - start);
-    }
+        /// <summary>Converts the <see cref="Span{T}"/> to the <see cref="ReadOnlySpan{T}"/>.</summary>
+        /// <returns>The <see cref="ReadOnlySpan{T}"/> of the parameter <paramref name="body"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> ReadOnly() => body;
 
-    /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelySlice<T>(
-        this Span<T> body,
-        [NonNegativeValue] int start,
-        [NonNegativeValue] int length
-    )
-    {
-        System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-        return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
-    }
+        /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
+        /// <param name="head">The first element of the parameter <paramref name="body"/>.</param>
+        /// <param name="tail">The rest of the parameter <paramref name="body"/>.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Deconstruct(out T? head, out Span<T> tail)
+        {
+            if (body.IsEmpty)
+            {
+                head = default;
+                tail = default;
+                return;
+            }
 
-    /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelyTake<T>(this Span<T> body, [NonNegativeValue] int end)
-    {
-        System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
-        return UnsafelySlice(body, 0, end);
+            head = body.UnsafelyIndex(0);
+            tail = body.UnsafelySkip(1);
+        }
+
+        /// <summary>Gets the specific slice from the span.</summary>
+        /// <param name="range">The index to get.</param>
+        /// <returns>A slice from the parameter <paramref name="body"/>, or <see langword="default"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public Span<T> Nth(Range range) =>
+            range.TryGetOffsetAndLength(body.Length, out var off, out var len) ? body.UnsafelySlice(off, len) : default;
     }
 }
 #endif

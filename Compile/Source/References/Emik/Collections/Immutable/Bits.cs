@@ -19,86 +19,74 @@ static partial class BitsFactory
         where T : unmanaged =>
         source;
 
-    /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseAnd<T>(this IEnumerable<T> source)
+    /// <typeparam name="T">The type of item.</typeparam>
+    extension<T>(IEnumerable<T> source)
         where T : unmanaged
     {
-        T t = default;
+        /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
+        /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T BitwiseAnd()
+        {
+            T t = default;
 
-        foreach (var next in source)
-            Bits<T>.And(next, ref t);
+            foreach (var next in source)
+                Bits<T>.And(next, ref t);
 
-        return t;
-    }
+            return t;
+        }
 
-    /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseAndNot<T>(this IEnumerable<T> source)
-        where T : unmanaged
-    {
-        T t = default;
+        /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
+        /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T BitwiseAndNot()
+        {
+            T t = default;
 
-        foreach (var next in source)
-            Bits<T>.AndNot(next, ref t);
+            foreach (var next in source)
+                Bits<T>.AndNot(next, ref t);
 
-        return t;
-    }
+            return t;
+        }
 
-    /// <summary>Returns the reference that contains the most bits.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the most bits of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseMax<T>(this IEnumerable<T> source)
-        where T : unmanaged =>
-        source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
+        /// <summary>Returns the reference that contains the most bits.</summary>
+        /// <returns>The value <typeparamref name="T"/> containing the most bits of <paramref name="source"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T BitwiseMax() =>
+            source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
 
-    /// <summary>Returns the reference that contains the least bits.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseMin<T>(this IEnumerable<T> source)
-        where T : unmanaged =>
-        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
+        /// <summary>Returns the reference that contains the least bits.</summary>
+        /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T BitwiseMin() =>
+            source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
 
-    /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseOr<T>(this IEnumerable<T> source)
-        where T : unmanaged
-    {
-        T t = default;
+        /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
+        /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T BitwiseOr()
+        {
+            T t = default;
 
-        foreach (var next in source)
-            Bits<T>.Or(next, ref t);
+            foreach (var next in source)
+                Bits<T>.Or(next, ref t);
 
-        return t;
-    }
+            return t;
+        }
 
-    /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseXor<T>(this IEnumerable<T> source)
-        where T : unmanaged
-    {
-        T t = default;
+        /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
+        /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T BitwiseXor()
+        {
+            T t = default;
 
-        foreach (var next in source)
-            Bits<T>.Xor(next, ref t);
+            foreach (var next in source)
+                Bits<T>.Xor(next, ref t);
 
-        return t;
+            return t;
+        }
     }
 }
 

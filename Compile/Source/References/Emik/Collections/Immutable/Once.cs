@@ -7,21 +7,22 @@ using static CollectionAccessType;
 /// <summary>Extension methods that act as factories for <see cref="Once{T}"/>.</summary>
 static partial class OnceFactory
 {
-    /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
-    /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
-    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
-    [Pure]
-    public static Once<T> Yield<T>(this T source, bool condition = true) => condition ? source : [];
+    /// <typeparam name="T">The type of item.</typeparam>
+    extension<T>(T source)
+    {
+        /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
+        /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
+        /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+        [Pure]
+        public Once<T> Yield(bool condition = true) => condition ? source : [];
 
-    /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
-    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
-    [Pure]
-    public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? source : [];
+        /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
+        /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
+        /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+        [Pure]
+        public Once<T> Yield(Predicate<T> condition) => condition(source) ? source : [];
+    }
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>

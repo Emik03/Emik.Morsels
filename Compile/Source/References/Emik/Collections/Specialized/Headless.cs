@@ -106,28 +106,28 @@ static partial class Headless
         }
     }
 
-    /// <summary>Separates the head from the tail of an <see cref="ICollection{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="collection">The enumerable to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="collection"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="collection"/>.</param>
-    public static void Deconstruct<T>(
-        this IList<T>? collection,
-        out T? head,
-        [NotNullIfNotNull(nameof(collection))] out HeadlessList<T>? tail
-    )
-    {
-        head = collection is null ? default : collection.FirstOrDefault();
-        tail = collection.Tail();
-    }
-
-    /// <summary>Gets the tail of the <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="collection">The collection to extract the tail from.</param>
-    /// <returns>
-    /// The encapsulation of the parameter <paramref name="collection"/> that prevents the head from being accessed.
-    /// </returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(collection))]
-    public static HeadlessList<T>? Tail<T>(this IList<T>? collection) => collection is null ? null : new(collection);
+    extension<T>(IList<T>? collection)
+    {
+        /// <summary>Separates the head from the tail of an <see cref="ICollection{T}"/>.</summary>
+        /// <param name="head">The first element of the parameter <paramref name="collection"/>.</param>
+        /// <param name="tail">The rest of the parameter <paramref name="collection"/>.</param>
+        public void Deconstruct(
+            out T? head,
+            [NotNullIfNotNull(nameof(collection))] out HeadlessList<T>? tail
+        )
+        {
+            head = collection is null ? default : collection.FirstOrDefault();
+            tail = collection.Tail();
+        }
+
+        /// <summary>Gets the tail of the <see cref="ICollection{T}"/>.</summary>
+        /// <returns>
+        /// The encapsulation of the parameter <paramref name="collection"/> that prevents the head from being accessed.
+        /// </returns>
+        [Pure]
+        [return: NotNullIfNotNull(nameof(collection))]
+        public HeadlessList<T>? Tail() => collection is null ? null : new(collection);
+    }
 }

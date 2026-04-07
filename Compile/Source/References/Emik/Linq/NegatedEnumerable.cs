@@ -5,60 +5,56 @@ namespace Emik.Morsels;
 /// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
 static partial class NegatedEnumerable
 {
-    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
-    /// <remarks><para>
-    /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
-    /// Each duplicate appears exactly once within the returned value.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
     /// <param name="source">The source to filter.</param>
-    /// <param name="comparer">The comparer to assess distinctiveness.</param>
-    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> DistinctDuplicates<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        source.GroupDuplicates(comparer).Select(x => x.Key);
-
-    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
-    /// <remarks><para>
-    /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
-    /// Each duplicate appears two or more times within the returned value.
-    /// </para></remarks>
     /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
-    /// <param name="source">The source to filter.</param>
-    /// <param name="comparer">The comparer to assess distinctiveness.</param>
-    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Duplicates<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        source.GroupDuplicates(comparer).SelectMany(x => x);
+    extension<T>([NoEnumeration] IEnumerable<T> source)
+    {
+        /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+        /// <remarks><para>
+        /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
+        /// Each duplicate appears exactly once within the returned value.
+        /// </para></remarks>
+        /// <param name="comparer">The comparer to assess distinctiveness.</param>
+        /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> DistinctDuplicates(
+            IEqualityComparer<T>? comparer = null
+        ) =>
+            source.GroupDuplicates(comparer).Select(x => x.Key);
 
-    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
-    /// <remarks><para>Filters out unique elements within an <see cref="IEnumerable{T}"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
-    /// <param name="source">The source to filter.</param>
-    /// <param name="comparer">The comparer to assess distinctiveness.</param>
-    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<IGrouping<T, T>> GroupDuplicates<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
+        /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+        /// <remarks><para>
+        /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
+        /// Each duplicate appears two or more times within the returned value.
+        /// </para></remarks>
+        /// <param name="comparer">The comparer to assess distinctiveness.</param>
+        /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> Duplicates(
+            IEqualityComparer<T>? comparer = null
+        ) =>
+            source.GroupDuplicates(comparer).SelectMany(x => x);
 
-    /// <summary>Negated <see cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input sequence starting at
-    /// the first element in the linear series that does pass the test specified by the predicate.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.SkipWhile(x => !predicate(x));
+        /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+        /// <remarks><para>Filters out unique elements within an <see cref="IEnumerable{T}"/>.</para></remarks>
+        /// <param name="comparer">The comparer to assess distinctiveness.</param>
+        /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<IGrouping<T, T>> GroupDuplicates(
+            IEqualityComparer<T>? comparer = null
+        ) =>
+            source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
+
+        /// <summary>Negated <see cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}" /> that contains the elements from the input sequence starting at
+        /// the first element in the linear series that does pass the test specified by the predicate.
+        /// </returns>
+        /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> SkipUntil(Func<T, bool> predicate) =>
+            source.SkipWhile(x => !predicate(x));
+    }
 
     /// <summary>
     /// Negated
@@ -88,51 +84,52 @@ static partial class NegatedEnumerable
             yield return e.SplitEvery(count);
     }
 
-    /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input
-    /// sequence that occur before the element at which the test no longer fails.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.TakeWhile(x => !predicate(x));
+    extension<T>([NoEnumeration] IEnumerable<T> source)
+    {
+        /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}" /> that contains the elements from the input
+        /// sequence that occur before the element at which the test no longer fails.
+        /// </returns>
+        /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> TakeUntil(Func<T, bool> predicate) =>
+            source.TakeWhile(x => !predicate(x));
 
-    /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains elements from
-    /// the input sequence that do not satisfy the condition.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> TakeUntil<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        Func<T, int, bool> predicate
-    ) =>
-        source.TakeWhile((x, y) => !predicate(x, y));
+        /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}" /> that contains elements from
+        /// the input sequence that do not satisfy the condition.
+        /// </returns>
+        /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> TakeUntil(
+            Func<T, int, bool> predicate
+        ) =>
+            source.TakeWhile((x, y) => !predicate(x, y));
 
-    /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains elements from
-    /// the input sequence that do not satisfy the condition.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.Where(x => !predicate(x));
+        /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>.</summary>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}" /> that contains elements from
+        /// the input sequence that do not satisfy the condition.
+        /// </returns>
+        /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> Omit(Func<T, bool> predicate) =>
+            source.Where(x => !predicate(x));
 
-    /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains elements from
-    /// the input sequence that do not satisfy the condition.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Omit<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        Func<T, int, bool> predicate
-    ) =>
-        source.Where((x, y) => !predicate(x, y));
+        /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}" /> that contains elements from
+        /// the input sequence that do not satisfy the condition.
+        /// </returns>
+        /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> Omit(
+            Func<T, int, bool> predicate
+        ) =>
+            source.Where((x, y) => !predicate(x, y));
+    }
 
     static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
     {

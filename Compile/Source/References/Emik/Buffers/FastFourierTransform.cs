@@ -5,19 +5,18 @@ namespace Emik.Morsels;
 /// <summary>Computes the Fast Fourier Transform.</summary>
 static partial class FastFourierTransform
 {
-    /// <summary>Computes the Fast Fourier Transform in place.</summary>
-    /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="bluestein">The bluestein transform.</param>
-    /// <param name="real">The real part.</param>
-    /// <param name="imaginary">The imaginary part.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
-    public static void FFT<T>(
-        this (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) bluestein,
-        scoped Span<T> real,
-        scoped Span<T> imaginary
-    )
-        where T : IRootFunctions<T>, ITrigonometricFunctions<T> =>
-        FFT(bluestein.Real.AsSpan(), bluestein.Imaginary.AsSpan(), real, imaginary);
+    /// <typeparam name="T">The type of the samples.</typeparam>
+    extension<T>((ImmutableArray<T> Real, ImmutableArray<T> Imaginary) bluestein)
+        where T : IRootFunctions<T>, ITrigonometricFunctions<T>
+    {
+        /// <summary>Computes the Fast Fourier Transform in place.</summary>
+        /// <param name="real">The real part.</param>
+        /// <param name="imaginary">The imaginary part.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
+        public void FFT(scoped Span<T> real, scoped Span<T> imaginary) =>
+            FFT(bluestein.Real.AsSpan(), bluestein.Imaginary.AsSpan(), real, imaginary);
+    }
 
     /// <summary>Computes the Fast Fourier Transform in place.</summary>
     /// <typeparam name="T">The type of the samples.</typeparam>
@@ -149,8 +148,8 @@ static partial class FastFourierTransform
             while (Unsafe.IsAddressLessThan(real, end))
             {
                 max = max.Max(real = real.Hypot(imaginary));
-                real = ref Unsafe.Add(ref real, 1)!;
-                imaginary = ref Unsafe.Add(ref imaginary, 1)!;
+                real = ref Unsafe.Add(ref real, 1);
+                imaginary = ref Unsafe.Add(ref imaginary, 1);
             }
 
             return max;
@@ -160,14 +159,14 @@ static partial class FastFourierTransform
         ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
         ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
         StoreUnsafe(ref real, imaginary, ref maxVector);
-        real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
-        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+        real = ref Unsafe.Add(ref real, Vector<T>.Count);
+        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
 
         while (Unsafe.IsAddressLessThan(real, realLast))
         {
             StoreUnsafe(ref real, imaginary, ref maxVector);
-            real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
-            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+            real = ref Unsafe.Add(ref real, Vector<T>.Count);
+            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
         }
 
         StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
@@ -201,8 +200,8 @@ static partial class FastFourierTransform
         static void NextReorder(ref int i, int j, Span<T> re, Span<T> im)
         {
             if (i > j)
-                (re[i], re[j], im[i], im[j]) = (re.UnsafelyIndex(j), re.UnsafelyIndex(i), im.UnsafelyIndex(j),
-                    im.UnsafelyIndex(i));
+                (re[i], re[j], im[i], im[j]) =
+                    (re.UnsafelyIndex(j), re.UnsafelyIndex(i), im.UnsafelyIndex(j), im.UnsafelyIndex(i));
 
             var length = re.Length;
 

@@ -88,40 +88,38 @@ static partial class Collected
         iterable is null ? null : iterable as IList<T> ?? [..iterable];
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
-    /// <summary>Creates a <see cref="HashSet{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
-    /// <param name="comparer">The comparer to use.</param>
-    /// <returns>Itself as <see cref="ISet{T}"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static HashSet<T>? ToSet<T>(
-        [InstantHandle] this IEnumerable<T>? iterable,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        iterable is null ? null : new HashSet<T>(iterable, comparer);
-
-    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
+    extension<T>([InstantHandle] IEnumerable<T>? iterable)
+    {
+        /// <summary>Creates a <see cref="HashSet{T}"/>.</summary>
+        /// <param name="comparer">The comparer to use.</param>
+        /// <returns>Itself as <see cref="ISet{T}"/>.</returns>
+        [Pure]
+        [return: NotNullIfNotNull(nameof(iterable))]
+        public HashSet<T>? ToSet(
+            IEqualityComparer<T>? comparer = null
+        ) =>
+            iterable is null ? null : new HashSet<T>(iterable, comparer);
 
-    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <param name="comparer">The comparer to use if one needs to be generated.</param>
-    /// <returns>Itself as <see cref="ISet{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSetLazily<T>(
-        [InstantHandle] this IEnumerable<T>? iterable,
-        IEqualityComparer<T> comparer
-    ) =>
-        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
+        /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+        /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+        [Pure]
+        [return: NotNullIfNotNull(nameof(iterable))]
+        public ISet<T>? ToSetLazily() =>
+            iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
+
+        /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+        /// <param name="comparer">The comparer to use if one needs to be generated.</param>
+        /// <returns>Itself as <see cref="ISet{T}"/>, or collected.</returns>
+        [Pure]
+        [return: NotNullIfNotNull(nameof(iterable))]
+        public ISet<T>? ToSetLazily(
+            IEqualityComparer<T> comparer
+        ) =>
+            iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
+    }
+
 #endif
     /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
     /// <param name="enumerable">The enumerable to encapsulate.</param>

@@ -175,75 +175,70 @@ static partial class EachLazy
         }
     }
 
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T> action) =>
-        new Enumerable<T, object?>(iterable, null, action);
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    extension<T>([NoEnumeration] IEnumerable<T> iterable)
+    {
+        /// <summary>
+        /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+        /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+        /// </summary>
+        /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+        /// See here for more information.
+        /// </a></para></remarks>
+        /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+        /// <returns>The parameter <paramref name="iterable"/>.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> Lazily(Action<T> action) =>
+            new Enumerable<T, object?>(iterable, null, action);
 
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T, TExternal>(
-        [NoEnumeration] this IEnumerable<T> iterable,
-        TExternal external,
-        Action<T, TExternal> action
-    ) =>
-        new Enumerable<T, TExternal>(iterable, external, action);
+        /// <summary>
+        /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+        /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+        /// </summary>
+        /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+        /// See here for more information.
+        /// </a></para></remarks>
+        /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+        /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+        /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+        /// <returns>The parameter <paramref name="iterable"/>.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> Lazily<TExternal>(
+            TExternal external,
+            Action<T, TExternal> action
+        ) =>
+            new Enumerable<T, TExternal>(iterable, external, action);
 
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T, int> action) =>
-        new Enumerable<T, object?>(iterable, null, action);
+        /// <summary>
+        /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+        /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+        /// </summary>
+        /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+        /// See here for more information.
+        /// </a></para></remarks>
+        /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+        /// <returns>The parameter <paramref name="iterable"/>.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> Lazily(Action<T, int> action) =>
+            new Enumerable<T, object?>(iterable, null, action);
 
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T, TExternal>(
-        [NoEnumeration] this IEnumerable<T> iterable,
-        TExternal external,
-        Action<T, int, TExternal> action
-    ) =>
-        new Enumerable<T, TExternal>(iterable, external, action);
+        /// <summary>
+        /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+        /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+        /// </summary>
+        /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+        /// See here for more information.
+        /// </a></para></remarks>
+        /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+        /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+        /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+        /// <returns>The parameter <paramref name="iterable"/>.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<T> Lazily<TExternal>(
+            TExternal external,
+            Action<T, int, TExternal> action
+        ) =>
+            new Enumerable<T, TExternal>(iterable, external, action);
+    }
 }

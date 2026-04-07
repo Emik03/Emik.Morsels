@@ -6,35 +6,36 @@ namespace Emik.Morsels;
 /// <summary>Provides methods to create views of <see cref="IEnumerable{T}"/> instances.</summary>
 static partial class WindowIteration
 {
-    /// <summary>
-    /// Transforms the <see cref="IEnumerable{T}"/> into views of the current and next items.
-    /// </summary>
-    /// <typeparam name="T">The type of items in the collection.</typeparam>
     /// <param name="source">The collection to iterate over.</param>
-    /// <returns>The <see cref="IEnumerable{T}"/> containing the current and next items.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<(T Left, T Right)> Pairs<T>(this IEnumerable<T> source) =>
-        source.TryCount() is { } x ? Iterator(source).WithCount(x - 1) : Iterator(source);
+    /// <typeparam name="T">The type of items in the collection.</typeparam>
+    extension<T>(IEnumerable<T> source)
+    {
+        /// <summary>
+        /// Transforms the <see cref="IEnumerable{T}"/> into views of the current and next items.
+        /// </summary>
+        /// <returns>The <see cref="IEnumerable{T}"/> containing the current and next items.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<(T Left, T Right)> Pairs() =>
+            source.TryCount() is { } x ? Iterator(source).WithCount(x - 1) : Iterator(source);
 
-    /// <summary>
-    /// Transforms the <see cref="IEnumerable{T}"/> into views of the specified length.
-    /// </summary>
-    /// <typeparam name="T">The type of items in the collection.</typeparam>
-    /// <param name="source">The collection to iterate over.</param>
-    /// <param name="size">The size of the window.</param>
-    /// <returns>An <see cref="IEnumerable{T}"/> of windows.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T[]> Window<T>(this IEnumerable<T> source, int size) =>
-        size <= 0
-            ? []
-            : source.TryCount() switch
-            {
-                0 => [],
-                { } x when x < size => [],
-                1 => source.Select(x => new[] { x }),
-                { } x => Iterator(source, size).WithCount(x - size + 1),
-                null => Iterator(source, size),
-            };
+        /// <summary>
+        /// Transforms the <see cref="IEnumerable{T}"/> into views of the specified length.
+        /// </summary>
+        /// <param name="size">The size of the window.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of windows.</returns>
+        [LinqTunnel, Pure]
+        public IEnumerable<T[]> Window(int size) =>
+            size <= 0
+                ? []
+                : source.TryCount() switch
+                {
+                    0 => [],
+                    { } x when x < size => [],
+                    1 => source.Select(x => new[] { x }),
+                    { } x => Iterator(source, size).WithCount(x - size + 1),
+                    null => Iterator(source, size),
+                };
+    }
 
     [Pure]
     static IEnumerable<(T Left, T Right)> Iterator<T>(IEnumerable<T> source)

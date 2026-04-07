@@ -7,20 +7,6 @@ namespace Emik.Morsels;
 [UsedImplicitly]
 static partial class EnumMath
 {
-    /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="left"/> has the values
-    /// of the parameter <paramref name="right"/>; otherwise, <see langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool Has<T>(this T left, T right)
-        where T : struct, Enum =>
-        (left.AsInt() & right.AsInt()) == right.AsInt();
-
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -73,90 +59,83 @@ static partial class EnumMath
 #else
         MathCaching<T>.To(value);
 #endif
-    /// <summary>Performs a negation operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
     /// <param name="value">The value.</param>
-    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Negate<T>(this T value)
-        where T : struct, Enum =>
-        (-value.AsInt()).As<T>();
-
-    /// <summary>Performs an decrement operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately before it.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Predecessor<T>(this T value)
-        where T : struct, Enum =>
-        (value.AsInt() - 1).As<T>();
+    extension<T>(T value)
+        where T : struct, Enum
+    {
+        /// <summary>Performs a negation operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Negate() =>
+            (-value.AsInt()).As<T>();
 
-    /// <summary>Performs a increment operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately after it.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Successor<T>(this T value)
-        where T : struct, Enum =>
-        (value.AsInt() + 1).As<T>();
+        /// <summary>Performs an decrement operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately before it.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Predecessor() =>
+            (value.AsInt() - 1).As<T>();
 
-    /// <summary>Performs an addition operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The sum of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Add<T>(this T left, T right)
-        where T : struct, Enum =>
-        (left.AsInt() + right.AsInt()).As<T>();
+        /// <summary>Performs a increment operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately after it.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Successor() =>
+            (value.AsInt() + 1).As<T>();
 
-    /// <summary>Performs a subtraction operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The difference of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Subtract<T>(this T left, T right)
-        where T : struct, Enum =>
-        (left.AsInt() - right.AsInt()).As<T>();
+        /// <summary>Performs an addition operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>The sum of the parameters <paramref name="value"/> and <paramref name="right"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Add(T right) =>
+            (value.AsInt() + right.AsInt()).As<T>();
 
-    /// <summary>Performs a multiplication operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The product of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Multiply<T>(this T left, T right)
-        where T : struct, Enum =>
-        (left.AsInt() * right.AsInt()).As<T>();
+        /// <summary>Performs a subtraction operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>The difference of the parameters <paramref name="value"/> and <paramref name="right"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Subtract(T right) =>
+            (value.AsInt() - right.AsInt()).As<T>();
 
-    /// <summary>Performs a division operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The quotient of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Divide<T>(this T left, T right)
-        where T : struct, Enum =>
-        (left.AsInt() / right.AsInt()).As<T>();
+        /// <summary>Performs a multiplication operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>The product of the parameters <paramref name="value"/> and <paramref name="right"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Multiply(T right) =>
+            (value.AsInt() * right.AsInt()).As<T>();
 
-    /// <summary>Performs a modulo operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The remainder of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Modulo<T>(this T left, T right)
-        where T : struct, Enum =>
-        (left.AsInt() % right.AsInt()).As<T>();
+        /// <summary>Performs a division operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>The quotient of the parameters <paramref name="value"/> and <paramref name="right"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Divide(T right) =>
+            (value.AsInt() / right.AsInt()).As<T>();
+
+        /// <summary>Performs a modulo operation.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>The remainder of the parameters <paramref name="value"/> and <paramref name="right"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public T Modulo(T right) =>
+            (value.AsInt() % right.AsInt()).As<T>();
+
+        /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
+        /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+        /// <param name="right">The right-hand side.</param>
+        /// <returns>
+        /// The value <see langword="true"/> if the parameter <paramref name="value"/> has the values
+        /// of the parameter <paramref name="right"/>; otherwise, <see langword="false"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public bool Has(T right) =>
+            (value.AsInt() & right.AsInt()) == right.AsInt();
+    }
 
     /// <summary>Computes the product of a sequence of <typeparamref name="T"/> values.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>

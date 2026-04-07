@@ -26,38 +26,43 @@ static partial class Unfolding
         }
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T _, Converter<T, T> converter)
-        where T : struct =>
-        throw Unreachable;
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
+    extension<T>(T _)
         where T : struct
     {
-        T? maybe = value;
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+        public IEnumerable<T> FindPathToEmptyNullable(Converter<T, T> converter) =>
+            throw Unreachable;
 
-        while (maybe is { } yes)
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [Pure]
+        public IEnumerable<T> FindPathToEmptyNullable(Converter<T, T?> converter)
         {
-            yield return yes;
+            T? maybe = _;
 
-            maybe = converter(yes);
+            while (maybe is { } yes)
+            {
+                yield return yes;
+
+                maybe = converter(yes);
+            }
         }
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? _, Converter<T, T> converter)
-        where T : struct =>
-        throw Unreachable;
+    extension<T>(T? _)
+        where T : struct
+    {
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+        public IEnumerable<T> FindPathToEmptyNullable(Converter<T, T> converter) =>
+            throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
-        where T : struct =>
-        value is { } t ? FindPathToEmptyNullable(t, converter) : [];
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [Pure]
+        public IEnumerable<T> FindPathToEmptyNullable(Converter<T, T?> converter) =>
+            _ is { } t ? FindPathToEmptyNullable(t, converter) : [];
+    }
+
 #if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
@@ -75,39 +80,44 @@ static partial class Unfolding
         return output;
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T _, Converter<T, T> converter)
-        where T : struct =>
-        throw Unreachable;
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
+    extension<T>(T _)
         where T : struct
     {
-        SmallList<T> output = [];
-        T? maybe = value;
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+        public SmallList<T> FindSmallPathToEmptyNullable(Converter<T, T> converter) =>
+            throw Unreachable;
 
-        while (maybe is { } yes)
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [Pure]
+        public SmallList<T> FindSmallPathToEmptyNullable(Converter<T, T?> converter)
         {
-            output.Add(yes);
-            maybe = converter(yes);
-        }
+            SmallList<T> output = [];
+            T? maybe = _;
 
-        return output;
+            while (maybe is { } yes)
+            {
+                output.Add(yes);
+                maybe = converter(yes);
+            }
+
+            return output;
+        }
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? _, Converter<T, T> converter)
-        where T : struct =>
-        throw Unreachable;
+    extension<T>(T? _)
+        where T : struct
+    {
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+        public SmallList<T> FindSmallPathToEmptyNullable(Converter<T, T> converter) =>
+            throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
-        where T : struct =>
-        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : [];
+        /// <inheritdoc cref="FindPathToNull{T}"/>
+        [Pure]
+        public SmallList<T> FindSmallPathToEmptyNullable(Converter<T, T?> converter) =>
+            _ is { } t ? FindSmallPathToEmptyNullable(t, converter) : [];
+    }
+
 #endif
 }

@@ -15,20 +15,20 @@ namespace System
     /// <summary>Allows a <see cref="KeyValuePair{TKey, TValue}"/> to be deconstructed, much like a tuple.</summary>
     static partial class KeyValuePairDeconstructors
     {
-        /// <summary>Deconstructs a <see cref="KeyValuePair{TKey, TValue}"/> into its components.</summary>
+        /// <summary>Extensions.</summary>
+        /// <param name="kvp">The key value pair to deconstruct.</param>
         /// <typeparam name="TKey">The key generic in the <see cref="KeyValuePair{TKey, TValue}"/>.</typeparam>
         /// <typeparam name="TValue">The value generic in the <see cref="KeyValuePair{TKey, TValue}"/>.</typeparam>
-        /// <param name="kvp">The key value pair to deconstruct.</param>
-        /// <param name="key">The key value to get assigned as the key value pair's key.</param>
-        /// <param name="value">The key value to get assigned as the key value pair's value.</param>
-        public static void Deconstruct<TKey, TValue>(
-            this KeyValuePair<TKey, TValue> kvp,
-            out TKey key,
-            out TValue value
-        )
+        extension<TKey, TValue>(KeyValuePair<TKey, TValue> kvp)
         {
-            key = kvp.Key;
-            value = kvp.Value;
+            /// <summary>Deconstructs a <see cref="KeyValuePair{TKey, TValue}"/> into its components.</summary>
+            /// <param name="key">The key value to get assigned as the key value pair's key.</param>
+            /// <param name="value">The key value to get assigned as the key value pair's value.</param>
+            public void Deconstruct(out TKey key, out TValue value)
+            {
+                key = kvp.Key;
+                value = kvp.Value;
+            }
         }
     }
 #endif
