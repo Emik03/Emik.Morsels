@@ -1,14 +1,8 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NET5_0_OR_GREATER
-#pragma warning disable GlobalUsingsAnalyzer
-using SecurityAction = System.Security.Permissions.SecurityAction;
-
-#pragma warning restore GlobalUsingsAnalyzer
-#endif
-
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#if !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER // ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+using SecurityAction = System.Security.Permissions.SecurityAction;
 using static SecurityAction;
 using static SecurityPermissionFlag;
 #endif
@@ -102,6 +96,6 @@ static partial class Exit
             (exitCode is 0 ? Console.Out : Console.Error).WriteLine(message);
 
         Environment.Exit(exitCode);
-        throw Unreachable;
+        throw new UnreachableException();
     }
 }

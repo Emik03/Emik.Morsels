@@ -11,16 +11,35 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/468a9fc5b3904039877652321136dd84e26400/46/a81d29ba/Span`1.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/468a9fc5b3904039877652321136dd84e26400/b1/ec154437/ReadOnlySpanMarshaller`2.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/468a9fc5b3904039877652321136dd84e26400/df/1e6dc6fb/SpanMarshaller`2.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/c28a86ac98994084a29d1009e48b7ad81afe00/29/664cc673/Object.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/e5bcd7cdebf7415b8946836b5593900923718/f7/efbc500f/SpanHelpers.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock:///home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Collections/Similarity.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Collections/Similarity.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Collections/Similarity.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Collections/Similarity.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Collections/Similarity.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/549d290ec6e547c6b0c060e4fd796958ae4000/_59e6b/IReadOnlySet.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bce199ef01649ab501e8a635d735b71e3ca6364214a411bdd9736c7e873be7/MemoryHandle.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Aliases.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/AssemblyLevelAttributes.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/FastFourierTransform.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/OnceMemoryManager.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/Span.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SpanSimdQueries.AverageSum.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SpanSimdQueries.MinimumMaximum.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SpanSimdQueries.Range.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Collections/Specialized/SmallFactory.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Collections/Specialized/SmallList.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Linq/Each.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/MethodGroupings.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Numerics/OperatorCaching.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Reflection/MemberGrabber.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Text/DeconstructionCollection.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Text/GenericParser.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Text/Kvp.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Text/StringFactory.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/XNA/Letterboxed2DGame.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/Collections/Generics/CollectionExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/RandomGetItems.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/RandomShuffle.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/Range.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/Runtime/CompilerServices/DefaultInterpolatedStringHandler.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/Runtime/RuntimeHelpers.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/TypeGetEnumUnderlyingTypePolyfill.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/ValueTuple.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />

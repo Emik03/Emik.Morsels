@@ -256,7 +256,7 @@ static class Kvp
             {
                 FieldInfo f => f.FieldType,
                 PropertyInfo p => p.PropertyType,
-                _ => throw Unreachable,
+                _ => throw new UnreachableException(),
             };
     }
 
@@ -279,7 +279,7 @@ static class Kvp
     /// <param name="span">The string to deserialize.</param>
     /// <returns>The deserialized object.</returns>
     [Pure]
-    public static T Deserialize<T>(scoped ReadOnlySpan<char> span)
+    public static T Deserialize<T>(params ReadOnlySpan<char> span)
         where T : new()
 #if NET9_0_OR_GREATER
       , allows ref struct

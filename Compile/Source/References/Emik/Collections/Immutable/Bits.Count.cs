@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-#pragma warning disable CS8500, IDE0004
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
+// ReSharper disable CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 // ReSharper disable once RedundantNameQualifier
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
-/// <inheritdoc cref="Bits{T}"/>
 partial struct Bits<T>
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>

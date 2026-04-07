@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable IDE0180 // ReSharper disable SwapViaDeconstruction
+
 /// <summary>Extension methods for randomized getters.</summary>
 static partial class RandomizedGetters
 {
+    // ReSharper disable once RedundantNameQualifier
     static readonly Func<int, int, int> s_rng =
 #if NET6_0_OR_GREATER
         System.Random.Shared.Next;
 #else
-        new Random().Next;
+        new System.Random().Next;
 #endif
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -18,7 +18,7 @@ static partial class RandomizedGetters
     /// <param name="selector">The indices to swap with.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
     public static IList<T> Shuffle<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
+        this IEnumerable<T> iterable,
         [InstantHandle] Func<int, int, int>? selector = null
     )
     {
@@ -33,6 +33,7 @@ static partial class RandomizedGetters
                 continue;
 
             // Tuples might not necessarily be imported.
+            // ReSharper disable SwapViaDeconstruction
             var t = list[item];
             list[item] = list[j - 1];
             list[j - 1] = t;
@@ -92,14 +93,17 @@ static partial class RandomizedGetters
 #if !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]
-    public static T PickRandom<T>([InstantHandle] this scoped Span<T> iterable, Func<int, int, int>? selector = null) =>
+    public static T PickRandom<T>(
+        [InstantHandle] this scoped Span<T> iterable,
+        [InstantHandle] Func<int, int, int>? selector = null
+    ) =>
         iterable.ReadOnly().PickRandom(selector);
 
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]
     public static T PickRandom<T>(
         [InstantHandle] this scoped ReadOnlySpan<T> iterable,
-        Func<int, int, int>? selector = null
+        [InstantHandle] Func<int, int, int>? selector = null
     ) =>
         iterable[(selector ?? s_rng)(0, iterable.Length)];
 #endif

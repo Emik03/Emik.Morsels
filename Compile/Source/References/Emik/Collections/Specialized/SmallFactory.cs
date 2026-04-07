@@ -1,9 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable RedundantUnsafeContext
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 static partial class SmallFactory
 {

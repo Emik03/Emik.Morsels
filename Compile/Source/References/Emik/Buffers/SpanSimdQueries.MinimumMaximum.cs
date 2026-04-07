@@ -5,7 +5,6 @@ namespace Emik.Morsels;
 using static Span; // ReSharper disable RedundantNameQualifier UseSymbolAlias
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
-/// <inheritdoc cref="SpanSimdQueries"/>
 static partial class SpanSimdQueries
 {
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
@@ -276,7 +275,7 @@ static partial class SpanSimdQueries
             _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(ushort) => (ushort)(object)l! < (ushort)(object)r!,
             _ when typeof(TS) == typeof(SMax) => Comparer<T>.Default.Compare(l, r) > 0,
             _ when typeof(TS) == typeof(SMin) => Comparer<T>.Default.Compare(l, r) < 0,
-            _ => throw Unreachable,
+            _ => throw new UnreachableException(),
         };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -329,14 +328,14 @@ static partial class SpanSimdQueries
             {
                 _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(current)),
                 _ when typeof(TS) == typeof(SMin) => System.Numerics.Vector.Min(best, LoadUnsafe(current)),
-                _ => throw Unreachable,
+                _ => throw new UnreachableException(),
             };
 
         best = 0 switch
         {
             _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(lastVectorStart)),
             _ when typeof(TS) == typeof(SMin) => System.Numerics.Vector.Min(best, LoadUnsafe(lastVectorStart)),
-            _ => throw Unreachable,
+            _ => throw new UnreachableException(),
         };
 
         value = best[0];
@@ -346,7 +345,7 @@ static partial class SpanSimdQueries
             {
                 _ when typeof(TS) == typeof(SMax) => Compare<T, TS>(best[i], value),
                 _ when typeof(TS) == typeof(SMin) => Compare<T, TS>(best[i], value),
-                _ => throw Unreachable,
+                _ => throw new UnreachableException(),
             })
                 value = best[i];
 
@@ -373,7 +372,7 @@ static partial class SpanSimdQueries
                 {
                     _ when typeof(TS) == typeof(SMax) => Compare<TResult, TS>(next, bestKey),
                     _ when typeof(TS) == typeof(SMin) => Compare<TResult, TS>(next, bestKey),
-                    _ => throw Unreachable,
+                    _ => throw new UnreachableException(),
                 })
             {
                 bestKey = next;

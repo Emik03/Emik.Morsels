@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier StructCanBeMadeReadOnly
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
+#if !NO_SYSTEM_MEMORY
 #pragma warning disable CS8500
 using static Span;
 
@@ -882,7 +882,6 @@ static partial class Similarity
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get
             {
-                // ReSharper disable once RedundantNameQualifier UseSymbolAlias
                 System.Diagnostics.Debug.Assert((uint)i < (uint)length, "Index must be within bounds.");
                 return ((T*)pointer)[i];
             }

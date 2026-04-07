@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantNameQualifier RedundantReadonlyModifier
-#pragma warning disable CS8500, IDE0251, MA0102
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 using static JetBrains.Annotations.CollectionAccessType;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
@@ -129,7 +127,7 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
 
     /// <summary>Gets the item to use.</summary>
     [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
-    public readonly T Current
+    public T Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => bits;
     }
@@ -225,7 +223,7 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void CopyTo(T[] array, int arrayIndex)
+    public void CopyTo(T[] array, int arrayIndex)
     {
         foreach (var next in this)
             array[arrayIndex++] = next;
@@ -233,66 +231,66 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ICollection<T>.Add(T item) { }
+    void ICollection<T>.Add(T item) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void ICollection<T>.Clear() { }
+    void ICollection<T>.Clear() { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void IList<T>.Insert(int index, T item) { }
+    void IList<T>.Insert(int index, T item) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void IList<T>.RemoveAt(int index) { }
+    void IList<T>.RemoveAt(int index) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void System.Collections.Generic.ISet<T>.ExceptWith(IEnumerable<T>? other) { }
+    void System.Collections.Generic.ISet<T>.ExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void System.Collections.Generic.ISet<T>.IntersectWith(IEnumerable<T>? other) { }
+    void System.Collections.Generic.ISet<T>.IntersectWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void System.Collections.Generic.ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
+    void System.Collections.Generic.ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly void System.Collections.Generic.ISet<T>.UnionWith(IEnumerable<T>? other) { }
+    void System.Collections.Generic.ISet<T>.UnionWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly bool ICollection<T>.Remove(T item) => false;
+    bool ICollection<T>.Remove(T item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly bool System.Collections.Generic.ISet<T>.Add(T item) => false;
+    bool System.Collections.Generic.ISet<T>.Add(T item) => false;
 
     /// <summary>Determines whether the reference of <typeparamref name="T"/> contains all zeros.</summary>
     /// <returns>
     /// The value <see langword="true"/> if this instance is all zeros; otherwise, <see langword="false"/>.
     /// </returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool Eq0() => Eq0(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)));
+    public bool Eq0() => Eq0(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)));
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override bool Equals(object? other) => other is Bits<T> bit && this == bit;
+    public override bool Equals(object? other) => other is Bits<T> bit && this == bit;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool Equals(Bits<T> other) => this == other;
+    public bool Equals(Bits<T> other) => this == other;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override int GetHashCode() => Coerce<int>();
+    public override int GetHashCode() => Coerce<int>();
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly int IndexOf(T item)
+    public int IndexOf(T item)
     {
         if ((Enumerator)item is var e && !e.MoveNext() ||
             e.Mask is var mask && e.Index is var index && e.MoveNext())
@@ -311,13 +309,13 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
+    public override string ToString() => ((Enumerator)this).ToRemainingString();
 
     /// <summary>Computes the Bitwise-AND-NOT computation.</summary>
     /// <param name="other">The other set of bits.</param>
     /// <returns>The result of the computation.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly Bits<T> AndNot(Bits<T> other)
+    public Bits<T> AndNot(Bits<T> other)
     {
         AndNot(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)), ref Unsafe.As<Bits<T>, T>(ref other));
         return other;
@@ -329,7 +327,7 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// <paramref name="other"/>; otherwise, <paramref name="other"/>.
     /// </returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly Bits<T> Max(Bits<T> other) =>
+    public Bits<T> Max(Bits<T> other) =>
         Max(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)), Unsafe.As<Bits<T>, T>(ref other));
 
     /// <summary>Returns the lesser bits.</summary>
@@ -338,7 +336,7 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// <paramref name="other"/>; otherwise, <paramref name="other"/>.
     /// </returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly Bits<T> Min(Bits<T> other) =>
+    public Bits<T> Min(Bits<T> other) =>
         Min(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)), Unsafe.As<Bits<T>, T>(ref other));
 
     /// <summary>
@@ -346,15 +344,15 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    public readonly Enumerator GetEnumerator() => bits;
+    public Enumerator GetEnumerator() => bits;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 #pragma warning disable DOC100
     /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
@@ -372,7 +370,7 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TResult Coerce<TResult>()
+    public TResult Coerce<TResult>()
         where TResult : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -406,7 +404,7 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TResult CoerceLeft<TResult>()
+    public TResult CoerceLeft<TResult>()
         where TResult : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -427,7 +425,7 @@ readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <returns>The hex <see cref="string"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly string ToHexString()
+    public string ToHexString()
     {
         Span<char> span = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
         ref var first = ref MemoryMarshal.GetReference(span);

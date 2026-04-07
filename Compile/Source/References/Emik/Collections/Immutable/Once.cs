@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
@@ -46,7 +46,7 @@ static partial class OnceFactory
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="value">The item to use.</param>
 [StructLayout(LayoutKind.Auto)]
-partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
+readonly partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
     IEquatable<Once<T>>,
     IList<T>,
     IOrderedEnumerable<T>,
@@ -266,11 +266,8 @@ partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
 
     /// <inheritdoc />
     [CollectionAccess(None), MustDisposeResource(false), Pure]
-    IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
-        Func<T, TKey> keySelector,
-        IComparer<TKey>? comparer,
-        bool descending
-    ) =>
+    IOrderedEnumerable<T> IOrderedEnumerable<T>
+        .CreateOrderedEnumerable<TKey>(Func<T, TKey> keySelector, IComparer<TKey>? comparer, bool descending) =>
         this;
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>

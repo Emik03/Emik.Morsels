@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -91,6 +90,7 @@ static partial class SplitFactory
 /// <typeparam name="T">The type of item in the collection.</typeparam>
 /// <param name="truthy">The value representing a <see langword="true"/> value.</param>
 /// <param name="falsy">The value representing a <see langword="false"/> value.</param>
+// ReSharper disable ReturnTypeCanBeEnumerable.Global
 sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IDictionary<bool, T>,
     IReadOnlyCollection<T>,
@@ -102,7 +102,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         : this(value, value) { }
 
     /// <summary>Gets <see cref="Truthy"/> and <see cref="Falsy"/> within an array, in that order.</summary>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public T[] Array => [truthy, falsy];
 
     /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
@@ -146,7 +146,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
     /// <inheritdoc cref="Array"/>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public KeyValuePair<bool, T>[] ArrayPair => [new(true, truthy), new(false, falsy)];
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
@@ -219,7 +219,6 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
 
     /// <inheritdoc />
-    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
     public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
 
     /// <inheritdoc />

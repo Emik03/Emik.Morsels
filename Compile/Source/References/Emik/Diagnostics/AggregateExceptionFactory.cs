@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK || NET40_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NETFRAMEWORK || NET40_OR_GREATER
 /// <summary>Provides methods to create and operate on <see cref="AggregateException"/> instances.</summary>
 static partial class AggregateExceptionFactory
 {

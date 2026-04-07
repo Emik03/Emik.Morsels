@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable UnusedMember.Local
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable CS8619
+
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
 static partial class NullableItems
 {
@@ -45,5 +43,7 @@ static partial class NullableItems
     /// <returns>The parameter <paramref name="set"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     [return: NotNullIfNotNull(nameof(set))]
+#pragma warning disable CS8619
     public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
+#pragma warning restore CS8619
 }

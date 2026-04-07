@@ -21,7 +21,7 @@ static partial class RandomGetItems
     public static void GetItems<T>(this Random that, ReadOnlySpan<T> choices, Span<T> destination)
     {
         if (choices.IsEmpty)
-            throw CannotBeEmpty;
+            throw new InvalidOperationException("Cannot be empty");
 
         for (var i = 0; i < destination.Length; i++)
             destination[i] = choices[that.Next(choices.Length)];

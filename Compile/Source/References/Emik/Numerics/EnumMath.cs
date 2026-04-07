@@ -42,7 +42,7 @@ static partial class EnumMath
             _ when typeof(T).GetEnumUnderlyingType() == typeof(ulong) => (int)(ulong)(object)value,
             _ when typeof(T).GetEnumUnderlyingType() == typeof(nint) => (int)(nint)(object)value,
             _ when typeof(T).GetEnumUnderlyingType() == typeof(nuint) => (int)(nuint)(object)value,
-            _ => throw Unreachable,
+            _ => throw new UnreachableException(),
         };
 #else
         MathCaching<T>.From(value);
@@ -68,7 +68,7 @@ static partial class EnumMath
             _ when typeof(T).GetEnumUnderlyingType() == typeof(ulong) => (T)(object)(ulong)value,
             _ when typeof(T).GetEnumUnderlyingType() == typeof(nint) => (T)(object)(nint)value,
             _ when typeof(T).GetEnumUnderlyingType() == typeof(nuint) => (T)(object)(nuint)value,
-            _ => throw Unreachable,
+            _ => throw new UnreachableException(),
         };
 #else
         MathCaching<T>.To(value);

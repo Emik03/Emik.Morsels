@@ -137,32 +137,32 @@ static partial class Span
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this string left, scoped ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this string left, params ReadOnlySpan<char> right) =>
         left.AsSpan().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this IMemoryOwner<char> left, scoped ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this IMemoryOwner<char> left, params ReadOnlySpan<char> right) =>
         left.Memory.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this Memory<char> left, scoped ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this Memory<char> left, params ReadOnlySpan<char> right) =>
         left.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this scoped Span<char> left, scoped ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this scoped Span<char> left, params ReadOnlySpan<char> right) =>
         left.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this ReadOnlyMemory<char> left, scoped ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this ReadOnlyMemory<char> left, params ReadOnlySpan<char> right) =>
         left.Span.Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this scoped ReadOnlySpan<char> left, scoped ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this scoped ReadOnlySpan<char> left, params ReadOnlySpan<char> right) =>
         left.Equals(right, StringComparison.OrdinalIgnoreCase);
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
@@ -372,7 +372,7 @@ static partial class Span
     /// <param name="span">The reference to the target item to get the index for.</param>
     /// <returns>The index of <paramref name="memory"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
+    public static int IndexOf<T>(ReadOnlyMemory<T> memory, params ReadOnlySpan<T> span) =>
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
 
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>

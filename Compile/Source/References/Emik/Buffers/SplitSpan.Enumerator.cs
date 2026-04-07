@@ -6,7 +6,6 @@ using static Span;
 using static SplitSpanFactory;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
-/// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>

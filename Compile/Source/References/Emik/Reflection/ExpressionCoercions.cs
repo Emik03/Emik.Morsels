@@ -27,6 +27,6 @@ static partial class ExpressionCoercions
         {
             PropertyInfo p => System.Linq.Expressions.Expression.Property(expression, p),
             FieldInfo f => System.Linq.Expressions.Expression.Field(expression, f),
-            _ => throw Unreachable,
+            _ => throw new UnreachableException(),
         };
 }

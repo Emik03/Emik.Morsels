@@ -50,7 +50,7 @@ static partial class StringFactory
         return expression?.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries).Conjoin("");
 #else
         // ReSharper disable once RedundantUnsafeContext
-        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, params ReadOnlySpan<char> next)
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
             =>
                 accumulator.Append(next.Trim());
@@ -158,7 +158,7 @@ static partial class StringFactory
         for (var i = 0; i < s.Length; i++)
             (seen, nest, sb) = s[i] switch
             {
-                not ' ' when seen && Indent(sb, indent, nest) is var _ && (seen = false) => throw Unreachable,
+                not ' ' when seen && Indent(sb, indent, nest) is var _ && (seen = false) => throw new UnreachableException(),
                 _ when start.Contains(s[i]) && (s.Nth(i + 1) is not { } next || !end.Contains(next)) =>
                     (seen, ++nest, Indent(sb.Append(s[i]), indent, nest)),
                 _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>

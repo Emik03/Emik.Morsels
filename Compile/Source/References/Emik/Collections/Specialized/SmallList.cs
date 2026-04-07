@@ -1,10 +1,9 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 using static CollectionAccessType;
-using static Span;
+using static Span; // ReSharper disable RedundantNameQualifier
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>

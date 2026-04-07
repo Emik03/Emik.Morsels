@@ -5,7 +5,6 @@ namespace Emik.Morsels;
 using static Span;
 using static SplitSpanFactory;
 
-/// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>

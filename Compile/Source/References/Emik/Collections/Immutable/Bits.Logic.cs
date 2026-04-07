@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-#pragma warning disable CS8500, IDE0004, MA0051
-// ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity RedundantCast StructCanBeMadeReadOnly
+// ReSharper disable CheckNamespace RedundantCast
 namespace Emik.Morsels;
-
-// ReSharper disable once RedundantNameQualifier
+#if !NO_SYSTEM_MEMORY // ReSharper disable once RedundantNameQualifier
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
-/// <inheritdoc cref="Bits{T}"/>
 partial struct Bits<T>
 {
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>

@@ -6,7 +6,6 @@ using static OperatorCaching;
 using static Span; // ReSharper disable RedundantNameQualifier UseSymbolAlias
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
-/// <inheritdoc cref="SpanSimdQueries"/>
 static partial class SpanSimdQueries
 {
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
@@ -365,7 +364,7 @@ static partial class SpanSimdQueries
             var x when x == typeof(ulong) => (T)(object)To<ulong>.From(span).Sum(),
             var x when x == typeof(nint) => (T)(object)To<nint>.From(span).Sum(),
             var x when x == typeof(nuint) => (T)(object)To<nuint>.From(span).Sum(),
-            _ => throw Unreachable,
+            _ => throw new UnreachableException(),
         };
 }
 #endif

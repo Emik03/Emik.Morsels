@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-#pragma warning disable CS8500
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
-/// <inheritdoc cref="Bits{T}"/>
+#if !NO_SYSTEM_MEMORY
 partial struct Bits<T>
 {
     /// <summary>Determines whether the item has only a single bit.</summary>

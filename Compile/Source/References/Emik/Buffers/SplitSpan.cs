@@ -788,7 +788,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
-    static unsafe StringBuilder StringBuilderAccumulator(StringBuilder builder, scoped ReadOnlySpan<TBody> span)
+    static unsafe StringBuilder StringBuilderAccumulator(StringBuilder builder, params ReadOnlySpan<TBody> span)
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         =>
             builder.Append(To<char>.From(span));

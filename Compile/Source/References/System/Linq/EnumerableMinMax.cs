@@ -56,7 +56,7 @@ static partial class EnumerableMinMax
         using var e = source.GetEnumerator();
 
         if (!e.MoveNext())
-            return default(TSource) is null ? default : throw CannotBeEmpty;
+            return default(TSource) is null ? default : throw new InvalidOperationException("Cannot be empty");
 
         var value = e.Current;
         var key = keySelector(value);
@@ -168,7 +168,7 @@ static partial class EnumerableMinMax
         using var e = source.GetEnumerator();
 
         if (!e.MoveNext())
-            return default(TSource) is null ? default : throw CannotBeEmpty;
+            return default(TSource) is null ? default : throw new InvalidOperationException("Cannot be empty");
 
         var value = e.Current;
         var key = keySelector(value);

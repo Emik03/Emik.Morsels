@@ -30,7 +30,7 @@ static partial class Unfolding
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T _, Converter<T, T> converter)
         where T : struct =>
-        throw Unreachable;
+        throw new UnreachableException();
 
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
@@ -51,7 +51,7 @@ static partial class Unfolding
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? _, Converter<T, T> converter)
         where T : struct =>
-        throw Unreachable;
+        throw new UnreachableException();
 
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
@@ -79,7 +79,7 @@ static partial class Unfolding
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T _, Converter<T, T> converter)
         where T : struct =>
-        throw Unreachable;
+        throw new UnreachableException();
 
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
@@ -102,7 +102,7 @@ static partial class Unfolding
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? _, Converter<T, T> converter)
         where T : struct =>
-        throw Unreachable;
+        throw new UnreachableException();
 
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]

@@ -1,7 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
-
+// ReSharper disable CheckNamespace
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
