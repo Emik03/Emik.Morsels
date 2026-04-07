@@ -3,7 +3,6 @@
 namespace Emik.Morsels;
 
 /// <summary>The basic wrapper around <see cref="Game"/> that handles letterboxing for a 2D game.</summary>
-// ReSharper disable NullableWarningSuppressionIsUsed
 [CLSCompliant(false)]
 public abstract partial class Letterboxed2DGame : Game
 {

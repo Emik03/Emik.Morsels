@@ -47,7 +47,7 @@ static partial class RuntimeHelpers
             return [];
 
         var dest = default(T) is not null || typeof(T[]) == array.GetType()
-            ? new T[length] // ReSharper disable once NullableWarningSuppressionIsUsed
+            ? new T[length]
             : (T[])Array.CreateInstance(array.GetType().GetElementType()!, length);
 
         Array.Copy(array, offset, dest, 0, length);

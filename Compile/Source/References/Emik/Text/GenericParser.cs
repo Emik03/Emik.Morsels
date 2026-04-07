@@ -288,7 +288,6 @@ static partial class GenericParser
             s_charParseEnum is not null ? CharParseEnumInvoker :
             s_charParse is not null ? CharParseInvoker : CharFailedParseInvoker;
 
-        // ReSharper disable NullableWarningSuppressionIsUsed
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ByteFailedParseInvoker(in ReadOnlySpan<byte> _, out bool b)
         {

@@ -10,8 +10,6 @@ static class CollectionExtensions
     /// <inheritdoc cref="GetValueOrDefault{TKey,TValue}(IReadOnlyDictionary{TKey,TValue}, TKey)"/>
     // ReSharper disable once ReturnTypeCanBeNotNullable
     public static TValue? GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) =>
-
-        // ReSharper disable once NullableWarningSuppressionIsUsed
         dictionary.GetValueOrDefault(key, default!);
 
     /// <inheritdoc cref="GetValueOrDefault{TKey,TValue}(IReadOnlyDictionary{TKey,TValue}, TKey, TValue)"/>
@@ -41,7 +39,7 @@ static class CollectionExtensions
     public static TValue? GetValueOrDefault<TKey, TValue>(
         this IReadOnlyDictionary<TKey, TValue> dictionary,
         TKey key
-    ) => // ReSharper disable once NullableWarningSuppressionIsUsed
+    ) =>
         dictionary.GetValueOrDefault(key, default!);
 
     /// <summary>

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable ArrangeStaticMemberQualifier NullableWarningSuppressionIsUsed
+// ReSharper disable ArrangeStaticMemberQualifier
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -394,7 +394,6 @@ static partial class Each
         var isNegative = upper < default(T);
         var abs = isNegative ? default(T)! - upper : upper;
 
-        // ReSharper disable RedundantSuppressNullableWarningExpression
         for (T? i = default; i < abs; i!++)
             yield return isNegative ? upper - i! : i!;
     }

@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-// ReSharper disable RedundantUsingDirective
-// ReSharper disable CheckNamespace NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP // ReSharper disable CheckNamespace RedundantUsingDirective
 namespace Emik.Morsels;
 
 // ReSharper disable once RedundantNameQualifier
@@ -164,7 +161,6 @@ static partial class OperatorCaching
         } = true;
 
         /// <summary>Gets the minimum value.</summary>
-        // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MaxValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             (typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T)) switch
             {
@@ -185,7 +181,6 @@ static partial class OperatorCaching
             };
 
         /// <summary>Gets the minimum value.</summary>
-        // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             (typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T)) switch
             {

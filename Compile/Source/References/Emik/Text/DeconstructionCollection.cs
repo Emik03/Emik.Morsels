@@ -614,7 +614,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
 
         /// <inheritdoc cref="IDictionary.Add"/>
-        // ReSharper disable once NullableWarningSuppressionIsUsed
         public void Add(object? key, object? value) => _list.Add(new(key!, value));
 
         /// <inheritdoc cref="IDictionary.Clear"/>
@@ -637,7 +636,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var any = false;
 
             if (layer is 0)
-                for (var i = 0; i < Count; i++) // ReSharper disable once NullableWarningSuppressionIsUsed
+                for (var i = 0; i < Count; i++)
                     _list[i] = new(
                         CollectNext(_list[i].Key, str, ref visit, ref any, seen)!,
                         CollectNext(_list[i].Value, str, ref visit, ref any, seen)

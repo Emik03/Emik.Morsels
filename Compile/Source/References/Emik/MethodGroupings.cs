@@ -43,7 +43,6 @@ static partial class MethodGroupings
         /// <summary>Returns the equality function based on the <see cref="IComparer{T}"/>.</summary>
         /// <param name="comparer">The comparer to evaluate equality.</param>
         /// <returns>The equality function that wraps <paramref name="comparer"/>.</returns>
-        // ReSharper disable NullableWarningSuppressionIsUsed
         static Func<T?, T?, bool> FromIComparer(IComparer<T> comparer) => (x, y) => comparer.Compare(x!, y!) is 0;
     }
 
@@ -54,7 +53,6 @@ static partial class MethodGroupings
         public bool Equals(T? x, T? y) => equalityComparer.Equals(converter(x), converter(y));
 
         /// <inheritdoc />
-        // ReSharper disable once NullableWarningSuppressionIsUsed
         public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj)!);
     }
 

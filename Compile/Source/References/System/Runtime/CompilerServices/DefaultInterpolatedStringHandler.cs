@@ -574,8 +574,7 @@ ref struct DefaultInterpolatedStringHandler
             "Expected CultureInfo to not provide a custom formatter"
         );
 
-        return // ReSharper disable once NullableWarningSuppressionIsUsed
-            provider!.GetType() != typeof(CultureInfo) && // optimization to avoid GetFormat in the majority case
+        return provider!.GetType() != typeof(CultureInfo) && // optimization to avoid GetFormat in the majority case
             provider.GetFormat(typeof(ICustomFormatter)) != null;
     }
 
@@ -593,7 +592,6 @@ ref struct DefaultInterpolatedStringHandler
         System.Diagnostics.Debug.Assert(_hasCustomFormatter, "_hasCustomFormatter");
         System.Diagnostics.Debug.Assert(_provider is not null, "_provider is not null");
 
-        // ReSharper disable once NullableWarningSuppressionIsUsed
         var formatter = (ICustomFormatter?)_provider!.GetFormat(typeof(ICustomFormatter));
 
         System.Diagnostics.Debug.Assert(
@@ -601,7 +599,6 @@ ref struct DefaultInterpolatedStringHandler
             "An incorrectly written provider said it implemented ICustomFormatter, and then didn't"
         );
 
-        // ReSharper disable once NullableWarningSuppressionIsUsed
         if (formatter!.Format(format, value, _provider) is { } customFormatted)
             AppendLiteral(customFormatted);
     }

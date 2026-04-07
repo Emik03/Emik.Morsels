@@ -149,7 +149,6 @@ static partial class FastFourierTransform
             while (Unsafe.IsAddressLessThan(real, end))
             {
                 max = max.Max(real = real.Hypot(imaginary));
-                // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
                 real = ref Unsafe.Add(ref real, 1)!;
                 imaginary = ref Unsafe.Add(ref imaginary, 1)!;
             }
@@ -169,7 +168,6 @@ static partial class FastFourierTransform
             StoreUnsafe(ref real, imaginary, ref maxVector);
             real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
             imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
-            // ReSharper restore NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
         }
 
         StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);

@@ -16,7 +16,6 @@ static partial class MemberGrabber
     /// <returns>
     /// The function that get <paramref name="x"/>. The return type is <see cref="Converter{TInput, TOutput}"/>.
     /// </returns>
-    // ReSharper disable NullableWarningSuppressionIsUsed
     public static Delegate Getter(this FieldInfo x)
     {
         DynamicMethod ret = new(x.Name, x.DeclaringType, [x.FieldType]);

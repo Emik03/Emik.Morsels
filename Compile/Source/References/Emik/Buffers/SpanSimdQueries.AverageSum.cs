@@ -8,7 +8,7 @@ using static Span;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
+// ReSharper disable RedundantNameQualifier UseSymbolAlias
 static partial class SpanSimdQueries
 {
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>

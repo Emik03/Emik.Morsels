@@ -89,7 +89,7 @@ static class Kvp
         [MustUseReturnValue]
         static Expression Convert(Type t, Expression exReader, Expression exTemp)
         {
-            // ReSharper disable once NullableWarningSuppressionIsUsed RedundantTypeArgumentsInsideNameof
+            // ReSharper disable once RedundantTypeArgumentsInsideNameof
 #pragma warning disable IDE0340
             var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<char>.ToString), [])!;
 #pragma warning restore IDE0340
@@ -204,7 +204,6 @@ static class Kvp
             var exReader = Expression.Parameter(typeof(T).MakeByRefType());
             var exWriter = Expression.Parameter(typeof(DefaultInterpolatedStringHandler).MakeByRefType());
             Type[] args = [typeof(int), typeof(int), typeof(IFormatProvider)];
-            // ReSharper disable once NullableWarningSuppressionIsUsed
             var constructor = typeof(DefaultInterpolatedStringHandler).GetConstructor(args)!;
             var members = s_members.Where(x => x is FieldInfo or PropertyInfo { CanRead: true }).ToIList();
             var literalLength = members.Sum(ConstantLength) + members.Select(Description).Sum(x => x?.Length);

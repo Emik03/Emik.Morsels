@@ -8,7 +8,6 @@ using static Span;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 /// <summary>Contains extension methods for fast SIMD operations.</summary>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 static partial class SpanSimdQueries
 {
     /// <summary>Determines whether the type is a numeric primitive.</summary>
