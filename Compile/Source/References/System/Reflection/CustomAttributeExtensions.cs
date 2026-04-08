@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable REFL010
-
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Reflection;
 #if NETFRAMEWORK && !NET45_OR_GREATER

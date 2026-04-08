@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NET20 && !NET30
 /// <summary>Provides methods for creating combinations of items.</summary>
 static partial class Permuted
 {

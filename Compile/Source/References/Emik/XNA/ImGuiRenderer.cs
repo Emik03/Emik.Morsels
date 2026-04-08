@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace EmptyNamespace
+namespace Emik.Morsels;
 #if IMGUI && XNA
 // ReSharper disable RedundantNameQualifier
-// ReSharper disable once CheckNamespace
-namespace Emik.Morsels;
 #pragma warning disable CA1707, CA2213
 using Buffer = System.Buffer;
 

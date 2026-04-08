@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 using static Span;
 
 /// <summary>Extension methods to attempt to grab the span from enumerables.</summary>

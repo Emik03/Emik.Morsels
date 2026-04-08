@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA // ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if XNA
 /// <summary>Provides methods to create <see cref="Texture2D"/> at runtime.</summary>
 static partial class Texture2DFactory
 {

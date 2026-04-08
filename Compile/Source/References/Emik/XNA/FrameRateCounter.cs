@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA // ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if XNA
 /// <summary>Provides the component that draws the frame rate.</summary>
 /// <remarks><para>
 /// Adapted from <a href="https://blogs.msdn.microsoft.com/shawnhar/2007/06/08/displaying-the-framerate/">Shawn Hargreaves's implementation</a>.

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable CheckNamespace EmptyNamespace
 namespace System.Collections.Generic;
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP

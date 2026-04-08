@@ -1,5 +1,4 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 #if NETFRAMEWORK && !NET471_OR_GREATER

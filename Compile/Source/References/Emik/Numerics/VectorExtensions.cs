@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NET8_0_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if NET8_0_OR_GREATER
 /// <summary>Extension methods for <see cref="Vector{T}"/>.</summary>
 static partial class NumberInterfaceExtensions
 {

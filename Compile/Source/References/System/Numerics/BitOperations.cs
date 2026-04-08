@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Numerics;
 #if !NETCOREAPP
@@ -14,8 +13,8 @@ static partial class BitOperations
 #if NO_SYSTEM_MEMORY
         byte[] Log2DeBruijn { get; } =
 #else
-        ReadOnlySpan<byte> Log2DeBruijn => // 32
-#endif
+        ReadOnlySpan<byte> Log2DeBruijn =>
+#endif // 32
     [
         00, 09, 01, 10, 13, 21, 02, 29,
         11, 14, 16, 18, 22, 25, 03, 30,

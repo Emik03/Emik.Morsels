@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_SYSTEM_MEMORY
-// ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
-
+#if !NO_SYSTEM_MEMORY
 /// <summary>Provides methods to turn <see cref="Version"/> into a <see cref="string"/>.</summary>
 static partial class VersionConciseStringFactory
 {

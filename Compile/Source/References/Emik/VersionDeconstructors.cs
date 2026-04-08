@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable MissingIndent UsePositionalDeconstructionPattern
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace UsePositionalDeconstructionPattern
 namespace Emik.Morsels;
 
 /// <summary>Methods that deconstructs <see cref="Version"/> instances.</summary>

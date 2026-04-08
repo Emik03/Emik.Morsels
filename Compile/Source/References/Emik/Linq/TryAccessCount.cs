@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace RedundantUsingDirective
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to attempt to grab the length from enumerables.</summary>

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Linq;
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
 #if !NET6_0_OR_GREATER
 /// <summary>The backport of the MinBy and MaxBy methods for <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumerableMinMax
@@ -52,7 +50,6 @@ static partial class EnumerableMinMax
     )
     {
         comparer ??= Comparer<TKey>.Default;
-
         using var e = source.GetEnumerator();
 
         if (!e.MoveNext())
@@ -61,61 +58,27 @@ static partial class EnumerableMinMax
         var value = e.Current;
         var key = keySelector(value);
 
-        if (default(TKey) is null)
+        if (default(TKey) is null && key is null)
         {
-            if (key is null)
+            var firstValue = value;
+
+            do
             {
-                var firstValue = value;
+                if (!e.MoveNext())
+                    return firstValue;
 
-                do
-                {
-                    if (!e.MoveNext()) // All keys are null, surface the first element.
-                        return firstValue;
-
-                    value = e.Current;
-                    key = keySelector(value);
-                } while (key is null);
-            }
-
-            while (e.MoveNext())
-            {
-                var nextValue = e.Current;
-                var nextKey = keySelector(nextValue);
-
-                if (nextKey is null || comparer.Compare(nextKey, key) >= 0)
-                    continue;
-
-                key = nextKey;
-                value = nextValue;
-            }
+                value = e.Current;
+                key = keySelector(value);
+            } while (key is null);
         }
-        else
+
+        while (e.MoveNext())
         {
-            // ReSharper disable once PossibleUnintendedReferenceComparison
-            if (comparer == Comparer<TKey>.Default)
-                while (e.MoveNext())
-                {
-                    var nextValue = e.Current;
-                    var nextKey = keySelector(nextValue);
+            var nextValue = e.Current;
+            var nextKey = keySelector(nextValue);
 
-                    if (Comparer<TKey>.Default.Compare(nextKey, key) >= 0)
-                        continue;
-
-                    key = nextKey;
-                    value = nextValue;
-                }
-            else
-                while (e.MoveNext())
-                {
-                    var nextValue = e.Current;
-                    var nextKey = keySelector(nextValue);
-
-                    if (comparer.Compare(nextKey, key) >= 0)
-                        continue;
-
-                    key = nextKey;
-                    value = nextValue;
-                }
+            if ((default(TKey) is not null || nextKey is not null) && comparer.Compare(nextKey, key) < 0)
+                (key, value) = (nextKey, nextValue);
         }
 
         return value;
@@ -173,61 +136,27 @@ static partial class EnumerableMinMax
         var value = e.Current;
         var key = keySelector(value);
 
-        if (default(TKey) is null)
+        if (default(TKey) is null && key is null)
         {
-            if (key is null)
+            var firstValue = value;
+
+            do
             {
-                var firstValue = value;
+                if (!e.MoveNext())
+                    return firstValue;
 
-                do
-                {
-                    if (!e.MoveNext()) // All keys are null, surface the first element.
-                        return firstValue;
-
-                    value = e.Current;
-                    key = keySelector(value);
-                } while (key is null);
-            }
-
-            while (e.MoveNext())
-            {
-                var nextValue = e.Current;
-                var nextKey = keySelector(nextValue);
-
-                if (nextKey is null || comparer.Compare(nextKey, key) <= 0)
-                    continue;
-
-                key = nextKey;
-                value = nextValue;
-            }
+                value = e.Current;
+                key = keySelector(value);
+            } while (key is null);
         }
-        else
+
+        while (e.MoveNext())
         {
-            // ReSharper disable once PossibleUnintendedReferenceComparison
-            if (comparer == Comparer<TKey>.Default)
-                while (e.MoveNext())
-                {
-                    var nextValue = e.Current;
-                    var nextKey = keySelector(nextValue);
+            var nextValue = e.Current;
+            var nextKey = keySelector(nextValue);
 
-                    if (Comparer<TKey>.Default.Compare(nextKey, key) <= 0)
-                        continue;
-
-                    key = nextKey;
-                    value = nextValue;
-                }
-            else
-                while (e.MoveNext())
-                {
-                    var nextValue = e.Current;
-                    var nextKey = keySelector(nextValue);
-
-                    if (comparer.Compare(nextKey, key) <= 0)
-                        continue;
-
-                    key = nextKey;
-                    value = nextValue;
-                }
+            if ((default(TKey) is not null || nextKey is not null) && comparer.Compare(nextKey, key) > 0)
+                (key, value) = (nextKey, nextValue);
         }
 
         return value;

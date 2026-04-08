@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NETCOREAPP && !NET8_0_OR_GREATER || ROSLYN
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Runtime.InteropServices;
+#if NETCOREAPP && !NET8_0_OR_GREATER || ROSLYN
 using Unsafe = CompilerServices.Unsafe;
-
 /// <summary>
 /// An unsafe class that provides a set of methods to access the
 /// underlying data representations of immutable collections.

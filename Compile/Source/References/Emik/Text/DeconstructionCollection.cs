@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantCallerArgumentExpressionDefaultValue RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
+// ReSharper disable CheckNamespace EmptyNamespace RedundantCallerArgumentExpressionDefaultValue RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
 namespace Emik.Morsels;
 
 /// <summary>Contains methods for deconstructing objects.</summary>

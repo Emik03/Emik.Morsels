@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER && !ROSLYN
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Buffers;
-
+#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER && !ROSLYN
 /// <summary>Provides a resource pool that enables reusing instances of arrays.</summary>
 /// <remarks><para>
 /// Renting and returning buffers with an <see cref="ArrayPool{T}"/> can increase performance

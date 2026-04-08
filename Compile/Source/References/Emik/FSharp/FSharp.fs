@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-/// Extension methods for boolean types.
+/// Provides standard functional methods.
 module internal Emik.Morsels.FSharp
 
 open System

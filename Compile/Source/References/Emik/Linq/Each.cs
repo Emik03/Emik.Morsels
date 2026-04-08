@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable ArrangeStaticMemberQualifier
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>

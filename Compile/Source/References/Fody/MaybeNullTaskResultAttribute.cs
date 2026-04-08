@@ -1,5 +1,4 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable CheckNamespace ClassNeverInstantiated.Global RedundantUsingDirective.Global
 #if !NET452_OR_GREATER && !NETSTANDARD1_4_OR_GREATER && !NETCOREAPP
 global using MaybeNullTaskResultAttribute = NullGuard.MaybeNullTaskResultAttribute;

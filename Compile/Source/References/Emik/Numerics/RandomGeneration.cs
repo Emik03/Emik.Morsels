@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 using static Span;
 
 /// <summary>Extension methods to generate random numbers.</summary>

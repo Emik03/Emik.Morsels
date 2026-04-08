@@ -1,5 +1,4 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
 #if NETFRAMEWORK && !NET35_OR_GREATER // ReSharper disable TypeParameterCanBeVariant

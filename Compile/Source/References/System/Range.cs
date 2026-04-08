@@ -1,8 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace StructCanBeMadeReadOnly
+// ReSharper disable CheckNamespace EmptyNamespace
 namespace System;
-#pragma warning disable MA0008
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
 /// <summary>Represent a range has start and end indexes.</summary>
 /// <remarks><para>

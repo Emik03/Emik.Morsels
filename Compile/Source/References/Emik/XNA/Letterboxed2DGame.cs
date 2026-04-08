@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA // ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if XNA
 /// <summary>The basic wrapper around <see cref="Game"/> that handles letterboxing for a 2D game.</summary>
 [CLSCompliant(false)]
 public abstract partial class Letterboxed2DGame : Game

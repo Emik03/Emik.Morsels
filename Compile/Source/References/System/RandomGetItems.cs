@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NET8_0_OR_GREATER && !NO_SYSTEM_MEMORY
-// ReSharper disable CheckNamespace RedundantUnsafeContext
+// ReSharper disable CheckNamespace EmptyNamespace
 namespace System;
-#pragma warning disable CS8500
+#if !NET8_0_OR_GREATER && !NO_SYSTEM_MEMORY
 /// <summary>The backport of GetItems methods for <see cref="Random"/>.</summary>
 static partial class RandomGetItems
 {
@@ -41,7 +40,7 @@ static partial class RandomGetItems
     /// </exception>
     /// <exception cref="InvalidOperationException"><paramref name="choices"/> is empty.</exception>
     /// <returns>An array populated with random items.</returns>
-    public static unsafe T[] GetItems<T>(this Random that, T[] choices, [NonNegativeValue] int length) =>
+    public static T[] GetItems<T>(this Random that, T[] choices, [NonNegativeValue] int length) =>
         GetItems(that, new ReadOnlySpan<T>(choices), length);
 
     /// <summary>Creates an array populated with items chosen at random from the provided set of choices.</summary>
@@ -58,7 +57,7 @@ static partial class RandomGetItems
     /// </exception>
     /// <exception cref="InvalidOperationException"><paramref name="choices"/> is empty.</exception>
     /// <returns>An array populated with random items.</returns>
-    public static unsafe T[] GetItems<T>(this Random that, ReadOnlySpan<T> choices, [NonNegativeValue] int length)
+    public static T[] GetItems<T>(this Random that, ReadOnlySpan<T> choices, [NonNegativeValue] int length)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (length < 0)

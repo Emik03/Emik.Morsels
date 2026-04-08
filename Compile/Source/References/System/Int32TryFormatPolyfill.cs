@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NO_SYSTEM_MEMORY
-// ReSharper disable CheckNamespace RedundantAssignment RedundantNameQualifier UseSymbolAlias
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier UseSymbolAlias
 namespace System;
-#pragma warning disable RCS1163
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NO_SYSTEM_MEMORY
 /// <summary>Provides the polyfill to <c>int.TryFormat</c>.</summary>
 [Obsolete("This class shouldn't be referred to directly, as only the extension method is guaranteed.", true)]
 static partial class Int32TryFormatPolyfill

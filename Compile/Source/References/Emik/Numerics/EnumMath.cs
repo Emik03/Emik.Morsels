@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK || NET35_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier
 namespace Emik.Morsels;
-
+#if !NETFRAMEWORK || NET35_OR_GREATER
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
 static partial class EnumMath

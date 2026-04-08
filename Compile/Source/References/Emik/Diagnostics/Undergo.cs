@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable GlobalUsingsAnalyzer // ReSharper disable once RedundantUsingDirective.Global
+// ReSharper disable once RedundantUsingDirective.Global
 global using static Emik.Morsels.Undergo;
 
-#pragma warning restore GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable CA1031
+
 /// <summary>Provides methods to wrap delegates around try-catch blocks.</summary>
 // ReSharper disable OutParameterValueIsAlwaysDiscarded.Global
 static partial class Undergo

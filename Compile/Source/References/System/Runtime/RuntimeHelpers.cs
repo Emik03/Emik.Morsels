@@ -1,8 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Runtime.CompilerServices;
-
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
 /// <summary>
 /// Provides a set of static methods and properties that provide support for compilers. This class cannot be inherited.
 /// </summary>

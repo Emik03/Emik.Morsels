@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA // ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
-using static Span;
-
+#if XNA
 /// <summary>Provides thread-safe access to keyboard input.</summary>
 static partial class ButtonExtensions
 {
@@ -24,7 +22,7 @@ static partial class ButtonExtensions
          UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_buttons")]
         static extern ref readonly byte Buttons(in MouseState state);
 
-        return ref Unsafe.As<byte, MouseButtons>(ref AsRef(Buttons(in state)));
+        return ref Unsafe.As<byte, MouseButtons>(ref Unsafe.AsRef(Buttons(in state)));
     }
 }
 #endif

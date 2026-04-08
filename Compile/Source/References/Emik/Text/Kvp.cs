@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NET8_0_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if NET8_0_OR_GREATER
 /// <summary>Contains fast parsing of key-value pairs.</summary>
 static class Kvp
 {
@@ -280,9 +279,10 @@ static class Kvp
     /// <returns>The deserialized object.</returns>
     [Pure]
     public static T Deserialize<T>(params ReadOnlySpan<char> span)
-        where T : new()
 #if NET9_0_OR_GREATER
-      , allows ref struct
+        where T : new(), allows ref struct
+#else
+        where T : new()
 #endif
     {
         var ret = new T();

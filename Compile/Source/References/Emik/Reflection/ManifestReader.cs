@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-#pragma warning disable GlobalUsingsAnalyzer // ReSharper disable once RedundantUsingDirective.Global
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper disable once RedundantUsingDirective.Global
 global using static Emik.Morsels.ManifestReader;
 
 // ReSharper disable once CheckNamespace

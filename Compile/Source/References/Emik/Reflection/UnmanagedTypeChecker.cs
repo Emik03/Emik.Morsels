@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace
+// ReSharper disable CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Provides methods to check for unmanaged types.</summary>
 static partial class UnmanagedTypeChecker
 {
     static readonly Dictionary<Type, bool> s_fullyUnmanaged = [];
 
-    /// <summary>Gets the type name, with its generics extended.</summary>
+    /// <summary>Determines whether the type follows the <see langword="unmanaged"/> constraint.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
     [Pure]
@@ -18,9 +17,7 @@ static partial class UnmanagedTypeChecker
             !type.IsValueType ? s_fullyUnmanaged[type] = false :
             type.IsEnum || type.IsPointer || type.IsPrimitive ? s_fullyUnmanaged[type] = true :
             s_fullyUnmanaged[type] = type.IsGenericTypeDefinition
-                ? type
-                   .GetCustomAttributes()
-                    // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+                ? type.GetCustomAttributes()
                    .Any(x => x?.GetType().FullName is "System.Runtime.CompilerServices.IsUnmanagedAttribute")
                 : Array.TrueForAll(
                     type.GetFields(

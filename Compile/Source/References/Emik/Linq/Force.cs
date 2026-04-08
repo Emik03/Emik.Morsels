@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable InvertIf
-
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace InvertIf
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to force full enumerations.</summary>

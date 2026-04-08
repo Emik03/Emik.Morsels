@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK && !NET40_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
-
+#if NETFRAMEWORK && !NET40_OR_GREATER
 using static BindingFlags;
 
 /// <summary>Provides the polyfill to <c>Type.GetEnumUnderlyingType</c>.</summary>

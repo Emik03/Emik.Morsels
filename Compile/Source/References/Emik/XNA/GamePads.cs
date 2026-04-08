@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA // ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if XNA
 using static Span;
 
 /// <summary>Provides the enumeration over <see cref="GamePad"/> instances.</summary>

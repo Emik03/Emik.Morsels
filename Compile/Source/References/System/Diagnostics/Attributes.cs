@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantNameQualifier RedundantUsingDirective
 #pragma warning disable CA1019, GlobalUsingsAnalyzer
 #if !KTANE && !WAWA
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
@@ -287,11 +286,11 @@ namespace System.Runtime.CompilerServices
 {
     /// <summary>Defines a closed type.</summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum, Inherited = false)]
-    public sealed class ClosedAttribute : Attribute;
+    sealed class ClosedAttribute : Attribute;
 
     /// <summary>Defines a closed subtype.</summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
-    public sealed class ClosedSubtypeAttribute(Type subtypeType) : Attribute
+    sealed class ClosedSubtypeAttribute(Type subtypeType) : Attribute
     {
         /// <summary>Gets the subtype.</summary>
         public Type SubtypeType => subtypeType;
@@ -299,10 +298,10 @@ namespace System.Runtime.CompilerServices
 
     /// <summary>Defines a union.</summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-    public sealed class UnionAttribute : Attribute { }
+    sealed class UnionAttribute : Attribute { }
 
     /// <summary>Generic interface for unions.</summary>
-    public interface IUnion
+    interface IUnion
     {
         /// <summary>Gets the boxed value.</summary>
         object? Value { get; }

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
 /// <summary>Contains functions to create other functions that get or set fields and properties.</summary>
 static partial class MemberGrabber
 {

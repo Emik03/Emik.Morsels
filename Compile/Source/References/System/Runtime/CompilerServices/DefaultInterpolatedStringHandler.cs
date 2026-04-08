@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable RedundantNameQualifier UseSymbolAlias
-#pragma warning disable IDE0064, IDE0251, MA0102, RCS1146, SA1214
-#if !NET6_0_OR_GREATER && !NO_SYSTEM_MEMORY
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier UseSymbolAlias
 namespace System.Runtime.CompilerServices;
-
+#if !NET6_0_OR_GREATER && !NO_SYSTEM_MEMORY
 /// <summary>
 /// Provides a handler used by the language compiler to process
 /// interpolated strings into <see cref="string"/> instances.
@@ -69,9 +66,7 @@ ref struct DefaultInterpolatedStringHandler
     /// </para></remarks>
     public DefaultInterpolatedStringHandler(int literalLength, int formattedCount)
     {
-        _chars = _arrayToReturnToPool =
-            ArrayPool<char>.Shared.Rent(GetDefaultLength(literalLength, formattedCount));
-
+        _chars = _arrayToReturnToPool = ArrayPool<char>.Shared.Rent(GetDefaultLength(literalLength, formattedCount));
         _pos = 0;
         _provider = null;
         _hasCustomFormatter = false;
@@ -92,9 +87,7 @@ ref struct DefaultInterpolatedStringHandler
     /// </para></remarks>
     public DefaultInterpolatedStringHandler(int literalLength, int formattedCount, IFormatProvider? provider)
     {
-        _chars = _arrayToReturnToPool =
-            ArrayPool<char>.Shared.Rent(GetDefaultLength(literalLength, formattedCount));
-
+        _chars = _arrayToReturnToPool = ArrayPool<char>.Shared.Rent(GetDefaultLength(literalLength, formattedCount));
         _pos = 0;
         _provider = provider;
         _hasCustomFormatter = provider is not null && HasCustomFormatter(provider);
@@ -185,8 +178,6 @@ ref struct DefaultInterpolatedStringHandler
             GrowThenCopyString(value);
     }
 
-#region AppendFormatted
-
     // Design note:
     // The compiler requires a AppendFormatted overload for anything that might be within an interpolation expression;
     // if it can't find an appropriate overload, for handlers in general it'll simply fail to compile.
@@ -263,8 +254,6 @@ ref struct DefaultInterpolatedStringHandler
     // This matches the behavior of string.Format, StringBuilder.AppendFormat, etc. The only overloads for
     // which this doesn't apply is ReadOnlySpan<char>, which isn't supported by either string.Format nor
     // StringBuilder.AppendFormat, but more importantly which can't be boxed to be passed to ICustomFormatter.Format.
-
-#region AppendFormatted T
 
     /// <summary>Writes the specified value to the handler.</summary>
     /// <param name="value">The value to write.</param>
@@ -425,10 +414,6 @@ ref struct DefaultInterpolatedStringHandler
             AppendOrInsertAlignmentIfNeeded(startingPos, alignment);
     }
 
-#endregion
-
-#region AppendFormatted ReadOnlySpan<char>
-
     /// <summary>Writes the specified character span to the handler.</summary>
     /// <param name="value">The span to write.</param>
     public void AppendFormatted(scoped ReadOnlySpan<char> value)
@@ -487,10 +472,6 @@ ref struct DefaultInterpolatedStringHandler
         }
     }
 
-#endregion
-
-#region AppendFormatted string
-
     /// <summary>Writes the specified value to the handler.</summary>
     /// <param name="value">The value to write.</param>
     public void AppendFormatted(string? value)
@@ -537,10 +518,6 @@ ref struct DefaultInterpolatedStringHandler
         // string is implicitly convertible to both. Just delegate to the T-based implementation.
         AppendFormatted<string?>(value, alignment, format);
 
-#endregion
-
-#region AppendFormatted object
-
     /// <summary>Writes the specified value to the handler.</summary>
     /// <param name="value">The value to write.</param>
     /// <param name="alignment">
@@ -553,10 +530,6 @@ ref struct DefaultInterpolatedStringHandler
         // formatted with both an alignment and a format, or b: the compiler is unable to target type to T. It
         // exists purely to help make cases from (b) compile. Just delegate to the T-based implementation.
         AppendFormatted<object?>(value, alignment, format);
-
-#endregion
-
-#endregion
 
     /// <summary>Gets whether the provider provides a custom formatter.</summary>
     /// <param name="provider">The <see cref="IFormatProvider"/>.</param>

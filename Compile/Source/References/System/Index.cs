@@ -1,9 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
-// ReSharper disable BadPreprocessorIndent
-// ReSharper disable once CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
-
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
 /// <summary>Represent a type can be used to index a collection either from the start or the end.</summary>
 /// <remarks><para>
 /// Index is used by the C# compiler to support the new index syntax.
@@ -36,9 +34,11 @@ readonly partial struct Index : IEquatable<Index>
     Index([NonNegativeValue] int value) => _value = value;
 
     /// <summary>Create an Index pointing at first element.</summary>
+    [Pure]
     public static Index Start => new(0);
 
     /// <summary>Create an Index pointing at beyond last element.</summary>
+    [Pure]
     public static Index End => new(~0);
 
     /// <summary>Indicates whether the index is from the start or the end.</summary>
@@ -57,21 +57,15 @@ readonly partial struct Index : IEquatable<Index>
     /// <param name="value">The index value from the end.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Index FromEnd([NonNegativeValue] int value) =>
-        // Runtime check.
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        value >= 0
-            ? new(~value)
-            : throw new ArgumentOutOfRangeException(nameof(value), "Must be non-negative.");
+        value >= 0 ? new(~value) : throw new ArgumentOutOfRangeException(nameof(value), "Must be non-negative.");
 
     /// <summary>Create an Index from the start at the position indicated by the value.</summary>
     /// <param name="value">The index value from the start.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Index FromStart([NonNegativeValue] int value) =>
-        // Runtime check.
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        value >= 0
-            ? new(value)
-            : throw new ArgumentOutOfRangeException(nameof(value), "Must be non-negative.");
+        value >= 0 ? new(value) : throw new ArgumentOutOfRangeException(nameof(value), "Must be non-negative.");
 
     /// <inheritdoc cref="object.Equals(object?)" />
     [Pure]
@@ -97,18 +91,7 @@ readonly partial struct Index : IEquatable<Index>
     /// will be same affect as the validation.
     /// </para></remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int GetOffset(int length)
-    {
-        var offset = _value;
-
-        if (IsFromEnd)
-            // offset = length - (~value)
-            // offset = length + (~(~value) + 1)
-            // offset = length + value + 1
-            offset += length + 1;
-
-        return offset;
-    }
+    public int GetOffset(int length) => IsFromEnd ? _value + length + 1 : _value;
 
     /// <inheritdoc />
     [Pure]
