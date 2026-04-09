@@ -35,9 +35,8 @@ struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>
 
     /// <inheritdoc />
     public bool MoveNext() =>
-#pragma warning disable MA0099
         _index < (_length is 0 ? PlayerIndex.Four + 1 : _length) && (Current = GamePad.GetState(_index++)) is var _;
-#pragma warning restore MA0099
+
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     public readonly GamePads GetEnumerator() => new(last);
 
@@ -49,9 +48,7 @@ struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>
 }
 
 /// <summary>Extensions for <see cref="GamePadState"/>.</summary>
-#pragma warning disable MA0048
 static class GamePadStateExtensions
-#pragma warning restore MA0048
 {
     /// <inheritdoc cref="GamePadState.IsConnected"/>
     public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>

@@ -3,7 +3,6 @@
 namespace Emik.Morsels;
 
 /// <summary>Contains methods for deconstructing objects.</summary>
-#pragma warning disable CA1031, CS9107
 static partial class DeconstructionCollectionExtensions
 {
     [return: NotNullIfNotNull(nameof(it))]
@@ -315,7 +314,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
             if (layer is 0)
                 for (var i = 0; i < Count; i++)
-                    _list[i] = CollectNext(_list[i], str, ref visit, ref any, seen);
+                    _list[i] = CollectNext(_list[i], Str, ref visit, ref any, seen);
             else
                 foreach (var next in _list)
                     RecurseNext(next, layer, ref visit, ref any, seen);
@@ -638,8 +637,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             if (layer is 0)
                 for (var i = 0; i < Count; i++)
                     _list[i] = new(
-                        CollectNext(_list[i].Key, str, ref visit, ref any, seen)!,
-                        CollectNext(_list[i].Value, str, ref visit, ref any, seen)
+                        CollectNext(_list[i].Key, Str, ref visit, ref any, seen)!,
+                        CollectNext(_list[i].Value, Str, ref visit, ref any, seen)
                     );
             else
                 foreach (var next in _list)
@@ -696,10 +695,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
             // We aren't looking at a member from a base type,
             // so we can leave it unqualified, similar to how the 'new' keyword works.
-#pragma warning disable MA0169
             if (next.DeclaringType == next.ReflectedType)
                 return next.Name;
-#pragma warning restore MA0169
+
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var x in fields)
                 if (x != next && x.Name == next.Name)
@@ -783,6 +781,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     // Unless this is explicitly overriden, assume the type is already serializable.
     [Pure]
     public virtual ICollection Serialized => this;
+
+    /// <summary>Gets the string length.</summary>
+    [Pure]
+    protected int Str => str;
 
     /// <summary>Attempts to truncate the <paramref name="v"/>.</summary>
     /// <param name="v">The <see cref="object"/> to truncate.</param>

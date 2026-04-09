@@ -87,7 +87,6 @@ static partial class Conditionals
 #pragma warning disable CS8619
         iterable?.Where(x => x is not null) ?? [];
 #pragma warning restore CS8619
-
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>

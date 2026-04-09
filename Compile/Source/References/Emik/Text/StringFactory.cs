@@ -16,7 +16,7 @@ static partial class StringFactory
 #if NET8_0_OR_GREATER
     static readonly OnceMemoryManager<SearchValues<char>> s_slashes = new(SearchValues.Create(@"/\"));
 #endif
-#pragma warning disable MA0110, SYSLIB1045
+#pragma warning disable SYSLIB1045
     static readonly Regex
         s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
         s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
@@ -24,7 +24,7 @@ static partial class StringFactory
         s_doubleQuotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options),
         s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options);
-#pragma warning restore MA0110, SYSLIB1045
+#pragma warning restore SYSLIB1045
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
@@ -276,10 +276,10 @@ static partial class StringFactory
     public static unsafe string ToHexString<T>(this T value)
 #if KTANE
         where T : struct
+#pragma warning disable CS8500
 #else
         where T : unmanaged
 #endif
-#pragma warning disable CS8500
     {
         var p = stackalloc char[sizeof(T) * 2 + 2];
         p[0] = '0';
@@ -297,7 +297,6 @@ static partial class StringFactory
 
         return new(p, 0, sizeof(T) * 2 + 2);
     }
-#pragma warning restore CS8500
 #if NET6_0_OR_GREATER
     /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>

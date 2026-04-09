@@ -54,11 +54,8 @@ static partial class Pancake
         {
             while (truthy is not [])
             {
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
                 yield return truthy.ConvertAll(x => x.Current);
-#else
-                yield return new(truthy.Select(x => x.Current));
-#endif
+
                 (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
                 falsy.For(x => x.Dispose());
             }

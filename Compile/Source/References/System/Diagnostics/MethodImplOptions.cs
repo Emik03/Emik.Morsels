@@ -1,6 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK
-#pragma warning disable GlobalUsingsAnalyzer
 extern alias ms;
 
 // ReSharper disable once CheckNamespace

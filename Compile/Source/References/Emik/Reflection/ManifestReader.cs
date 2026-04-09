@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper disable once RedundantUsingDirective.Global
-global using static Emik.Morsels.ManifestReader;
-
-// ReSharper disable once CheckNamespace
+global using static Emik.Morsels.ManifestReader; // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Methods to read this assembly's manifest streams into common data structures.</summary>
@@ -65,4 +62,3 @@ static partial class ManifestReader
                 $"{typeof(ManifestReader).Assembly.GetName().Name}.{path.Replace('/', '.').Replace('\\', '.')}"
             );
 }
-#endif

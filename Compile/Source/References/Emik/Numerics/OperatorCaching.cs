@@ -149,9 +149,7 @@ static partial class OperatorCaching
         /// <see cref="MinValue"/> can be used regardless of its output.
         /// </summary>
         [CLSCompliant(false)]
-#pragma warning disable RCS1158
         public static bool IsSupported
-#pragma warning restore RCS1158
         {
             [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),
              MethodImpl(MethodImplOptions.AggressiveInlining),

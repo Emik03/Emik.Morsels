@@ -1,16 +1,12 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace EmptyNamespace
-// ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
 namespace System.Runtime.InteropServices;
-#pragma warning disable CS8500, SA1137
+#pragma warning disable CS8500
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NO_SYSTEM_MEMORY
-#pragma warning disable CS1574 // Reference to System.Memory may not exist.
 /// <summary>
 /// Provides a collection of methods for interoperating with <see cref="Memory{T}"/>, <see cref="ReadOnlyMemory{T}"/>,
 /// <see cref="Span{T}"/>, and <see cref="ReadOnlySpan{T}"/>.
 /// </summary>
-#pragma warning restore CS1574
 static partial class MemoryMarshal
 {
     /// <summary>

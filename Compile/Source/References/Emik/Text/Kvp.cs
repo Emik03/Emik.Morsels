@@ -88,10 +88,7 @@ static class Kvp
         [MustUseReturnValue]
         static Expression Convert(Type t, Expression exReader, Expression exTemp)
         {
-            // ReSharper disable once RedundantTypeArgumentsInsideNameof
-#pragma warning disable IDE0340
-            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<char>.ToString), [])!;
-#pragma warning restore IDE0340
+            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<>.ToString), [])!;
             var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
             var exReaderString = Expression.Call(exReader, spanToString);
             var exNumberStyles = Expression.Constant(NumberStyles.Any);

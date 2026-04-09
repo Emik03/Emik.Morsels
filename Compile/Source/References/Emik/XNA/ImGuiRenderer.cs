@@ -3,7 +3,6 @@
 namespace Emik.Morsels;
 #if IMGUI && XNA
 // ReSharper disable RedundantNameQualifier
-#pragma warning disable CA1707, CA2213
 using Buffer = System.Buffer;
 
 /// <summary>ImGui renderer for use with MonoGame.</summary>
@@ -96,10 +95,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                     io.AddInputCharacter(c);
         }
 
-        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
-#pragma warning disable MA0134
-            _ = Task.Run(ShowAsync);
-#pragma warning restore MA0134
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && (Task.Run(ShowAsync)) is var _;
     }
 
     /// <inheritdoc cref="BeginTabItem(ReadOnlySpan{char}, ref bool, ImGuiTabItemFlags)"/>
@@ -433,11 +429,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                 }
 
         (var ret, input) = textInput(labelSpan, hint, input, maxLength, size, flags);
-
-        if ((OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret)
-#pragma warning disable MA0134
-            _ = Task.Run(ShowAsync);
-#pragma warning restore MA0134
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret && (Task.Run(ShowAsync)) is var _;
         return ret;
     }
 

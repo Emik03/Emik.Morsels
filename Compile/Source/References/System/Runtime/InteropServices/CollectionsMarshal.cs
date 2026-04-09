@@ -15,9 +15,7 @@ static partial class CollectionsMarshal
     /// <typeparam name="T">The type of items in the list.</typeparam>
     /// <param name="list">List from which to create the <see cref="Span{T}"/>.</param>
     /// <returns>A <see cref="Span{T}"/> instance over the <see cref="List{T}"/>.</returns>
-#pragma warning disable MA0016
     public static Span<T> AsSpan<T>(List<T>? list) =>
-#pragma warning restore MA0016
         list is null ? default : new Span<T>(list.UnsafelyToArray(), 0, list.Count);
 }
 #endif

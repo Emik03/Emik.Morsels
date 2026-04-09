@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace EmptyNamespace
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+
 /// <summary>Provides methods to check for unmanaged types.</summary>
 static partial class UnmanagedTypeChecker
 {
@@ -26,4 +26,3 @@ static partial class UnmanagedTypeChecker
                     x => IsUnmanaged(x.FieldType)
                 ));
 }
-#endif

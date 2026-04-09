@@ -106,7 +106,7 @@ namespace System
         [Pure]
         string ToStringEnd();
     }
-
+#pragma warning disable CA2208
     /// <summary>
     /// The ValueTuple types (from arity 0 to 8) comprise the runtime implementation that underlies tuples in C# and struct tuples in F#.
     /// Aside from created via language syntax, they are most easily created via the ValueTuple.Create factory methods.

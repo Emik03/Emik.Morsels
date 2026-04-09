@@ -168,7 +168,6 @@
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <PackageReference Remove="GlobalUsingsAnalyzer"/>
         <ProjectReference Include="../*.csproj" PrivateAssets="all" IncludeAssets="all"/>
         <ProjectReference Include="../*.fsproj" PrivateAssets="all" IncludeAssets="all"/>
         <PackageReference Include="coverlet.collector" Version="6.0.4" PrivateAssets="all" IncludeAssets="all"/>

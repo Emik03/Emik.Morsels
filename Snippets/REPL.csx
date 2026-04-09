@@ -3422,7 +3422,6 @@ public readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-#pragma warning disable DOC100
     /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
@@ -3468,7 +3467,6 @@ public readonly partial struct Bits<T>([ProvidesContext] T bits) :
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
-#pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public TResult CoerceLeft<TResult>()
         where TResult : unmanaged
@@ -4065,10 +4063,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     /// <a href="https://github.com/rhaiscript/rhai/blob/ca18cdd7f47f8ae8bd6e2b7a950ad4815d62f026/src/lib.rs#L373">
     /// (Adapted from Rhai)
     /// </a></para></remarks>
-#pragma warning disable RCS1158
     public const int InlinedLength = 3;
-#pragma warning restore RCS1158
-    //
     [ProvidesContext]
     IList<T>? _rest;
     T? _first, _second, _third;
@@ -4234,7 +4229,6 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     {
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[0];
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0102
         set => this[0] = value;
     }
     /// <summary>Gets or sets the second element.</summary>
@@ -4252,7 +4246,6 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[2];
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[2] = value;
-#pragma warning restore MA0102
     }
     /// <summary>Gets the rest of the elements.</summary>
     public readonly IList<T>? Rest
@@ -4380,9 +4373,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
         if (count <= stackExpand)
             return;
         var rest = _rest as List<T> ?? [.. _rest!];
-#pragma warning disable IDE0305
-        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollection());
-#pragma warning restore IDE0305
+        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand));
         _rest = rest;
     }
     /// <inheritdoc />
@@ -4633,21 +4624,20 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     {
         unchecked
         {
-            const int Prime = 397;
-            var hashCode = Prime;
+            int hashCode = Primes.Get();
             switch (Count)
             {
                 case > InlinedLength:
                     hashCode = _rest!.GetHashCode();
                     goto case 3;
                 case 3:
-                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
+                    hashCode = hashCode * Primes.Get() ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
                     goto case 2;
                 case 2:
-                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
+                    hashCode = hashCode * Primes.Get() ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
                     goto case 1;
                 case 1:
-                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
+                    hashCode = hashCode * Primes.Get() ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
                     break;
             }
             return hashCode;
@@ -5300,9 +5290,7 @@ static class Kvp
         [MustUseReturnValue]
         static Expression Convert(Type t, Expression exReader, Expression exTemp)
         {
-#pragma warning disable IDE0340
-            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<char>.ToString), [])!;
-#pragma warning restore IDE0340
+            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<>.ToString), [])!;
             var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
             var exReaderString = Expression.Call(exReader, spanToString);
             var exNumberStyles = Expression.Constant(NumberStyles.Any);
@@ -8221,9 +8209,7 @@ public enum KeyMods : ushort
         /// <see cref="MinValue"/> can be used regardless of its output.
         /// </summary>
         [CLSCompliant(false)]
-#pragma warning disable RCS1158
         public static bool IsSupported
-#pragma warning restore RCS1158
         {
             [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),
              MethodImpl(MethodImplOptions.AggressiveInlining),
@@ -10658,7 +10644,6 @@ public sealed class FrameRateCounter(Game game, SpriteFont font, SpriteBatch bat
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable once RedundantUsingDirective.Global
 // ReSharper disable once CheckNamespace
 /// <summary>Methods to create methods.</summary>
@@ -12251,8 +12236,7 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
 #endif
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace EmptyNamespace
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
 /// <summary>Provides methods to check for unmanaged types.</summary>
     static readonly Dictionary<Type, bool> s_fullyUnmanaged = [];
     /// <summary>Determines whether the type follows the <see langword="unmanaged"/> constraint.</summary>
@@ -12273,7 +12257,6 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
                     ),
                     x => IsUnmanaged(x.FieldType)
                 ));
-#endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 #if !NET5_0_OR_GREATER
@@ -12513,7 +12496,6 @@ public abstract partial class Letterboxed2DGame : Game
 // ReSharper disable once CheckNamespace EmptyNamespace
 #if IMGUI && XNA
 // ReSharper disable RedundantNameQualifier
-#pragma warning disable CA1707, CA2213
 /// <summary>ImGui renderer for use with MonoGame.</summary>
 /// <param name="game">The game to use as reference.</param>
 /// <param name="shared">Whether the <see cref="Context"/> is shared between instances of this type.</param>
@@ -12584,10 +12566,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                 if (c is not '\t')
                     io.AddInputCharacter(c);
         }
-        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
-#pragma warning disable MA0134
-            _ = Task.Run(ShowAsync);
-#pragma warning restore MA0134
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && (Task.Run(ShowAsync)) is var _;
     }
     /// <inheritdoc cref="BeginTabItem(ReadOnlySpan{char}, ref bool, ImGuiTabItemFlags)"/>
     public static bool BeginTabItem(string label, ref bool p_open, ImGuiTabItemFlags flags) =>
@@ -12887,10 +12866,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                     s_queued.RemoveAt(i);
                 }
         (var ret, input) = textInput(labelSpan, hint, input, maxLength, size, flags);
-        if ((OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret)
-#pragma warning disable MA0134
-            _ = Task.Run(ShowAsync);
-#pragma warning restore MA0134
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret && (Task.Run(ShowAsync)) is var _;
         return ret;
     }
     static nint SetupInput([UsedImplicitly] Game game, bool shared)
@@ -15756,7 +15732,6 @@ public partial struct Bits<T>
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace EmptyNamespace RedundantCallerArgumentExpressionDefaultValue RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
 /// <summary>Contains methods for deconstructing objects.</summary>
-#pragma warning disable CA1031, CS9107
     [return: NotNullIfNotNull(nameof(it))]
     public static T Debug<T>(
         this T it,
@@ -16034,7 +16009,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var any = false;
             if (layer is 0)
                 for (var i = 0; i < Count; i++)
-                    _list[i] = CollectNext(_list[i], str, ref visit, ref any, seen);
+                    _list[i] = CollectNext(_list[i], Str, ref visit, ref any, seen);
             else
                 foreach (var next in _list)
                     RecurseNext(next, layer, ref visit, ref any, seen);
@@ -16305,8 +16280,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             if (layer is 0)
                 for (var i = 0; i < Count; i++)
                     _list[i] = new(
-                        CollectNext(_list[i].Key, str, ref visit, ref any, seen)!,
-                        CollectNext(_list[i].Value, str, ref visit, ref any, seen)
+                        CollectNext(_list[i].Key, Str, ref visit, ref any, seen)!,
+                        CollectNext(_list[i].Value, Str, ref visit, ref any, seen)
                     );
             else
                 foreach (var next in _list)
@@ -16348,10 +16323,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         static string Name(MemberInfo next, FieldInfo[] fields, PropertyInfo[] properties)
         {
             static string QualifyTypeName(MemberInfo next) => $"{next.DeclaringType?.Name}.{next.Name}";
-#pragma warning disable MA0169
             if (next.DeclaringType == next.ReflectedType)
                 return next.Name;
-#pragma warning restore MA0169
             foreach (var x in fields)
                 if (x != next && x.Name == next.Name)
                     return QualifyTypeName(next);
@@ -16416,6 +16389,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <summary>Gets the collection to a serializable collection.</summary>
     [Pure]
     public virtual ICollection Serialized => this;
+    /// <summary>Gets the string length.</summary>
+    [Pure]
+    protected int Str => str;
     /// <summary>Attempts to truncate the <paramref name="v"/>.</summary>
     /// <param name="v">The <see cref="object"/> to truncate.</param>
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -16621,8 +16597,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             foreach (var _ in iterable) { }
     }
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-// ReSharper disable once CheckNamespace
 /// <summary>Methods to read this assembly's manifest streams into common data structures.</summary>
 // ReSharper disable RedundantNameQualifier
     /// <summary>Reads the manifest resource as a sequence of bytes.</summary>
@@ -16673,7 +16647,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             : typeof(ManifestReader).Assembly.GetManifestResourceStream(
                 $"{typeof(ManifestReader).Assembly.GetName().Name}.{path.Replace('/', '.').Replace('\\', '.')}"
             );
-#endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Extension methods to clamp numbers.</summary>
@@ -16955,9 +16928,7 @@ public struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePa
     public void Reset() => _index = PlayerIndex.One;
     /// <inheritdoc />
     public bool MoveNext() =>
-#pragma warning disable MA0099
         _index < (_length is 0 ? PlayerIndex.Four + 1 : _length) && (Current = GamePad.GetState(_index++)) is var _;
-#pragma warning restore MA0099
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     public readonly GamePads GetEnumerator() => new(last);
     /// <inheritdoc />
@@ -16966,9 +16937,7 @@ public struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePa
     readonly IEnumerator<GamePadState> IEnumerable<GamePadState>.GetEnumerator() => GetEnumerator();
 }
 /// <summary>Extensions for <see cref="GamePadState"/>.</summary>
-#pragma warning disable MA0048
 static class GamePadStateExtensions
-#pragma warning restore MA0048
 {
     /// <inheritdoc cref="GamePadState.IsConnected"/>
     public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
@@ -17653,11 +17622,7 @@ public partial struct Bits<T>
         {
             while (truthy is not [])
             {
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
                 yield return truthy.ConvertAll(x => x.Current);
-#else
-                yield return new(truthy.Select(x => x.Current));
-#endif
                 (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
                 falsy.For(x => x.Dispose());
             }
@@ -17727,7 +17692,7 @@ public partial struct Bits<T>
 #if NET8_0_OR_GREATER
     static readonly OnceMemoryManager<SearchValues<char>> s_slashes = new(SearchValues.Create(@"/\"));
 #endif
-#pragma warning disable MA0110, SYSLIB1045
+#pragma warning disable SYSLIB1045
     static readonly Regex
         s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
         s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
@@ -17735,7 +17700,7 @@ public partial struct Bits<T>
         s_doubleQuotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options),
         s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options);
-#pragma warning restore MA0110, SYSLIB1045
+#pragma warning restore SYSLIB1045
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
@@ -17966,10 +17931,10 @@ public partial struct Bits<T>
     public static unsafe string ToHexString<T>(this T value)
 #if KTANE
         where T : struct
+#pragma warning disable CS8500
 #else
         where T : unmanaged
 #endif
-#pragma warning disable CS8500
     {
         var p = stackalloc char[sizeof(T) * 2 + 2];
         p[0] = '0';
@@ -17985,7 +17950,6 @@ public partial struct Bits<T>
             }
         return new(p, 0, sizeof(T) * 2 + 2);
     }
-#pragma warning restore CS8500
 #if NET6_0_OR_GREATER
     /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>

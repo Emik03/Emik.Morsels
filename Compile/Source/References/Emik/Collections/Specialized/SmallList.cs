@@ -29,17 +29,12 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <a href="https://github.com/rhaiscript/rhai/blob/ca18cdd7f47f8ae8bd6e2b7a950ad4815d62f026/src/lib.rs#L373">
     /// (Adapted from Rhai)
     /// </a></para></remarks>
-#pragma warning disable RCS1158
     public const int InlinedLength = 3;
-#pragma warning restore RCS1158
     // DO NOT PLACE _rest BELOW GENERICS;
     // Doing so will cause only unmanaged generics to be mapped before the object,
     // leading to inconsistent mapping of memory when dereferencing pointers in HeadSpan functions.
     // See the following link for a lengthier explanation and example:
-    //
-    // ReSharper disable CommentTypo
     // https://sharplab.io/#v2:EYLgtghglgdgPgYgA4CcIHNIAIDuEUyzpYAmUAzhMADYCmWAHAKwAMLAsAFBcACLWPAIwA6AEoBXGABcoYWsICS02igD2SAMoqAblADGtcgG5e/IQDYBIidNnylUleq0pdB8sIAyEAJ6rxUgDSsCQm3JwA9BFYALIQMBi0JLiqKADW5FgQmbQAHki0eo4kIFxRWADkAILAqtq0FVgotACO4lDNmfFYqgBmveS0UljAhRDig1hSABb0qsAAVoXDeqpymb0d5FLCZdEVAEK01Ko4jc1tHYZYMKo9/YPDo3rjkzNzi8tYq+tZvY4oXbhbT4LK1eoaKQoLAAXhutBwWBqdVoAB4hCwAHwACgARJsUNtcQAaLC4warGAkXEASjCIOhoxOOEh0LhMARWCOzPRgixeIJRNJ5MKqiptLCXEklF6tC4AG8uFhlVhsdiMQAqGkAMioKNZNIA2gwALqKGDkApFPEACVoEGSfS5x1OvKxuCgM3uAyGWBYuRYDAlSpVas1OqZpwNhpYZqUluWtvtjt6SPBaIxmI9Xr6PuG/rYwc4AF8uHssABVGCQBLoJJYCi4WbNKazBswSnkCiODs+LDUKCGUqRfbI+qNHCpDKt+iUORZTKjXqpeTlw4us5ZajUe5ZLDkcQkEi0GBNVrtTrex5+0iGJCe+ijIi3vTUfD1wU7MucBlglEOWF4URMc0VgKQcUEUkACY6S4X9IxwAD2U5blXTAiDoNg8JpQgWUFRDZU1TArVdXTBwjSguMLStKQkwdXcQNRdDs2mK9fQLIMsJVVVsWIiMN3ImMqITa1cTteinVQnAmOkLMcE9Vjc2vAsWCLAisHKAB5B52IDBgUnSchSS7Dt6EY5j4mSKSZPArIW22FBxCKcQ0G3Hx1PKKBj1sF4d1uHBSWPS0HxfN80BkMUehQY9oUcbdnz8cQeneFB5MGIFuKI6QSIQwTKPNETaLE5Nd2s5j5JzHT8z0otS3CQ1WScqRvES2itDaE8ZAgagaRNLgHKatMUVRAAVHERqwT9SQmikxRIGl8M4bj5iWIoAH4sAAfU6YZkJwbEsPUkaNs2z9AKmrbZqpQCrtCLg6q4BqoSalr/Da89Oqgbrev656imdHkxuxCaLpm0UqQWzhFSWlVjq2s64Quzbbpu8G7vCZbPnWradsAjl9qw4sgA==
-    // ReSharper restore CommentTypo
 
     [ProvidesContext]
     IList<T>? _rest;
@@ -234,7 +229,6 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     {
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[0];
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0102
         set => this[0] = value;
     }
 
@@ -254,7 +248,6 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[2];
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[2] = value;
-#pragma warning restore MA0102
     }
 
     /// <summary>Gets the rest of the elements.</summary>
@@ -400,9 +393,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
             return;
 
         var rest = _rest as List<T> ?? [.. _rest!];
-#pragma warning disable IDE0305
-        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollection());
-#pragma warning restore IDE0305
+        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand));
         _rest = rest;
     }
 
@@ -554,7 +545,6 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    // ReSharper disable once CognitiveComplexity
     public void Reverse()
     {
 #pragma warning disable IDE0180 // ReSharper disable SwapViaDeconstruction
@@ -687,8 +677,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     {
         unchecked
         {
-            const int Prime = 397;
-            var hashCode = Prime;
+            int hashCode = Primes.Get();
 
             switch (Count)
             {
@@ -696,13 +685,13 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
                     hashCode = _rest!.GetHashCode();
                     goto case 3;
                 case 3:
-                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
+                    hashCode = hashCode * Primes.Get() ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
                     goto case 2;
                 case 2:
-                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
+                    hashCode = hashCode * Primes.Get() ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
                     goto case 1;
                 case 1:
-                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
+                    hashCode = hashCode * Primes.Get() ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
                     break;
             }
 

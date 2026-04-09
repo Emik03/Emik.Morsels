@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS1591
-// ReSharper disable CommentTypo IdentifierTypo InconsistentNaming StringLiteralTypo
-// ReSharper disable once CheckNamespace EmptyNamespace
+// ReSharper disable CheckNamespace CommentTypo EmptyNamespace IdentifierTypo InconsistentNaming StringLiteralTypo
 namespace System.Runtime.InteropServices;
 #if NETSTANDARD1_0
 /// <summary>Identifies how to marshal parameters or fields to unmanaged code.</summary>
