@@ -19,8 +19,8 @@
         <WeaverConfiguration>
             <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="FodyWeavers.xsd">
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
-                <Divorce/>
                 <InlineIL/>
+                <Divorce/>
                 <StaticLambda JustPublic="true"/>
                 <Absence Except="$(DoNotTrim)"/>
             </Weavers>
@@ -31,7 +31,7 @@
         <FileVersion>6.0.2</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
-        <NoWarn>$(NoWarn);CS0419;IDE0032;IDE0370</NoWarn>
+        <NoWarn>$(NoWarn);CS0419;IDE0032</NoWarn>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
     </PropertyGroup>
     <!-- Adds Keep Talking and Nobody Explodes references implicitly, but allow opting-out of the reference. -->
@@ -64,12 +64,12 @@
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DefineConstants>$(DefineConstants);ROSLYN</DefineConstants>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-        <NoWarn>$(NoWarn);CS419;CS1574;CS1580;CS3001;CS3002;CS3003;CS3009;CS3024;CS8601;CS8604;CS8669;CS8767;CS9124</NoWarn>
+        <NoWarn>$(NoWarn);CS0419;CS1574;CS1580;CS3001;CS3002;CS3003;CS3009;CS3024;CS8601;CS8604;CS8669;CS8767;CS9124</NoWarn>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);CS1591;CS1595;CA1707;NUnit2005;SA1600</NoWarn>
+        <NoWarn>$(NoWarn);CS1591;CS1595;NUnit2005</NoWarn>
     </PropertyGroup>
     <!-- Use separate copy of Celeste if one is specified. -->
     <PropertyGroup Condition="$(CelesteLegacy) != '' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">
@@ -78,7 +78,7 @@
     <!-- Properties for Plants vs Zombies: Fusion projects. -->
     <PropertyGroup Condition="'$(IsPlantsVsZombiesFusion)' == 'true'">
         <NoWarn>$(NoWarn);CS8785;MA0049;NU1903;RCS1130</NoWarn>
-        <DoNotMerge>^(?:(?!(CommunityToolkit.Common)|(CommunityToolkit.Diagnostics)|(ZLinq)|(System\.Collections\.Immutable)|(System\.Reflection\.Emit)).)+$</DoNotMerge>
+        <DoNotMerge>^(?:(?!(System\.Collections\.Immutable)|(System\.Reflection\.Emit)).)+$</DoNotMerge>
     </PropertyGroup>
     <!-- StaticLambda.Fody is currently only needed in Plants vs Zombies: Fusion projects. -->
     <PropertyGroup Condition="'$(IsPlantsVsZombiesFusion)' != 'true'">
@@ -95,8 +95,6 @@
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
         <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.9.3"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Common" Version="8.4.2"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Diagnostics" Version="8.4.2"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.HighPerformance" Version="8.4.2"/>
         <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.6.3" PrivateAssets="all"/>
     </ItemGroup>
@@ -154,9 +152,9 @@
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-        <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
         <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime" GeneratePathProperty="true"/>
+        <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <Compile Include="$(PkgGu_Roslyn_Extensions_Source)/contentFiles/cs/any/**/*.cs"/>
     </ItemGroup>
     <!-- Reference roslyn analyzer from above onto tests. -->
