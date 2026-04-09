@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
-global using static Emik.Morsels.ManifestReader; // ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace RedundantUsingDirective.Global
+global using static Emik.Morsels.ManifestReader;
+
 namespace Emik.Morsels;
 
 /// <summary>Methods to read this assembly's manifest streams into common data structures.</summary>
-// ReSharper disable RedundantNameQualifier
 static partial class ManifestReader
 {
     /// <summary>Reads the manifest resource as a sequence of bytes.</summary>
