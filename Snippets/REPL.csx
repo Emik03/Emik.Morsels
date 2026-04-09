@@ -16947,19 +16947,19 @@ static class GamePadStateExtensions
         this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
-        AsRef(state.Item1).IsButtonDown(buttons) ||
-        AsRef(state.Item2).IsButtonDown(buttons) ||
-        AsRef(state.Item3).IsButtonDown(buttons) ||
-        AsRef(state.Item4).IsButtonDown(buttons);
+        Unsafe.AsRef(state.Item1).IsButtonDown(buttons) ||
+        Unsafe.AsRef(state.Item2).IsButtonDown(buttons) ||
+        Unsafe.AsRef(state.Item3).IsButtonDown(buttons) ||
+        Unsafe.AsRef(state.Item4).IsButtonDown(buttons);
     /// <inheritdoc cref="GamePadState.IsButtonUp"/>
     public static bool IsButtonUp(
         this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
-        AsRef(state.Item1).IsButtonUp(buttons) ||
-        AsRef(state.Item2).IsButtonUp(buttons) ||
-        AsRef(state.Item3).IsButtonUp(buttons) ||
-        AsRef(state.Item4).IsButtonUp(buttons);
+        Unsafe.AsRef(state.Item1).IsButtonUp(buttons) ||
+        Unsafe.AsRef(state.Item2).IsButtonUp(buttons) ||
+        Unsafe.AsRef(state.Item3).IsButtonUp(buttons) ||
+        Unsafe.AsRef(state.Item4).IsButtonUp(buttons);
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
