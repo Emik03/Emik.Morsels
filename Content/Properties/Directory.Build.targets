@@ -163,13 +163,11 @@
     </ItemGroup>
     <!-- Reference roslyn analyzer from above onto tests. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
-        <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <ProjectReference Include="../*.?sproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <ProjectReference Include="../*.csproj" PrivateAssets="all" IncludeAssets="all"/>
-        <ProjectReference Include="../*.fsproj" PrivateAssets="all" IncludeAssets="all"/>
+        <ProjectReference Include="../*.?sproj" PrivateAssets="all" IncludeAssets="all"/>
         <PackageReference Include="coverlet.collector" Version="6.0.4" PrivateAssets="all" IncludeAssets="all"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" PrivateAssets="all" IncludeAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all" IncludeAssets="all"/>

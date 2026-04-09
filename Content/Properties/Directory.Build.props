@@ -154,7 +154,7 @@
     </ItemGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
-        <AdditionalFiles Include="*.??proj" Visible="false"/>
+        <AdditionalFiles Include="*.?sproj" Visible="false"/>
         <AdditionalFiles Include="$(Morsels)/Content/Properties/**" Link="Properties/**"/>
         <Content Include="$(Morsels)/Content/Properties/**" Link="Properties/**" Pack="false"/>
         <Compile Condition="'$(MSBuildProjectExtension)' == '.fsproj'" Include="$(Morsels)/Compile/**/*.fs" Link="Emik.Morsels/*.fs"/>
