@@ -31,7 +31,7 @@
         <FileVersion>6.0.2</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
-        <NoWarn>$(NoWarn);CS0419;IDE0032</NoWarn>
+        <NoWarn>$(NoWarn);CS0419;IDE0028;IDE0032</NoWarn>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
     </PropertyGroup>
     <!-- Adds Keep Talking and Nobody Explodes references implicitly, but allow opting-out of the reference. -->
@@ -175,8 +175,9 @@
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <Compile Remove="$(Morsels)/Compile/Source/References/*/**/*.cs"/>
+        <Compile Include="$(Morsels)/Compile/Source/References/Aliases.cs" Link="Source/References/Aliases.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/ValidationFlags.cs" Link="Source/References/Fody/ValidationFlags.cs"/>
+        <Compile Include="$(Morsels)/Compile/Source/References/AssemblyLevelAttributes.cs" Link="Source/References/AssemblyLevelAttributes.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/AllowNullAttribute.cs" Link="Source/References/Fody/AllowNullAttribute.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/NullGuardAttribute.cs" Link="Source/References/Fody/NullGuardAttribute.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/System/Diagnostics/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
