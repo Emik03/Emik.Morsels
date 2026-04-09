@@ -5,3 +5,4 @@
 #elif WAWA
 [assembly: NullGuard(ValidationFlags.AllPublicArguments)]
 #endif
+[module: SkipLocalsInit]
