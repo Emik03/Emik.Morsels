@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantUsingDirective.Global
 namespace NullGuard;
-#if !NET452_OR_GREATER && !NETSTANDARD1_4_OR_GREATER && !!NETCOREAPP
+#if !NET452_OR_GREATER && !NETSTANDARD1_4_OR_GREATER && !NETCOREAPP
 using static AttributeTargets;
 
 /// <summary>Prevents the injection of null checking (implicit mode only).</summary>
