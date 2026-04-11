@@ -148,7 +148,7 @@
         <PackageReference Include="System.Reflection.Emit" Version="4.7.0"/>
         <Reference Include="$(PlantsVsZombiesFusion)/MelonLoader/net6/*.dll" Private="false"/>
         <Reference Include="$(PlantsVsZombiesFusion)/MelonLoader/Il2CppAssemblies/*.dll" Private="false"/>
-        <ProjectReference Condition="'$(ProjectName)' != 'Metachromasia'" Include="../Metachromasia/Metachromasia.csproj"/>
+        <ProjectReference Condition="Exists('../Metachromasia/Metachromasia.csproj') and '$(ProjectName)' != 'Metachromasia'" Include="../Metachromasia/Metachromasia.csproj"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
