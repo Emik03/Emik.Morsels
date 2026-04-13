@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Buffers;
-#if !NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER && !NO_SYSTEM_MEMORY
 /// <summary>Provides the polyfill to <c>ReadOnlySpan&lt;T&gt;.IndexOfAny</c>.</summary>
 [Obsolete("This class shouldn't be referred to directly, as only the extension method is guaranteed.", true)]
 static class SpanIndexOfAnyPolyfill

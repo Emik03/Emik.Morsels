@@ -89,17 +89,13 @@ static partial class StringRemoval
     {
         range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        popped = string.Create(
-            length,
-            (builder, startIndex),
-            static (span, tuple) =>
-            {
-                var (builder, startIndex) = tuple;
+        static void CopyFromStringBuilder(Span<char> span, (StringBuilder Builder, int StartIndex) tuple)
+        {
+            for (var i = 0; i < span.Length; i++)
+                span[i] = tuple.Builder[i + tuple.StartIndex];
+        }
 
-                for (var i = 0; i < span.Length; i++)
-                    span[i] = builder[i + startIndex];
-            }
-        );
+        popped = string.Create(length, (builder, startIndex), CopyFromStringBuilder);
 #else
         StringBuilder poppedBuilder = new(length);
 

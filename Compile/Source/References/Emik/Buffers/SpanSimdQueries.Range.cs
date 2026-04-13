@@ -147,7 +147,6 @@ static partial class SpanSimdQueries
 
     static class InAscendingOrder<T>
     {
-        // Vector512<T> is the largest vector type.
         static readonly int s_initialCapacity = 0 switch
         {
 #if NET8_0_OR_GREATER

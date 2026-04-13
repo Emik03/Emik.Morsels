@@ -94,9 +94,9 @@ static partial class CartesianProductFactories
     /// </returns>
     public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(
         this IEnumerable<T> first,
-        params IEnumerable<T>[] rest
+        params IEnumerable<IEnumerable<T>> rest
     ) =>
-        Enumerable.Repeat(first, 1).Concat(rest).CartesianProduct();
+        rest.Prepend(first).CartesianProduct();
 
     /// <summary>Creates a cartesian product from n-collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>

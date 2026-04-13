@@ -4813,16 +4813,12 @@ public enum ControlFlow : byte
     {
         range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        popped = string.Create(
-            length,
-            (builder, startIndex),
-            static (span, tuple) =>
-            {
-                var (builder, startIndex) = tuple;
-                for (var i = 0; i < span.Length; i++)
-                    span[i] = builder[i + startIndex];
-            }
-        );
+        static void CopyFromStringBuilder(Span<char> span, (StringBuilder Builder, int StartIndex) tuple)
+        {
+            for (var i = 0; i < span.Length; i++)
+                span[i] = tuple.Builder[i + tuple.StartIndex];
+        }
+        popped = string.Create(length, (builder, startIndex), CopyFromStringBuilder);
 #else
         StringBuilder poppedBuilder = new(length);
         for (var i = 0; i < length; i++)
@@ -7392,25 +7388,6 @@ public partial struct Bits<T>
         value is { } t ? FindSmallPathToEmptyNullable(t, converter) : [];
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace EmptyNamespace
-#if NETFRAMEWORK && !NET471_OR_GREATER
-/// <summary>Adds support for Append and Prepend in lower frameworks.</summary>
-    /// <summary>Appends a value to the end of the sequence.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">A sequence of values.</param>
-    /// <param name="element">The value to append to <paramref name="source"/>.</param>
-    /// <returns>A new sequence that ends with <paramref name="element"/>.</returns>
-    public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element) =>
-        source.Concat(element.Yield());
-    /// <summary>Prepends a value to the end of the sequence.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">A sequence of values.</param>
-    /// <param name="element">The value to prepend to <paramref name="source"/>.</param>
-    /// <returns>A new sequence that starts with <paramref name="element"/>.</returns>
-    public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element) =>
-        element.Yield().Concat(source);
-#endif
-// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
     /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
@@ -7472,15 +7449,12 @@ public partial struct Bits<T>
     /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
     [Pure]
 #if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(
-#else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(
-#endif
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> Combinations<T>([InstantHandle] this IEnumerable<IEnumerable<T>> iterator) =>
         iterator.Select(x => x.ToIList()).ToIList().Combinations();
 #else
+    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
+    ) =>
         iterator.Select(x => x.ReadOnly()).ReadOnly().Combinations();
 #endif
     /// <summary>Generates all combinations of the nested list.</summary>
@@ -8224,10 +8198,7 @@ public enum KeyMods : ushort
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Action<T> action
-    )
+    public static ICollection<T> For<T>([InstantHandle] this IEnumerable<T> iterable, [InstantHandle] Action<T> action)
     {
         var list = iterable.ToICollection();
         foreach (var item in list)
@@ -8723,11 +8694,11 @@ public enum KeyMods : ushort
 #endif
 /// <summary>Methods to split spans into multiple spans.</summary>
     /// <summary>The type that indicates to match all elements.</summary>
-    public struct MatchAll;
+    public readonly struct MatchAll;
     /// <summary>The type that indicates to match any element.</summary>
-    public struct MatchAny;
+    public readonly struct MatchAny;
     /// <summary>The type that indicates to match exactly one element.</summary>
-    public struct MatchOne;
+    public readonly struct MatchOne;
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="TSeparator">The type of separator for the left-hand side.</typeparam>
     /// <typeparam name="TStrategy">The strategy for splitting for the left-hand side.</typeparam>
@@ -9177,9 +9148,7 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
-    )
+    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other)
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
@@ -9839,9 +9808,9 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// </returns>
     public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(
         this IEnumerable<T> first,
-        params IEnumerable<T>[] rest
+        params IEnumerable<IEnumerable<T>> rest
     ) =>
-        Enumerable.Repeat(first, 1).Concat(rest).CartesianProduct();
+        rest.Prepend(first).CartesianProduct();
     /// <summary>Creates a cartesian product from n-collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T">The type of item in the set.</typeparam>
@@ -9967,10 +9936,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
-    public static IEnumerable<T> Omit<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        Func<T, int, bool> predicate
-    ) =>
+    public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, int, bool> predicate) =>
         source.Where((x, y) => !predicate(x, y));
     static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
     {
@@ -10016,16 +9982,10 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <inheritdoc cref="IFloatingPointIeee754{TSelf}.FusedMultiplyAdd"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> FusedMultiplyAdd<T>(this Vector<T> x, Vector<T> y, Vector<T> z) =>
-        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector.FusedMultiplyAdd(
-            (Vector<float>)(object)x,
-            (Vector<float>)(object)y,
-            (Vector<float>)(object)z
-        ) :
-        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector.FusedMultiplyAdd(
-            (Vector<double>)(object)x,
-            (Vector<double>)(object)y,
-            (Vector<double>)(object)z
-        ) :
+        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector
+           .FusedMultiplyAdd((Vector<float>)(object)x, (Vector<float>)(object)y, (Vector<float>)(object)z) :
+        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector
+           .FusedMultiplyAdd((Vector<double>)(object)x, (Vector<double>)(object)y, (Vector<double>)(object)z) :
         default;
     /// <inheritdoc cref="IRootFunctions{TSelf}.Hypot"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -10049,16 +10009,10 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <inheritdoc cref="INumberBase{TSelf}.MultiplyAddEstimate"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> MultiplyAddEstimate<T>(this Vector<T> x, Vector<T> y, Vector<T> z) =>
-        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector.MultiplyAddEstimate(
-            (Vector<float>)(object)x,
-            (Vector<float>)(object)y,
-            (Vector<float>)(object)z
-        ) :
-        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector.MultiplyAddEstimate(
-            (Vector<double>)(object)x,
-            (Vector<double>)(object)y,
-            (Vector<double>)(object)z
-        ) :
+        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector
+           .MultiplyAddEstimate((Vector<float>)(object)x, (Vector<float>)(object)y, (Vector<float>)(object)z) :
+        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector
+           .MultiplyAddEstimate((Vector<double>)(object)x, (Vector<double>)(object)y, (Vector<double>)(object)z) :
         default;
     /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.RadiansToDegrees"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -11016,9 +10970,7 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
     }
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
-    )
+    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other)
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif
@@ -11456,6 +11408,8 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 #if !NO_SYSTEM_MEMORY
+    readonly struct SMin;
+    readonly struct SMax;
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -11804,8 +11758,6 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
             }
         return bestValue;
     }
-    struct SMin;
-    struct SMax;
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
@@ -17596,10 +17548,6 @@ public partial struct Bits<T>
             : path.SplitOnAny(@"/\".AsMemory()).Last.Trim();
 #endif
     /// <summary>Creates the prettified form of the string.</summary>
-    /// <param name="s">The string to prettify.</param>
-    /// <returns>The prettified string.</returns>
-    public static string Prettify(this string s) => Prettify(s, separator: ",;");
-    /// <summary>Creates the prettified form of the string.</summary>
     /// <remarks><para>
     /// The functionality is based on
     /// <a href="https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7">this gist by kodo-pp</a>.
@@ -17632,7 +17580,8 @@ public partial struct Bits<T>
         for (var i = 0; i < s.Length; i++)
             (seen, nest, sb) = s[i] switch
             {
-                not ' ' when seen && Indent(sb, indent, nest) is var _ && (seen = false) => throw new UnreachableException(),
+                not ' ' when seen && Indent(sb, indent, nest) is var _ && (seen = false) =>
+                    throw new UnreachableException(),
                 _ when start.Contains(s[i]) && (s.Nth(i + 1) is not { } next || !end.Contains(next)) =>
                     (seen, ++nest, Indent(sb.Append(s[i]), indent, nest)),
                 _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>

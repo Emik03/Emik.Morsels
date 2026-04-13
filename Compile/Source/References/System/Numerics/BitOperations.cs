@@ -9,11 +9,10 @@ namespace System.Numerics;
 /// </summary>
 static partial class BitOperations
 {
-    static
 #if NO_SYSTEM_MEMORY
-        byte[] Log2DeBruijn { get; } =
+    static byte[] Log2DeBruijn { get; } =
 #else
-        ReadOnlySpan<byte> Log2DeBruijn =>
+    static ReadOnlySpan<byte> Log2DeBruijn =>
 #endif // 32
     [
         00, 09, 01, 10, 13, 21, 02, 29,

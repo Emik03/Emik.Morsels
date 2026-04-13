@@ -382,9 +382,7 @@ readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
 
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
-    )
+    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other)
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif

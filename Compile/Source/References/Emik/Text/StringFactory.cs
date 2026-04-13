@@ -117,11 +117,6 @@ static partial class StringFactory
             : path.SplitOnAny(@"/\".AsMemory()).Last.Trim();
 #endif
     /// <summary>Creates the prettified form of the string.</summary>
-    /// <param name="s">The string to prettify.</param>
-    /// <returns>The prettified string.</returns>
-    public static string Prettify(this string s) => Prettify(s, separator: ",;");
-
-    /// <summary>Creates the prettified form of the string.</summary>
     /// <remarks><para>
     /// The functionality is based on
     /// <a href="https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7">this gist by kodo-pp</a>.
@@ -133,7 +128,7 @@ static partial class StringFactory
     /// <param name="indent">The amount of spaces for indentation.</param>
     /// <returns>The prettified string.</returns>
     public static string Prettify(
-        this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
+        this string s,
         string start = "([{<",
         string end = ")]}>",
         string separator = ",;",
@@ -158,7 +153,8 @@ static partial class StringFactory
         for (var i = 0; i < s.Length; i++)
             (seen, nest, sb) = s[i] switch
             {
-                not ' ' when seen && Indent(sb, indent, nest) is var _ && (seen = false) => throw new UnreachableException(),
+                not ' ' when seen && Indent(sb, indent, nest) is var _ && (seen = false) =>
+                    throw new UnreachableException(),
                 _ when start.Contains(s[i]) && (s.Nth(i + 1) is not { } next || !end.Contains(next)) =>
                     (seen, ++nest, Indent(sb.Append(s[i]), indent, nest)),
                 _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>

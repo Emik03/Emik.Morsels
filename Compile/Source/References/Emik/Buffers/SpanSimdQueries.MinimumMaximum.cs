@@ -7,6 +7,10 @@ using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
 static partial class SpanSimdQueries
 {
+    readonly struct SMin;
+
+    readonly struct SMax;
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -382,9 +386,5 @@ static partial class SpanSimdQueries
 
         return bestValue;
     }
-
-    struct SMin;
-
-    struct SMax;
 }
 #endif

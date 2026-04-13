@@ -43,16 +43,10 @@ static partial class NumberInterfaceExtensions
     /// <inheritdoc cref="IFloatingPointIeee754{TSelf}.FusedMultiplyAdd"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> FusedMultiplyAdd<T>(this Vector<T> x, Vector<T> y, Vector<T> z) =>
-        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector.FusedMultiplyAdd(
-            (Vector<float>)(object)x,
-            (Vector<float>)(object)y,
-            (Vector<float>)(object)z
-        ) :
-        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector.FusedMultiplyAdd(
-            (Vector<double>)(object)x,
-            (Vector<double>)(object)y,
-            (Vector<double>)(object)z
-        ) :
+        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector
+           .FusedMultiplyAdd((Vector<float>)(object)x, (Vector<float>)(object)y, (Vector<float>)(object)z) :
+        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector
+           .FusedMultiplyAdd((Vector<double>)(object)x, (Vector<double>)(object)y, (Vector<double>)(object)z) :
         default;
 
     /// <inheritdoc cref="IRootFunctions{TSelf}.Hypot"/>
@@ -80,16 +74,10 @@ static partial class NumberInterfaceExtensions
     /// <inheritdoc cref="INumberBase{TSelf}.MultiplyAddEstimate"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> MultiplyAddEstimate<T>(this Vector<T> x, Vector<T> y, Vector<T> z) =>
-        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector.MultiplyAddEstimate(
-            (Vector<float>)(object)x,
-            (Vector<float>)(object)y,
-            (Vector<float>)(object)z
-        ) :
-        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector.MultiplyAddEstimate(
-            (Vector<double>)(object)x,
-            (Vector<double>)(object)y,
-            (Vector<double>)(object)z
-        ) :
+        typeof(T) == typeof(float) ? (Vector<T>)(object)Vector
+           .MultiplyAddEstimate((Vector<float>)(object)x, (Vector<float>)(object)y, (Vector<float>)(object)z) :
+        typeof(T) == typeof(double) ? (Vector<T>)(object)Vector
+           .MultiplyAddEstimate((Vector<double>)(object)x, (Vector<double>)(object)y, (Vector<double>)(object)z) :
         default;
 
     /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.RadiansToDegrees"/>

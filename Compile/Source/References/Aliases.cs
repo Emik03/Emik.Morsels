@@ -92,14 +92,19 @@ global using Vector2 = Microsoft.Xna.Framework.Vector2;
 global using Vector3 = Microsoft.Xna.Framework.Vector3;
 global using Vector4 = Microsoft.Xna.Framework.Vector4;
 #endif // ReSharper disable once RedundantUsingDirective
-using static System.AttributeTargets;
 #if NETFRAMEWORK && !NET40_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System.Diagnostics.Contracts
 {
     /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
     [AttributeUsage(
-        Class | Constructor | AttributeTargets.Delegate | AttributeTargets.Event | AttributeTargets.Parameter | Method | Property
+        AttributeTargets.Class |
+        AttributeTargets.Constructor |
+        AttributeTargets.Delegate |
+        AttributeTargets.Event |
+        AttributeTargets.Parameter |
+        AttributeTargets.Method |
+        AttributeTargets.Property
     )]
     sealed partial class PureAttribute : Attribute;
 }

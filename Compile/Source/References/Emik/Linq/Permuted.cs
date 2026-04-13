@@ -11,15 +11,12 @@ static partial class Permuted
     /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
     [Pure]
 #if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(
-#else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(
-#endif
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> Combinations<T>([InstantHandle] this IEnumerable<IEnumerable<T>> iterator) =>
         iterator.Select(x => x.ToIList()).ToIList().Combinations();
 #else
+    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
+    ) =>
         iterator.Select(x => x.ReadOnly()).ReadOnly().Combinations();
 #endif
     /// <summary>Generates all combinations of the nested list.</summary>

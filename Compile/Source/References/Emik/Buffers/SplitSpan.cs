@@ -16,13 +16,13 @@ using Unsafe = System.Runtime.CompilerServices.Unsafe;
 static partial class SplitSpanFactory
 {
     /// <summary>The type that indicates to match all elements.</summary>
-    public struct MatchAll;
+    public readonly struct MatchAll;
 
     /// <summary>The type that indicates to match any element.</summary>
-    public struct MatchAny;
+    public readonly struct MatchAny;
 
     /// <summary>The type that indicates to match exactly one element.</summary>
-    public struct MatchOne;
+    public readonly struct MatchOne;
 
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="TSeparator">The type of separator for the left-hand side.</typeparam>
@@ -533,9 +533,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
-    )
+    public bool ConcatEqual<TOtherSeparator, TOtherStrategy>(SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other)
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>
 #endif

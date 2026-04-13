@@ -104,10 +104,7 @@ static partial class Each
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Action<T> action
-    )
+    public static ICollection<T> For<T>([InstantHandle] this IEnumerable<T> iterable, [InstantHandle] Action<T> action)
     {
         var list = iterable.ToICollection();
 

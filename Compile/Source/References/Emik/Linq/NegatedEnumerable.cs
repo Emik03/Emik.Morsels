@@ -128,10 +128,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
-    public static IEnumerable<T> Omit<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        Func<T, int, bool> predicate
-    ) =>
+    public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, int, bool> predicate) =>
         source.Where((x, y) => !predicate(x, y));
 
     static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
