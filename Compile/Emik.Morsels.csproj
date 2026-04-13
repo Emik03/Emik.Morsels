@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <LangVersion>13</LangVersion>
         <PackageId>Emik.Morsels</PackageId>
         <RepositoryUrl>https://github.com/Emik03/Emik.Morsels</RepositoryUrl>
         <PackageProjectUrl>https://github.com/Emik03/Emik.Morsels</PackageProjectUrl>

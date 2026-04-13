@@ -88,7 +88,7 @@ static class Kvp
         [MustUseReturnValue]
         static Expression Convert(Type t, Expression exReader, Expression exTemp)
         {
-            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<>.ToString), [])!;
+            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(object.ToString), [])!;
             var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
             var exReaderString = Expression.Call(exReader, spanToString);
             var exNumberStyles = Expression.Constant(NumberStyles.Any);

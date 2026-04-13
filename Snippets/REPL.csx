@@ -1275,7 +1275,9 @@ public readonly partial struct Primes
             var item = selector(0, j);
             if (item >= j - 1)
                 continue;
+#pragma warning disable IDE0180
             var t = list[item];
+#pragma warning restore IDE0180
             list[item] = list[j - 1];
             list[j - 1] = t;
         }
@@ -1291,7 +1293,9 @@ public readonly partial struct Primes
             var item = selector(0, j);
             if (item >= j - 1)
                 continue;
+#pragma warning disable IDE0180
             var t = iterable[item];
+#pragma warning restore IDE0180
             iterable[item] = iterable[j - 1];
             iterable[j - 1] = t;
         }
@@ -1311,7 +1315,7 @@ public readonly partial struct Primes
     {
         static T Fallback(IEnumerable<T> iterable, Func<int, int, int> selector)
         {
-            IReadOnlyList<T> list = [..iterable];
+            var list = iterable.ReadOnly();
             return list[selector(0, list.Count)];
         }
         selector ??= s_rng;
@@ -5281,7 +5285,7 @@ static class Kvp
         [MustUseReturnValue]
         static Expression Convert(Type t, Expression exReader, Expression exTemp)
         {
-            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<>.ToString), [])!;
+            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(object.ToString), [])!;
             var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
             var exReaderString = Expression.Call(exReader, spanToString);
             var exNumberStyles = Expression.Constant(NumberStyles.Any);
@@ -14073,6 +14077,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
+#pragma warning disable CS8619
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
@@ -14108,9 +14113,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// <returns>The parameter <paramref name="set"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     [return: NotNullIfNotNull(nameof(set))]
-#pragma warning disable CS8619
     public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
-#pragma warning restore CS8619
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 // ReSharper disable once CheckNamespace

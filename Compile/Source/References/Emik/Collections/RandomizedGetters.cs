@@ -33,8 +33,9 @@ static partial class RandomizedGetters
                 continue;
 
             // Tuples might not necessarily be imported.
-            // ReSharper disable SwapViaDeconstruction
+#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
             var t = list[item];
+#pragma warning restore IDE0180
             list[item] = list[j - 1];
             list[j - 1] = t;
         }
@@ -55,7 +56,9 @@ static partial class RandomizedGetters
                 continue;
 
             // Tuples might not necessarily be imported.
+#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
             var t = iterable[item];
+#pragma warning restore IDE0180
             iterable[item] = iterable[j - 1];
             iterable[j - 1] = t;
         }
@@ -76,7 +79,7 @@ static partial class RandomizedGetters
     {
         static T Fallback(IEnumerable<T> iterable, Func<int, int, int> selector)
         {
-            IReadOnlyList<T> list = [..iterable];
+            var list = iterable.ReadOnly();
             return list[selector(0, list.Count)];
         }
 

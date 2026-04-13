@@ -48,7 +48,6 @@
         <ContinuousIntegrationBuild>false</ContinuousIntegrationBuild>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
