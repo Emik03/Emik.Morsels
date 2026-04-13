@@ -21,6 +21,12 @@
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SpanSimdQueries.AverageSum.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SpanSimdQueries.MinimumMaximum.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SpanSimdQueries.Range.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SplitSpan.Enumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SplitSpan.ReversedEnumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Buffers/SplitSpan.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Collections/Immutable/Bits.Enumerator.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Collections/Immutable/Bits.Logic.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/Emik/Collections/Immutable/SplitMemory.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/Collections/Specialized/SmallFactory.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/Collections/Specialized/SmallList.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/Linq/Each.cs" root0="FORCE_HIGHLIGHTING" />
@@ -33,6 +39,7 @@
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/Text/StringFactory.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/Emik/XNA/Letterboxed2DGame.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/Collections/Generics/CollectionExtensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/References/System/Linq/EnumerableAggregate.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/RandomGetItems.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/RandomShuffle.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/Range.cs" root0="FORCE_HIGHLIGHTING" />
@@ -40,6 +47,7 @@
     <setting file="file://$PROJECT_DIR$/Source/References/System/Runtime/RuntimeHelpers.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/TypeGetEnumUnderlyingTypePolyfill.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/ValueTuple.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/artifacts/obj/Emik.Morsels/project.assets.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Linq/Collected.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
@@ -54,16 +62,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "last_opened_file_path": "/home/emik/RiderProjects/Emik.Morsels/Compile",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/emik/RiderProjects/Emik.Morsels/Compile&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
   <component name="RiderProblemsViewState">
     <option name="proportion" value="0.17048517" />
   </component>

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if NET7_0_OR_GREATER // ReSharper disable once RedundantSuppressNullableWarningExpression
+#if NET7_0_OR_GREATER // ReSharper disable RedundantSuppressNullableWarningExpression
 /// <summary>Computes the Fast Fourier Transform.</summary>
 static partial class FastFourierTransform
 {
@@ -92,7 +92,7 @@ static partial class FastFourierTransform
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="length">The length.</param>
     /// <returns>The real and imaginary parts.</returns>
-    public static (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) Bluestein<T>(this int length)
+    public static (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) Bluestein<T>(int length)
         where T : ITrigonometricFunctions<T>
     {
         T[] re = new T[length], im = new T[length];
