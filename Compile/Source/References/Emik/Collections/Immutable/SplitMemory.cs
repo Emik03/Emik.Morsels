@@ -12,7 +12,6 @@ using ComptimeString = SearchValues<char>;
 #else // ReSharper disable once BuiltInTypeReferenceStyle
 using ComptimeString = System.Char;
 #endif
-
 /// <summary>Methods to split spans into multiple spans.</summary>
 static partial class SplitMemoryFactory
 {
@@ -846,14 +845,10 @@ readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
             ReadOnlyMemory<TSeparator> sep,
             scoped ref ReadOnlyMemory<TBody> body,
             out ReadOnlyMemory<TBody> current
-        )
-        {
-            var b = body.Span;
-            var ret = SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator.Move(sep.Span, ref b, out var c);
-            current = c.AsMemory(body);
-            body = b.AsMemory(body);
-            return ret;
-        }
+        ) =>
+            body.Span is var b &&
+            (SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator.Move(sep.Span, ref b, out var c),
+                body = b.AsMemory(body), current = c.AsMemory(body)) is (true, _, _);
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

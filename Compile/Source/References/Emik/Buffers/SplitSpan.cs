@@ -3,7 +3,6 @@
 namespace Emik.Morsels;
 #if !NO_SYSTEM_MEMORY
 using static Span;
-using static SplitSpanFactory;
 #if NET8_0_OR_GREATER
 using ComptimeString = SearchValues<char>;
 
