@@ -425,7 +425,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local1;
-                    local1 = ref obj;
+                    local1 = ref obj!;
                 }
 
                 var other1 = Unsafe.Add(ref search, elementOffset);
@@ -439,7 +439,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local2;
-                    local2 = ref obj;
+                    local2 = ref obj!;
                 }
 
                 var other2 = Unsafe.Add(ref search, elementOffset + 1);
@@ -453,7 +453,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local3;
-                    local3 = ref obj;
+                    local3 = ref obj!;
                 }
 
                 var other3 = Unsafe.Add(ref search, elementOffset + 2);
@@ -467,7 +467,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local4;
-                    local4 = ref obj;
+                    local4 = ref obj!;
                 }
 
                 var other4 = Unsafe.Add(ref search, elementOffset + 3);
@@ -481,7 +481,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local5;
-                    local5 = ref obj;
+                    local5 = ref obj!;
                 }
 
                 var other5 = Unsafe.Add(ref search, elementOffset + 4);
@@ -495,7 +495,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local6;
-                    local6 = ref obj;
+                    local6 = ref obj!;
                 }
 
                 var other6 = Unsafe.Add(ref search, elementOffset + 5);
@@ -509,7 +509,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local7;
-                    local7 = ref obj;
+                    local7 = ref obj!;
                 }
 
                 var other7 = Unsafe.Add(ref search, elementOffset + 6);
@@ -523,7 +523,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local8;
-                    local8 = ref obj;
+                    local8 = ref obj!;
                 }
 
                 var other8 = Unsafe.Add(ref search, elementOffset + 7);
@@ -543,7 +543,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local9;
-                    local9 = ref obj;
+                    local9 = ref obj!;
                 }
 
                 var other9 = Unsafe.Add(ref search, elementOffset);
@@ -557,7 +557,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local10;
-                    local10 = ref obj;
+                    local10 = ref obj!;
                 }
 
                 var other10 = Unsafe.Add(ref search, elementOffset + 1);
@@ -571,7 +571,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local11;
-                    local11 = ref obj;
+                    local11 = ref obj!;
                 }
 
                 var other11 = Unsafe.Add(ref search, elementOffset + 2);
@@ -585,7 +585,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local12;
-                    local12 = ref obj;
+                    local12 = ref obj!;
                 }
 
                 var other12 = Unsafe.Add(ref search, elementOffset + 3);
@@ -604,7 +604,7 @@ static partial class Span
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local;
-                    local = ref obj;
+                    local = ref obj!;
                 }
 
                 var other = Unsafe.Add(ref search, elementOffset);

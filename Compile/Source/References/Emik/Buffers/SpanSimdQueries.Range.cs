@@ -133,7 +133,7 @@ static partial class SpanSimdQueries
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<Half> AsSpan(this Half length)
     {
-        var i = (int)length;
+        var i = (int)(float)length;
         return SpanRange<Half>(i).UnsafelySkip(i);
     }
 #endif

@@ -19,7 +19,9 @@ partial struct Bits<T>
         public nuint Mask
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+#pragma warning disable IDE0251 // 'readonly set' is invalid.
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+#pragma warning restore IDE0251
         }
 
         /// <summary>Gets the current index.</summary>
@@ -27,7 +29,9 @@ partial struct Bits<T>
         public nint Index
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+#pragma warning disable IDE0251 // 'readonly set' is invalid.
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+#pragma warning restore IDE0251
         } = Start;
 
         /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>

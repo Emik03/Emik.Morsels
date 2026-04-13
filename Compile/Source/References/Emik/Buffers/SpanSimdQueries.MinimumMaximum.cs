@@ -318,12 +318,13 @@ static partial class SpanSimdQueries
 
         ref var current = ref MemoryMarshal.GetReference(span);
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
-        var best = LoadUnsafe(current);
-        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count);
+        var best = LoadUnsafe(current); // ReSharper disable once RedundantSuppressNullableWarningExpression
+        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!;
 
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
-            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count))
+            // ReSharper disable once RedundantSuppressNullableWarningExpression
+            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
             best = 0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(current)),

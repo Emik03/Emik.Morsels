@@ -82,7 +82,9 @@ static partial class Collected
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToIList<T>([InstantHandle] this IEnumerable<T>? iterable) =>
 #if !NET40_OR_GREATER && NETFRAMEWORK
+#pragma warning disable IDE0028, IDE0306
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
+#pragma warning restore IDE0028, IDE0306
 #else
         iterable is null ? null : iterable as IList<T> ?? [..iterable];
 #endif

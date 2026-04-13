@@ -25,7 +25,7 @@ static partial class ManifestReader
         while (stream.ReadByte() is not -1 and var b)
             memory.Add((byte)b);
 
-        return memory.ToArray();
+        return [..memory];
 #else
         using MemoryStream memory = new();
         stream.CopyTo(memory);

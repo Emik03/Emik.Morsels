@@ -108,7 +108,7 @@ static partial class CustomAttributeExtensions
     public static IEnumerable<T> GetCustomAttributes<T>(this ParameterInfo element, bool inherit)
         where T : Attribute =>
         GetCustomAttributes(element, typeof(T), inherit).Cast<T>();
-
+#pragma warning disable REFL010
     public static T? GetCustomAttribute<T>(this Assembly element)
         where T : Attribute =>
         (T?)GetCustomAttribute(element, typeof(T));
@@ -132,5 +132,6 @@ static partial class CustomAttributeExtensions
     public static T? GetCustomAttribute<T>(this ParameterInfo element, bool inherit)
         where T : Attribute =>
         (T?)GetCustomAttribute(element, typeof(T), inherit);
+#pragma warning restore REFL010
 }
 #endif

@@ -34,10 +34,12 @@ static partial class RandomShuffle
             if (j == i)
                 continue;
 
-            // ReSharper disable once SwapViaDeconstruction
+            // Tuples might not necessarily be imported.
+#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
             var temp = values[i];
             values[i] = values[j];
             values[j] = temp;
+#pragma warning restore IDE0180
         }
     }
 }

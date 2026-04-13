@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if NET7_0_OR_GREATER
+#if NET7_0_OR_GREATER // ReSharper disable once RedundantSuppressNullableWarningExpression
 /// <summary>Computes the Fast Fourier Transform.</summary>
 static partial class FastFourierTransform
 {
@@ -149,8 +149,8 @@ static partial class FastFourierTransform
             while (Unsafe.IsAddressLessThan(real, end))
             {
                 max = max.Max(real = real.Hypot(imaginary));
-                real = ref Unsafe.Add(ref real, 1);
-                imaginary = ref Unsafe.Add(ref imaginary, 1);
+                real = ref Unsafe.Add(ref real, 1)!;
+                imaginary = ref Unsafe.Add(ref imaginary, 1)!;
             }
 
             return max;
@@ -160,14 +160,14 @@ static partial class FastFourierTransform
         ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
         ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
         StoreUnsafe(ref real, imaginary, ref maxVector);
-        real = ref Unsafe.Add(ref real, Vector<T>.Count);
-        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
+        real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
 
         while (Unsafe.IsAddressLessThan(real, realLast))
         {
             StoreUnsafe(ref real, imaginary, ref maxVector);
-            real = ref Unsafe.Add(ref real, Vector<T>.Count);
-            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
+            real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
         }
 
         StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);

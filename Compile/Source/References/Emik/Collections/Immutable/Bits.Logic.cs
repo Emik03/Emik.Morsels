@@ -3,7 +3,7 @@
 namespace Emik.Morsels;
 #if !NO_SYSTEM_MEMORY // ReSharper disable once RedundantNameQualifier
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
-
+#pragma warning disable IDE0004
 partial struct Bits<T>
 {
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>

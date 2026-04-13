@@ -367,11 +367,11 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
         where TAccumulator : allows ref struct
 #endif // ReSharper disable once BadPreprocessorIndent
     ;
-
+#pragma warning disable IDE0032
     readonly ReadOnlySpan<TBody> _body = body;
 
     readonly ReadOnlySpan<TSeparator> _separator = separator;
-
+#pragma warning restore IDE0032
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -2,6 +2,7 @@
 // ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier UseSymbolAlias
 namespace System.Runtime.CompilerServices;
 #if !NET6_0_OR_GREATER && !NO_SYSTEM_MEMORY
+#pragma warning disable IDE0064
 /// <summary>
 /// Provides a handler used by the language compiler to process
 /// interpolated strings into <see cref="string"/> instances.
@@ -136,7 +137,7 @@ ref struct DefaultInterpolatedStringHandler
 
     /// <summary>Gets the built <see cref="string"/>.</summary>
     /// <returns>The built string.</returns>
-    public override string ToString() => Text.ToString();
+    public readonly override string ToString() => Text.ToString();
 
     /// <summary>Gets the built <see cref="string"/> and clears the handler.</summary>
     /// <returns>The built string.</returns>
@@ -165,7 +166,7 @@ ref struct DefaultInterpolatedStringHandler
     }
 
     /// <summary>Gets a span of the written characters thus far.</summary>
-    internal ReadOnlySpan<char> Text => _chars[.._pos];
+    internal readonly ReadOnlySpan<char> Text => _chars[.._pos];
 
     /// <summary>Writes the specified string to the handler.</summary>
     /// <param name="value">The string to write.</param>

@@ -1095,7 +1095,7 @@ public readonly partial struct Primes
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<Half> AsSpan(this Half length)
     {
-        var i = (int)length;
+        var i = (int)(float)length;
         return SpanRange<Half>(i).UnsafelySkip(i);
     }
 #endif
@@ -1719,7 +1719,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local1;
-                    local1 = ref obj;
+                    local1 = ref obj!;
                 }
                 var other1 = Unsafe.Add(ref search, elementOffset);
                 if (local1!.Equals(other1))
@@ -1729,7 +1729,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local2;
-                    local2 = ref obj;
+                    local2 = ref obj!;
                 }
                 var other2 = Unsafe.Add(ref search, elementOffset + 1);
                 if (local2!.Equals(other2))
@@ -1739,7 +1739,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local3;
-                    local3 = ref obj;
+                    local3 = ref obj!;
                 }
                 var other3 = Unsafe.Add(ref search, elementOffset + 2);
                 if (local3!.Equals(other3))
@@ -1749,7 +1749,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local4;
-                    local4 = ref obj;
+                    local4 = ref obj!;
                 }
                 var other4 = Unsafe.Add(ref search, elementOffset + 3);
                 if (local4!.Equals(other4))
@@ -1759,7 +1759,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local5;
-                    local5 = ref obj;
+                    local5 = ref obj!;
                 }
                 var other5 = Unsafe.Add(ref search, elementOffset + 4);
                 if (local5!.Equals(other5))
@@ -1769,7 +1769,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local6;
-                    local6 = ref obj;
+                    local6 = ref obj!;
                 }
                 var other6 = Unsafe.Add(ref search, elementOffset + 5);
                 if (local6!.Equals(other6))
@@ -1779,7 +1779,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local7;
-                    local7 = ref obj;
+                    local7 = ref obj!;
                 }
                 var other7 = Unsafe.Add(ref search, elementOffset + 6);
                 if (local7!.Equals(other7))
@@ -1789,7 +1789,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local8;
-                    local8 = ref obj;
+                    local8 = ref obj!;
                 }
                 var other8 = Unsafe.Add(ref search, elementOffset + 7);
                 if (local8!.Equals(other8))
@@ -1804,7 +1804,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local9;
-                    local9 = ref obj;
+                    local9 = ref obj!;
                 }
                 var other9 = Unsafe.Add(ref search, elementOffset);
                 if (local9!.Equals(other9))
@@ -1814,7 +1814,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local10;
-                    local10 = ref obj;
+                    local10 = ref obj!;
                 }
                 var other10 = Unsafe.Add(ref search, elementOffset + 1);
                 if (local10!.Equals(other10))
@@ -1824,7 +1824,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local11;
-                    local11 = ref obj;
+                    local11 = ref obj!;
                 }
                 var other11 = Unsafe.Add(ref search, elementOffset + 2);
                 if (local11!.Equals(other11))
@@ -1834,7 +1834,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local12;
-                    local12 = ref obj;
+                    local12 = ref obj!;
                 }
                 var other12 = Unsafe.Add(ref search, elementOffset + 3);
                 if (!local12!.Equals(other12))
@@ -1849,7 +1849,7 @@ public readonly partial struct Primes
                 if (ReferenceEquals(obj, null))
                 {
                     obj = local;
-                    local = ref obj;
+                    local = ref obj!;
                 }
                 var other = Unsafe.Add(ref search, elementOffset);
                 if (!local!.Equals(other))
@@ -3026,7 +3026,9 @@ public readonly partial struct Primes
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToIList<T>([InstantHandle] this IEnumerable<T>? iterable) =>
 #if !NET40_OR_GREATER && NETFRAMEWORK
+#pragma warning disable IDE0028, IDE0306
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
+#pragma warning restore IDE0028, IDE0306
 #else
         iterable is null ? null : iterable as IList<T> ?? [..iterable];
 #endif
@@ -5652,8 +5654,8 @@ static class Kvp
             while (Unsafe.IsAddressLessThan(real, end))
             {
                 max = max.Max(real = real.Hypot(imaginary));
-                real = ref Unsafe.Add(ref real, 1);
-                imaginary = ref Unsafe.Add(ref imaginary, 1);
+                real = ref Unsafe.Add(ref real, 1)!;
+                imaginary = ref Unsafe.Add(ref imaginary, 1)!;
             }
             return max;
         }
@@ -5661,13 +5663,13 @@ static class Kvp
         ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
         ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
         StoreUnsafe(ref real, imaginary, ref maxVector);
-        real = ref Unsafe.Add(ref real, Vector<T>.Count);
-        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
+        real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
         while (Unsafe.IsAddressLessThan(real, realLast))
         {
             StoreUnsafe(ref real, imaginary, ref maxVector);
-            real = ref Unsafe.Add(ref real, Vector<T>.Count);
-            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count);
+            real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
         }
         StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
         for (var index = 0; index < Vector<T>.Count; index++)
@@ -5748,14 +5750,18 @@ public partial struct Bits<T>
         public nuint Mask
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+#pragma warning disable IDE0251
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+#pragma warning restore IDE0251
         }
         /// <summary>Gets the current index.</summary>
         [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public nint Index
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+#pragma warning disable IDE0251
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+#pragma warning restore IDE0251
         } = Start;
         /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
         [CollectionAccess(Read)]
@@ -6747,6 +6753,7 @@ public partial struct Bits<T>
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantCast
 #if !NO_SYSTEM_MEMORY
+#pragma warning disable IDE0004
 public partial struct Bits<T>
 {
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>
@@ -7801,7 +7808,7 @@ public partial struct Bits<T>
     /// </para><para>
     /// The array may contain uninitialized memory for all elements past <see cref="List{T}.Count"/>.
     /// </para><para>
-    /// Uses of this method include obtaining a <see cref="ReadOnlySpan{T}"/> or <see cref="Span{T}"/> outside of
+    /// Uses of this method include obtaining a <c>ReadOnlySpan&lt;T&gt;</c> or <c>Span&lt;T&gt;</c> outside of
     /// .NET 5+ projects, as <c>CollectionsMarshal.AsSpan&lt;T&gt;</c> is not available there, or obtaining
     /// <c>ReadOnlyMemory&lt;T&gt;</c> or <c>Memory&lt;T&gt;</c> of a <see cref="List{T}"/>, normally impossible,
     /// or if growth of an array is no longer needed but the contents are expected to be long-lasting.
@@ -9222,8 +9229,10 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
         where TAccumulator : allows ref struct
 #endif
     ;
+#pragma warning disable IDE0032
     readonly ReadOnlySpan<TBody> _body = body;
     readonly ReadOnlySpan<TSeparator> _separator = separator;
+#pragma warning restore IDE0032
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -11089,8 +11098,10 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         where TAccumulator : allows ref struct
 #endif
     ;
+#pragma warning disable IDE0032
     readonly ReadOnlyMemory<TBody> _body = body;
     readonly ReadOnlyMemory<TSeparator> _separator = separator;
+#pragma warning restore IDE0032
     /// <summary>
     /// Initializes a new instance of the <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> struct.
     /// </summary>
@@ -11384,7 +11395,9 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
     public partial struct Enumerator(ReadOnlyMemory<TBody> body, ReadOnlyMemory<TSeparator> separator)
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
+#pragma warning disable IDE0032
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
+#pragma warning restore IDE0032
         readonly ReadOnlyMemory<TBody> _original = body;
         ReadOnlyMemory<TBody> _body = body, _current;
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
@@ -11504,7 +11517,9 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
         readonly ReadOnlyMemory<TBody> _original = body;
+#pragma warning disable IDE0032
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
+#pragma warning restore IDE0032
         ReadOnlyMemory<TBody> _body = body, _current;
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
         /// <param name="body">The body.</param>
@@ -11938,10 +11953,10 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         ref var current = ref MemoryMarshal.GetReference(span);
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
-        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count);
+        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!;
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
-            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count))
+            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
             best = 0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(current)),
@@ -13478,7 +13493,9 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
+#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
+#pragma warning restore IDE0032
         ReadOnlySpan<TBody> _body = body, _current;
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
         /// <param name="body">The body.</param>
@@ -16608,7 +16625,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         List<byte> memory = [];
         while (stream.ReadByte() is not -1 and var b)
             memory.Add((byte)b);
-        return memory.ToArray();
+        return [..memory];
 #else
         using MemoryStream memory = new();
         stream.CopyTo(memory);
@@ -18081,7 +18098,9 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref partial struct Enumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
+#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
+#pragma warning restore IDE0032
         ReadOnlySpan<TBody> _body = body, _current;
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="body">The body.</param>

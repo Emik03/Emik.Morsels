@@ -40,9 +40,10 @@
     <setting file="file://$PROJECT_DIR$/Source/References/System/Runtime/RuntimeHelpers.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/TypeGetEnumUnderlyingTypePolyfill.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/References/System/ValueTuple.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Linq/Collected.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="SWEA" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6

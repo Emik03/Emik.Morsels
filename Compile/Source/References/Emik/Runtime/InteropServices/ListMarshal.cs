@@ -48,7 +48,7 @@ static partial class ListMarshal
     /// </para><para>
     /// The array may contain uninitialized memory for all elements past <see cref="List{T}.Count"/>.
     /// </para><para>
-    /// Uses of this method include obtaining a <see cref="ReadOnlySpan{T}"/> or <see cref="Span{T}"/> outside of
+    /// Uses of this method include obtaining a <c>ReadOnlySpan&lt;T&gt;</c> or <c>Span&lt;T&gt;</c> outside of
     /// .NET 5+ projects, as <c>CollectionsMarshal.AsSpan&lt;T&gt;</c> is not available there, or obtaining
     /// <c>ReadOnlyMemory&lt;T&gt;</c> or <c>Memory&lt;T&gt;</c> of a <see cref="List{T}"/>, normally impossible,
     /// or if growth of an array is no longer needed but the contents are expected to be long-lasting.

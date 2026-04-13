@@ -250,11 +250,11 @@ readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         where TAccumulator : allows ref struct
 #endif // ReSharper disable once BadPreprocessorIndent
     ;
-
+#pragma warning disable IDE0032
     readonly ReadOnlyMemory<TBody> _body = body;
 
     readonly ReadOnlyMemory<TSeparator> _separator = separator;
-
+#pragma warning restore IDE0032
     /// <summary>
     /// Initializes a new instance of the <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> struct.
     /// </summary>
@@ -601,8 +601,9 @@ readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
     public partial struct Enumerator(ReadOnlyMemory<TBody> body, ReadOnlyMemory<TSeparator> separator)
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
+#pragma warning disable IDE0032
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
-
+#pragma warning restore IDE0032
         readonly ReadOnlyMemory<TBody> _original = body;
 
         ReadOnlyMemory<TBody> _body = body, _current;
@@ -738,9 +739,9 @@ readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
         readonly ReadOnlyMemory<TBody> _original = body;
-
+#pragma warning disable IDE0032
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
-
+#pragma warning restore IDE0032
         ReadOnlyMemory<TBody> _body = body, _current;
 
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
