@@ -8,8 +8,8 @@ using static SplitSpanFactory;
 using ComptimeString = SearchValues<char>;
 
 // -
-#else
-using ComptimeString = char;
+#else // ReSharper disable once BuiltInTypeReferenceStyle
+using ComptimeString = System.Char;
 #endif
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 
