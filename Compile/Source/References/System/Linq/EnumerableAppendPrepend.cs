@@ -1,9 +1,9 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
-namespace Emik.Morsels;
+namespace System;
 #if NETFRAMEWORK && !NET471_OR_GREATER
 /// <summary>Adds support for Append and Prepend in lower frameworks.</summary>
-static partial class Attachments
+static partial class EnumerableAppendPrepend
 {
     /// <summary>Appends a value to the end of the sequence.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
