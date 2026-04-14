@@ -5398,7 +5398,7 @@ static class Kvp
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="length">The length.</param>
     /// <returns>The real and imaginary parts.</returns>
-    public static (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) Bluestein<T>(int length)
+    public static (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) Bluestein<T>(this int length)
         where T : ITrigonometricFunctions<T>
     {
         T[] re = new T[length], im = new T[length];
