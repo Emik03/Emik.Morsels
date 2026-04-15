@@ -62,8 +62,9 @@ static partial class EnumerableAggregate
             IEqualityComparer<TKey>? keyComparer
         )
         {
+#pragma warning disable IDE0028
             Dictionary<TKey, TAccumulate> dict = new(keyComparer);
-
+#pragma warning restore IDE0028
             do
             {
                 var value = enumerator.Current;
@@ -100,8 +101,9 @@ static partial class EnumerableAggregate
             IEqualityComparer<TKey>? keyComparer
         )
         {
+#pragma warning disable IDE0028
             Dictionary<TKey, TAccumulate> dict = new(keyComparer);
-
+#pragma warning restore IDE0028
             do
             {
                 var value = enumerator.Current;

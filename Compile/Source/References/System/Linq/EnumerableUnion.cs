@@ -45,11 +45,13 @@ static partial class EnumerableUnion
         IEqualityComparer<TKey>? comparer
     )
     {
+#pragma warning disable IDE0028
 #if NET472_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         HashSet<TKey> set = new(DefaultInternalSetCapacity, comparer);
 #else
         HashSet<TKey> set = new(comparer);
 #endif
+#pragma warning restore IDE0028
         return source.Where(element => set.Add(keySelector(element)));
     }
 
@@ -141,7 +143,9 @@ static partial class EnumerableUnion
         IEqualityComparer<TKey>? comparer
     )
     {
+#pragma warning disable IDE0028
         HashSet<TKey> set = new(comparer);
+#pragma warning restore IDE0028
         return first.Where(x => set.Add(keySelector(x))).Concat(second.Where(x => set.Add(keySelector(x))));
     }
 

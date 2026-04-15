@@ -33,8 +33,9 @@ static partial class EnumerableCount
             IEqualityComparer<TKey>? keyComparer
         )
         {
+#pragma warning disable IDE0028
             Dictionary<TKey, int> countsBy = new(keyComparer);
-
+#pragma warning restore IDE0028
             do
             {
                 var key = keySelector(enumerator.Current);
