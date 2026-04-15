@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantNameQualifier RedundantUsingDirective UnusedParameter.Local
 #if !KTANE && !WAWA
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
@@ -297,7 +297,7 @@ namespace System.Runtime.CompilerServices
 
     /// <summary>Defines a union.</summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-    sealed class UnionAttribute : Attribute { }
+    sealed class UnionAttribute : Attribute;
 
     /// <summary>Generic interface for unions.</summary>
     interface IUnion
@@ -313,14 +313,12 @@ namespace System.Runtime.CompilerServices
         /// <summary>Initializes a new instance of the <see cref="InterceptsLocationAttribute"/> class.</summary>
         /// <param name="version">The version number of the encoding data.</param>
         /// <param name="data">The opaque data string.</param>
-        [UsedImplicitly]
         public InterceptsLocationAttribute(int version, string data) { }
 
         /// <summary>Initializes a new instance of the <see cref="InterceptsLocationAttribute"/> class.</summary>
         /// <param name="filePath">The file path to the intercepted location.</param>
         /// <param name="line">The line number to the intercepted location.</param>
         /// <param name="character">The character number to the intercepted location.</param>
-        [UsedImplicitly]
         public InterceptsLocationAttribute(string filePath, int line, int character) { }
     }
 #if !NET8_0_OR_GREATER
