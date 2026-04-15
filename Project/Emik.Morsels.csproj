@@ -9,4 +9,7 @@
     <PropertyGroup Condition="'$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40'">
         <DefineConstants>$(DefineConstants);NO_SYSTEM_MEMORY</DefineConstants>
     </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="../Compile/**/*.cs"/>
+    </ItemGroup>
 </Project>
