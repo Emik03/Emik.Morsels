@@ -275,8 +275,9 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="value">The single item to use.</param>
     /// <returns>The collection with 1 item.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable IDE0028
     public static implicit operator SmallList<T>(T value) => new(value);
-
+#pragma warning restore IDE0028
     /// <summary>Creates the collection with 2 items in it.</summary>
     /// <param name="tuple">The tuple containing 2 items to destructure and use.</param>
     /// <returns>The collection with 2 items.</returns>

@@ -391,7 +391,7 @@ public sealed class RoslynComparer
         r => (x, y) => x.IsOptional == y.IsOptional && r.Equals(x.Modifier, y.Modifier),
         _ => (x, y) => x.Span == y.Span && x.SyntaxTree.IsEquivalentTo(y.SyntaxTree),
         _ => BetterHashCode,
-        r => x => x.IsOptional.ToByte() * Prime() ^ r.GetHashCode(x.Modifier),
+        r => x => x.IsOptional.ToByte() * Primes.Get() ^ r.GetHashCode(x.Modifier),
         _ => x => x.Span.GetHashCode()
     );
 
@@ -486,16 +486,16 @@ public sealed class RoslynComparer
     [Pure]
     static int BetterHashCode(ISymbol x)
     {
-        int hash = Prime();
+        int hash = Primes.Get();
 
         for (var obj = Unsafe.As<ISymbol?>(x); obj is not null; obj = obj.ContainingSymbol)
         {
-            hash ^= unchecked(obj.Kind.AsInt() * Prime());
-            hash ^= unchecked(obj.MetadataToken * Prime());
-            hash ^= unchecked(obj.DeclaredAccessibility.AsInt() * Prime());
-            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Name) * Prime());
-            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Language) * Prime());
-            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.MetadataName) * Prime());
+            hash ^= unchecked(obj.Kind.AsInt() * Primes.Get());
+            hash ^= unchecked(obj.MetadataToken * Primes.Get());
+            hash ^= unchecked(obj.DeclaredAccessibility.AsInt() * Primes.Get());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Name) * Primes.Get());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Language) * Primes.Get());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.MetadataName) * Primes.Get());
         }
 
         return hash;

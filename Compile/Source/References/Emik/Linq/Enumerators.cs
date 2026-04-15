@@ -13,8 +13,9 @@ static partial class EnumeratorToEnumerable
         const int Capacity = 8;
 
         // ReSharper disable once CollectionNeverQueried.Local MemberCanBePrivate.Local
+#pragma warning disable IDE0028
         public List<object?> List { get; } = new(Capacity);
-
+#pragma warning restore IDE0028
         /// <inheritdoc />
         bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
 

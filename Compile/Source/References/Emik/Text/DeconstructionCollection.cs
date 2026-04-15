@@ -57,7 +57,9 @@ static partial class DeconstructionCollectionExtensions
         visitLength = visitLength >= 0 ? visitLength : int.MaxValue;
         stringLength = stringLength >= 0 ? stringLength : int.MaxValue;
         recurseLength = recurseLength >= 0 ? recurseLength : int.MaxValue;
+#pragma warning disable IDE0028
         HashSet<object?> seen = new(DeconstructionCollection.Comparer) { value };
+#pragma warning restore IDE0028
         var assertion = false;
         var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion, seen);
 

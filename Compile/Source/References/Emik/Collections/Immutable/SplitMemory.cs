@@ -12,6 +12,7 @@ using ComptimeString = SearchValues<char>;
 #else // ReSharper disable once BuiltInTypeReferenceStyle
 using ComptimeString = System.Char;
 #endif
+
 /// <summary>Methods to split spans into multiple spans.</summary>
 static partial class SplitMemoryFactory
 {

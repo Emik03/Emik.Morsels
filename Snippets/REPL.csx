@@ -2650,7 +2650,7 @@ public readonly partial struct Primes
             IEventSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IMethodSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IPropertySymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
-            _ => [],
+            _ => ImmutableArray<ISymbol>.Empty,
         };
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
@@ -2681,10 +2681,7 @@ public readonly partial struct Primes
             ContainingNamespace: { ContainingNamespace.IsGlobalNamespace: true, Name: nameof(System) },
             Name: nameof(Nullable),
             IsValueType: true,
-            TypeArguments:
-            [
-                { } underlying and not { Name: nameof(Nullable) },
-            ],
+            TypeArguments: [{ } underlying and not { Name: nameof(Nullable) }],
         }
             ? underlying
             : null;
@@ -4068,7 +4065,9 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     /// <param name="value">The single item to use.</param>
     /// <returns>The collection with 1 item.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable IDE0028
     public static implicit operator SmallList<T>(T value) => new(value);
+#pragma warning restore IDE0028
     /// <summary>Creates the collection with 2 items in it.</summary>
     /// <param name="tuple">The tuple containing 2 items to destructure and use.</param>
     /// <returns>The collection with 2 items.</returns>
@@ -8102,7 +8101,9 @@ public enum KeyMods : ushort
     /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable IDE0028
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
+#pragma warning restore IDE0028
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace
@@ -14237,7 +14238,7 @@ public sealed class RoslynComparer
         r => (x, y) => x.IsOptional == y.IsOptional && r.Equals(x.Modifier, y.Modifier),
         _ => (x, y) => x.Span == y.Span && x.SyntaxTree.IsEquivalentTo(y.SyntaxTree),
         _ => BetterHashCode,
-        r => x => x.IsOptional.ToByte() * Prime() ^ r.GetHashCode(x.Modifier),
+        r => x => x.IsOptional.ToByte() * Primes.Get() ^ r.GetHashCode(x.Modifier),
         _ => x => x.Span.GetHashCode()
     );
     /// <summary>Determines whether the <see cref="ITypeSymbol"/> has the defined operator.</summary>
@@ -14321,15 +14322,15 @@ public sealed class RoslynComparer
     [Pure]
     static int BetterHashCode(ISymbol x)
     {
-        int hash = Prime();
+        int hash = Primes.Get();
         for (var obj = Unsafe.As<ISymbol?>(x); obj is not null; obj = obj.ContainingSymbol)
         {
-            hash ^= unchecked(obj.Kind.AsInt() * Prime());
-            hash ^= unchecked(obj.MetadataToken * Prime());
-            hash ^= unchecked(obj.DeclaredAccessibility.AsInt() * Prime());
-            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Name) * Prime());
-            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Language) * Prime());
-            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.MetadataName) * Prime());
+            hash ^= unchecked(obj.Kind.AsInt() * Primes.Get());
+            hash ^= unchecked(obj.MetadataToken * Primes.Get());
+            hash ^= unchecked(obj.DeclaredAccessibility.AsInt() * Primes.Get());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Name) * Primes.Get());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Language) * Primes.Get());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.MetadataName) * Primes.Get());
         }
         return hash;
     }
@@ -15542,7 +15543,9 @@ public partial struct Bits<T>
         visitLength = visitLength >= 0 ? visitLength : int.MaxValue;
         stringLength = stringLength >= 0 ? stringLength : int.MaxValue;
         recurseLength = recurseLength >= 0 ? recurseLength : int.MaxValue;
+#pragma warning disable IDE0028
         HashSet<object?> seen = new(DeconstructionCollection.Comparer) { value };
+#pragma warning restore IDE0028
         var assertion = false;
         var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion, seen);
         if (next is not DeconstructionCollection x)
@@ -17120,7 +17123,9 @@ public abstract class FixedGenerator(
     {
         /// <summary>The most common usage is with tuples, in which the maximum capacity is 8.</summary>
         const int Capacity = 8;
+#pragma warning disable IDE0028
         public List<object?> List { get; } = new(Capacity);
+#pragma warning restore IDE0028
         /// <inheritdoc />
         bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
         /// <inheritdoc />

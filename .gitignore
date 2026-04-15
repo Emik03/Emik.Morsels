@@ -1,4 +1,4 @@
-Compile/artifacts
+Project/artifacts
 Content/Properties/Projects/**
 **/Directory.Build.local.props
 References/Emik.DefaultDocumentation.pdb

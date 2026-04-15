@@ -531,7 +531,7 @@ static partial class IncludedSyntaxNodeRegistrant
             IEventSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IMethodSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IPropertySymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
-            _ => [],
+            _ => ImmutableArray<ISymbol>.Empty,
         };
 
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
@@ -564,10 +564,7 @@ static partial class IncludedSyntaxNodeRegistrant
             ContainingNamespace: { ContainingNamespace.IsGlobalNamespace: true, Name: nameof(System) },
             Name: nameof(Nullable),
             IsValueType: true,
-            TypeArguments:
-            [
-                { } underlying and not { Name: nameof(Nullable) },
-            ],
+            TypeArguments: [{ } underlying and not { Name: nameof(Nullable) }],
         }
             ? underlying
             : null;

@@ -18,6 +18,8 @@ static partial class SmallFactory
     /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable IDE0028
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
+#pragma warning restore IDE0028
 }
 #endif
