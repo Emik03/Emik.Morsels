@@ -12,9 +12,9 @@ static partial class ImmutableArrayBuilderDrainToImmutable
     /// and sets the collection to a zero length array.
     /// </summary>
     /// <remarks><para>
-    /// If <see cref="Capacity"/> equals <see cref="Count"/>, the internal array will be extracted
-    /// as an <see cref="ImmutableArray{T}"/> without copying the contents. Otherwise, the contents
-    /// will be copied into a new array. The collection will then be set to a zero length array.
+    /// If <see cref="ImmutableArray{T}.Capacity"/> equals <see cref="ImmutableArray{T}.Count"/>,
+    /// the internal array will be extracted as an <see cref="ImmutableArray{T}"/> without copying the contents.
+    /// Otherwise, the contents will be copied into a new array. The collection will then be set to a zero length array.
     /// </para></remarks>
     /// <returns>An immutable array.</returns>
     public static ImmutableArray<T> DrainToImmutable<T>(this ImmutableArray<T>.Builder builder)
