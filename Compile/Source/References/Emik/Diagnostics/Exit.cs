@@ -3,7 +3,7 @@
 namespace Emik.Morsels;
 #if !NET5_0_OR_GREATER // ReSharper disable once RedundantNameQualifier RedundantUsingDirective
 using SecurityAction = System.Security.Permissions.SecurityAction;
-using static SecurityAction;
+using static System.Security.Permissions.SecurityAction;
 using static SecurityPermissionFlag;
 #endif
 

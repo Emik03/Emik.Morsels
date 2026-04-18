@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier RedundantUsingDirective
 namespace Emik.Morsels;
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+#if !NO_SYSTEM_MEMORY
 using Expression = System.Linq.Expressions.Expression;
 using Unsafe = System.Runtime.CompilerServices.Unsafe;
 

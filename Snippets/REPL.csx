@@ -7854,7 +7854,7 @@ public enum KeyMods : ushort
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier RedundantUsingDirective
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+#if !NO_SYSTEM_MEMORY
 /// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
     /// <summary>Increments the value.</summary>
     /// <typeparam name="T">The type of value to increment.</typeparam>
