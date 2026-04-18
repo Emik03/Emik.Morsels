@@ -136,7 +136,7 @@ static class CollectionExtensions
     public static ObjectModel.ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> list) => new(list);
 #if !NETFRAMEWORK || NET45_OR_GREATER
     /// <summary>
-    /// Returns a read-only <see cref="ReadOnlyDictionary{TKey, TValue}"/> wrapper for the current dictionary.
+    /// Returns a read-only <see cref="ReadOnlyDictionary{TKey,TValue}"/> wrapper for the current dictionary.
     /// </summary>
     /// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>

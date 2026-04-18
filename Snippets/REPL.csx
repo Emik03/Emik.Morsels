@@ -169,6 +169,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using SecurityAction = System.Security.Permissions.SecurityAction;
+using SecurityPermissionAttribute = System.Security.Permissions.SecurityPermissionAttribute;
 using static System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityPermissionFlag;
 using Buffer = System.Buffer;
