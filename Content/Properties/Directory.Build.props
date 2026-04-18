@@ -164,10 +164,10 @@
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Absence.Fody" Version="2.0.10" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Divorce.Fody" Version="1.1.2" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Absence.Fody" Version="2.0.11" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="InlineIL.Fody" Version="1.10.2" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="StaticLambda.Fody" Version="1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="StaticLambda.Fody" Version="1.1.2" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.14.1" PrivateAssets="all" ExcludeAssets="runtime"/>
