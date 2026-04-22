@@ -291,7 +291,7 @@ static partial class SpanSimdQueries
         where T : struct =>
         Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
 #if !NET8_0_OR_GREATER
         where T : struct

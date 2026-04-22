@@ -17,7 +17,7 @@ static partial class EnumerableChunk
     /// An <see cref="IEnumerable{T}"/> that contains the elements the
     /// input sequence split into chunks of size <paramref name="size"/>.
     /// </returns>
-    [Pure] // ReSharper disable once CognitiveComplexity
+    [Pure]
     public static IEnumerable<TSource[]> Chunk<TSource>(this IEnumerable<TSource> source, int size)
     {
         using var e = source.GetEnumerator();

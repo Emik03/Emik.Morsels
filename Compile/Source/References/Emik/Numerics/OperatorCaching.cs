@@ -12,7 +12,7 @@ static partial class OperatorCaching
     /// <typeparam name="T">The type of value to increment.</typeparam>
     /// <param name="t">The value to increment.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Increment<T>(ref T t)
     {
         if (typeof(T) == typeof(byte))

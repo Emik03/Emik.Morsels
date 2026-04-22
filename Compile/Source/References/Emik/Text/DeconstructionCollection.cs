@@ -546,7 +546,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
         /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
-        // ReSharper disable once CognitiveComplexity
         public static bool TryReflectivelyCollect(
             object value,
             [NonNegativeValue] int str,
