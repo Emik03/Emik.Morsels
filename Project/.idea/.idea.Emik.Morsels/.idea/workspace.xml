@@ -18,7 +18,7 @@
     <setting file="file://$PROJECT_DIR$/../Compile/Source/References/Emik/Collections/Immutable/SplitMemory.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/artifacts/obj/Emik.Morsels/project.assets.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Linq/Collected.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/System/Collections/Immutable/ImmutableArrayBuilderDrainToImmutable.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/System/Collections/Immutable/ImmutableArrayBuilderDrainToImmutable.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="SWEA" />

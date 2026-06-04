@@ -4,9 +4,9 @@
     ".NETFramework,Version=v3.5": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -16,18 +16,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -132,9 +129,9 @@
     ".NETFramework,Version=v4.0": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -144,18 +141,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -260,9 +254,9 @@
     ".NETStandard,Version=v2.0": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -284,18 +278,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -445,9 +436,9 @@
     ".NETStandard,Version=v2.1": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -466,18 +457,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -579,9 +567,9 @@
     ".NETCoreApp,Version=v5.0": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -600,18 +588,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -713,9 +698,9 @@
     "net6.0": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -734,18 +719,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -847,9 +829,9 @@
     "net7.0": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -868,18 +850,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -981,9 +960,9 @@
     "net8.0": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -999,18 +978,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -1107,9 +1083,9 @@
     "net9.0": {
       "Absence.Fody": {
         "type": "Direct",
-        "requested": "[2.0.10, )",
-        "resolved": "2.0.10",
-        "contentHash": "2KLFoerxZmndQnk0eChviplhYaViXuxho3rK5UzIY+Tdpsk72uOFoJV0+g0XELAAF2Kq48EgWf1/0iAIMs4rpg=="
+        "requested": "[2.0.11, )",
+        "resolved": "2.0.11",
+        "contentHash": "DoO21KRWNDlAt/amx2yD0Z1MAtpv5hC97EU2G9LEhptpgWsFedpBQuajvszRIMD2zIGXEzwSAkgAdvugjQdBoQ=="
       },
       "Collections.Analyzer": {
         "type": "Direct",
@@ -1125,18 +1101,15 @@
       },
       "Divorce.Fody": {
         "type": "Direct",
-        "requested": "[1.1.1, )",
-        "resolved": "1.1.1",
-        "contentHash": "FpZKfY6XUBD/dpL8iV/DOn9w+BTwPq2JVuKP0GdSck+TxrVEus00Jex2hyjW4uJqR1uqBHCMryNKZw+6KFCrZg==",
-        "dependencies": {
-          "Fody": "6.8.2"
-        }
+        "requested": "[1.1.2, )",
+        "resolved": "1.1.2",
+        "contentHash": "c0IPHVtr5T02Y+YRzGWLNPGyWTIgqzWHdUVgl2vle/SnO4ZPgmlhTke2GltgGuYwAmKFEA7SJlaeCWeZMqkdiA=="
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.16, )",
-        "resolved": "1.4.16",
-        "contentHash": "NaVwiCfMYmLf5mUqDhgS08YtOShR2kYvRyPQOs5xlZsTrvDDrJc2OzUHRIrEVzUOa2AoPBHxmtUX9PWy72Nwlw=="
+        "requested": "[1.4.17, )",
+        "resolved": "1.4.17",
+        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
