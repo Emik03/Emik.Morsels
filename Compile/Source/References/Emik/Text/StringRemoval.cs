@@ -125,7 +125,7 @@ static partial class StringRemoval
     /// <returns>The <see cref="StringBuilder"/> of the parameter <paramref name="str"/>.</returns>
     [Pure]
     public static StringBuilder ToBuilder(this string? str) => new(str);
-#if !NO_SYSTEM_MEMORY
+#if !NO_SYSTEM_MEMORY && !NETCOREAPP
     /// <inheritdoc cref="string.Trim()"/>
     public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
 
