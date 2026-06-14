@@ -304,8 +304,8 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// </summary>
     /// <param name="tuple">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of <see cref="SmallList{T}"/> by passing the parameter <paramref name="tuple"/>
-    /// to the constructor <see cref="Emik.Morsels.SmallList{T}(T, T, T, T[])"/>.
+    /// The new instance of <see cref="global::Emik.Morsels.SmallList{T}"/> by passing the parameter
+    /// <paramref name="tuple"/> to the constructor <see cref="Emik.Morsels.SmallList{T}(T, T, T, T[])"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second, T Third, T[] TheRest) tuple) =>

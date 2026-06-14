@@ -337,28 +337,28 @@ readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
 
     /// <summary>
     /// Explicitly converts the parameter by creating the new instance of
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
-    /// <see cref="Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
+    /// <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
+    /// <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
     /// </summary>
     /// <param name="body">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/>
+    /// The new instance of <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}"/>
     /// by passing the parameter <paramref name="body"/> to the constructor
-    /// <see cref="Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
+    /// <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
     /// </returns>
     [Pure]
     public static explicit operator SplitMemory<TBody, TSeparator, TStrategy>(ReadOnlyMemory<TBody> body) => new(body);
 
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
-    /// <see cref="Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
+    /// <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
+    /// <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
     /// </summary>
     /// <param name="tuple">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/>
+    /// The new instance of <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}"/>
     /// by passing the parameter <paramref name="tuple"/> to the constructor
-    /// <see cref="Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
+    /// <see cref="global::Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
     /// </returns>
     [Pure]
     public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>(
@@ -366,7 +366,7 @@ readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
     ) =>
         new(tuple.Body, tuple.Separator);
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
+    /// <inheritdoc cref="global::Emik.Morsels.SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Deconstruct(out ReadOnlyMemory<TBody> head, out SplitMemory<TBody, TSeparator, TStrategy> tail)
     {

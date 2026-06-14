@@ -4092,8 +4092,8 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     /// </summary>
     /// <param name="tuple">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of <see cref="SmallList{T}"/> by passing the parameter <paramref name="tuple"/>
-    /// to the constructor <see cref="SmallList{T}(T, T, T, T[])"/>.
+    /// The new instance of <see cref="global::SmallList{T}"/> by passing the parameter
+    /// <paramref name="tuple"/> to the constructor <see cref="SmallList{T}(T, T, T, T[])"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second, T Third, T[] TheRest) tuple) =>
@@ -9117,13 +9117,13 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
         !left.Equals(right);
     /// <summary>
     /// Explicitly converts the parameter by creating the new instance of
-    /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> by using the constructor
-    /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
+    /// <see cref="global::SplitSpan{TBody, TSeparator, TStrategy}"/> by using the constructor
+    /// <see cref="global::SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
     /// </summary>
     /// <param name="body">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of SplitSpan{TBody, TSeparator, TStrategy} by passing the parameter <paramref name="body"/>
-    /// to the constructor <see cref="SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
+    /// The new instance of SplitSpan{TBody, TSeparator, TStrategy} by passing the parameter <paramref name="body"/> to
+    /// the constructor <see cref="global::SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static explicit operator SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body) => new(body);
@@ -9640,8 +9640,8 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// </summary>
     /// <param name="tuple">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of <see cref="Split{T}"/> by passing the parameter <paramref name="tuple"/>
-    /// to the constructor <see cref="Split{T}(T, T)"/>.
+    /// The new instance of <see cref="global::Split{T}"/> by passing the parameter
+    /// <paramref name="tuple"/> to the constructor <see cref="Split{T}(T, T)"/>.
     /// </returns>
     [Pure]
     public static implicit operator Split<T>((T Truthy, T Falsy) tuple) => new(tuple.Truthy, tuple.Falsy);
@@ -10930,34 +10930,34 @@ public readonly partial struct SplitMemory<TBody, TSeparator, TStrategy>(
         !left.Equals(right);
     /// <summary>
     /// Explicitly converts the parameter by creating the new instance of
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
+    /// <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
+    /// <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
     /// </summary>
     /// <param name="body">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/>
+    /// The new instance of <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}"/>
     /// by passing the parameter <paramref name="body"/> to the constructor
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
+    /// <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
     /// </returns>
     [Pure]
     public static explicit operator SplitMemory<TBody, TSeparator, TStrategy>(ReadOnlyMemory<TBody> body) => new(body);
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
+    /// <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
+    /// <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
     /// </summary>
     /// <param name="tuple">The parameter to pass onto the constructor.</param>
     /// <returns>
-    /// The new instance of <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/>
+    /// The new instance of <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}"/>
     /// by passing the parameter <paramref name="tuple"/> to the constructor
-    /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
+    /// <see cref="global::SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
     /// </returns>
     [Pure]
     public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>(
         (ReadOnlyMemory<TBody> Body, ReadOnlyMemory<TSeparator> Separator) tuple
     ) =>
         new(tuple.Body, tuple.Separator);
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
+    /// <inheritdoc cref="global::SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Deconstruct(out ReadOnlyMemory<TBody> head, out SplitMemory<TBody, TSeparator, TStrategy> tail)
     {
