@@ -185,7 +185,7 @@
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Runtime.Serialization" Private="false"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="JetBrainsAnnotations.Fody" Version="2.17" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="JetBrains.Annotations" Version="2025.2.4" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="JetBrains.Annotations" Version="2026.2.0" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="11.0.100-preview3.26159.112"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="mscorlib" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))" Include="FSharp.Core" Version="4.1.18"/>

@@ -11,14 +11,12 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/549d290ec6e547c6b0c060e4fd796958ae4000/_59e6b/IReadOnlySet.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bce199ef01649ab501e8a635d735b71e3ca6364214a411bdd9736c7e873be7/MemoryHandle.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Compile/Source/References/Aliases.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Compile/Source/References/AssemblyLevelAttributes.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Compile/Source/References/Emik/Collections/Immutable/SplitMemory.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/artifacts/obj/Emik.Morsels/project.assets.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/Linq/Collected.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/System/Collections/Immutable/ImmutableArrayBuilderDrainToImmutable.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file:///media/f/RiderProjects/Emik.Morsels/Compile/Source/References/System/Collections/Immutable/ImmutableArrayBuilderDrainToImmutable.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="SWEA" />
