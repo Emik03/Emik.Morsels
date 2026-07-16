@@ -11,7 +11,7 @@ static partial class EnumerableAppendPrepend
     /// <param name="element">The value to append to <paramref name="source"/>.</param>
     /// <returns>A new sequence that ends with <paramref name="element"/>.</returns>
     public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element) =>
-        source.Concat(element.Yield());
+        source.Concat([element]);
 
     /// <summary>Prepends a value to the end of the sequence.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
@@ -19,6 +19,6 @@ static partial class EnumerableAppendPrepend
     /// <param name="element">The value to prepend to <paramref name="source"/>.</param>
     /// <returns>A new sequence that starts with <paramref name="element"/>.</returns>
     public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element) =>
-        element.Yield().Concat(source);
+        ((IEnumerable<TSource>)[element]).Concat(source);
 }
 #endif

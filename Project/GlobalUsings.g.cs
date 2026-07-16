@@ -57,7 +57,6 @@ global using global::System.IO.Enumeration;
 global using global::System.IO.IsolatedStorage;
 global using global::System.IO.MemoryMappedFiles;
 global using global::System.IO.Packaging;
-global using global::System.IO.Pipelines;
 global using global::System.IO.Pipes;
 global using global::System.IO.Ports;
 global using global::System.Linq;
@@ -76,7 +75,6 @@ global using global::System.Net.PeerToPeer;
 global using global::System.Net.PeerToPeer.Collaboration;
 global using global::System.Net.Quic;
 global using global::System.Net.Security;
-global using global::System.Net.ServerSentEvents;
 global using global::System.Net.Sockets;
 global using global::System.Net.WebSockets;
 global using global::System.Numerics;
@@ -92,11 +90,9 @@ global using global::System.Runtime.ConstrainedExecution;
 global using global::System.Runtime.ExceptionServices;
 global using global::System.Runtime.InteropServices;
 global using global::System.Runtime.InteropServices.ComTypes;
-global using global::System.Runtime.InteropServices.Java;
 global using global::System.Runtime.InteropServices.JavaScript;
 global using global::System.Runtime.InteropServices.Marshalling;
 global using global::System.Runtime.InteropServices.ObjectiveC;
-global using global::System.Runtime.InteropServices.Swift;
 global using global::System.Runtime.Intrinsics;
 global using global::System.Runtime.Intrinsics.Arm;
 global using global::System.Runtime.Intrinsics.Wasm;
@@ -129,7 +125,6 @@ global using global::System.Text.Encodings;
 global using global::System.Text.Encodings.Web;
 global using global::System.Text.Json;
 global using global::System.Text.Json.Nodes;
-global using global::System.Text.Json.Schema;
 global using global::System.Text.Json.Serialization;
 global using global::System.Text.Json.Serialization.Metadata;
 global using global::System.Text.RegularExpressions;
@@ -153,13 +148,6 @@ global using global::System.Xml.Serialization;
 global using global::System.Xml.XPath;
 global using global::System.Xml.Xsl;
 global using global::CommunityToolkit;
-global using global::CommunityToolkit.Common;
-global using global::CommunityToolkit.Common.Collections;
-global using global::CommunityToolkit.Common.Deferred;
-global using global::CommunityToolkit.Common.Extensions;
-global using global::CommunityToolkit.Common.Helpers;
-global using global::CommunityToolkit.Diagnostics;
-global using global::CommunityToolkit.Helpers;
 global using global::CommunityToolkit.HighPerformance;
 global using global::CommunityToolkit.HighPerformance.Buffers;
 global using global::CommunityToolkit.HighPerformance.Buffers.Internals;
@@ -176,10 +164,8 @@ global using global::Emik;
 global using global::Emik.Morsels;
 global using global::ILMerge;
 global using global::InlineIL;
-global using global::InlineMethod;
 global using global::JetBrains;
 global using global::JetBrains.Annotations;
-global using global::LocalsInit;
 global using global::Microsoft;
 global using global::Microsoft.CSharp;
 global using global::Microsoft.CSharp.RuntimeBinder;
@@ -307,8 +293,6 @@ namespace System.IO.MemoryMappedFiles { }
 
 namespace System.IO.Packaging { }
 
-namespace System.IO.Pipelines { }
-
 namespace System.IO.Pipes { }
 
 namespace System.IO.Ports { }
@@ -345,8 +329,6 @@ namespace System.Net.Quic { }
 
 namespace System.Net.Security { }
 
-namespace System.Net.ServerSentEvents { }
-
 namespace System.Net.Sockets { }
 
 namespace System.Net.WebSockets { }
@@ -377,15 +359,11 @@ namespace System.Runtime.InteropServices { }
 
 namespace System.Runtime.InteropServices.ComTypes { }
 
-namespace System.Runtime.InteropServices.Java { }
-
 namespace System.Runtime.InteropServices.JavaScript { }
 
 namespace System.Runtime.InteropServices.Marshalling { }
 
 namespace System.Runtime.InteropServices.ObjectiveC { }
-
-namespace System.Runtime.InteropServices.Swift { }
 
 namespace System.Runtime.Intrinsics { }
 
@@ -451,8 +429,6 @@ namespace System.Text.Json { }
 
 namespace System.Text.Json.Nodes { }
 
-namespace System.Text.Json.Schema { }
-
 namespace System.Text.Json.Serialization { }
 
 namespace System.Text.Json.Serialization.Metadata { }
@@ -499,20 +475,6 @@ namespace System.Xml.Xsl { }
 
 namespace CommunityToolkit { }
 
-namespace CommunityToolkit.Common { }
-
-namespace CommunityToolkit.Common.Collections { }
-
-namespace CommunityToolkit.Common.Deferred { }
-
-namespace CommunityToolkit.Common.Extensions { }
-
-namespace CommunityToolkit.Common.Helpers { }
-
-namespace CommunityToolkit.Diagnostics { }
-
-namespace CommunityToolkit.Helpers { }
-
 namespace CommunityToolkit.HighPerformance { }
 
 namespace CommunityToolkit.HighPerformance.Buffers { }
@@ -545,13 +507,9 @@ namespace ILMerge { }
 
 namespace InlineIL { }
 
-namespace InlineMethod { }
-
 namespace JetBrains { }
 
 namespace JetBrains.Annotations { }
-
-namespace LocalsInit { }
 
 namespace Microsoft { }
 

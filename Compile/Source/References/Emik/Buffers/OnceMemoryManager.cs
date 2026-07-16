@@ -36,8 +36,12 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>, IEnumerab
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    public IEnumerator<T> GetEnumerator() => MemoryMarshal.ToEnumerable<T>(Memory).GetEnumerator();
-
+    public IEnumerator<T> GetEnumerator() =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.ToEnumerable<T>(Memory).GetEnumerator();
+#else
+        ((IEnumerable<T>)[_value]).GetEnumerator();
+#endif
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public override unsafe MemoryHandle Pin(int elementIndex = 0) =>

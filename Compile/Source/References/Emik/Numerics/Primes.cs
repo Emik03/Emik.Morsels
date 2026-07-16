@@ -223,9 +223,8 @@ readonly partial struct Primes
         32429, 32441, 32443, 32467, 32479, 32491, 32497, 32503, 32507, 32531, 32533, 32537, 32561, 32563, 32569, 32573,
         32579, 32587, 32603, 32609, 32611, 32621, 32633, 32647, 32653, 32687, 32693, 32707, 32713, 32717, 32719, 32749,
     ];
-
-    /// <summary>Gets all <see langword="short"/> prime numbers.</summary>
 #if NETCOREAPP || ROSLYN
+    /// <summary>Gets all <see langword="short"/> prime numbers.</summary>
     public static ImmutableArray<short> Int16 => ImmutableCollectionsMarshal.AsImmutableArray(s_int16);
 #endif
     /// <summary>Gets a consistent prime number based on the line number this was called from.</summary>
