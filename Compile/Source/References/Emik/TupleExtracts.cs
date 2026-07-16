@@ -15,7 +15,7 @@ static partial class TupleExtracts
     /// <returns>
     /// The field <see cref="System.ValueTuple{T1, T2}.Item1"/> from the parameter <paramref name="tuple"/>.
     /// </returns>
-    public static T1 First<T1, T2>((T1, T2) tuple) => tuple.Item1;
+    public static T1 First<T1, T2>((T1 First, T2 Second) tuple) => tuple.First;
 
     /// <summary>Gets the second item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
@@ -24,20 +24,15 @@ static partial class TupleExtracts
     /// <returns>
     /// The field <see cref="System.ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.
     /// </returns>
-    public static T2 Second<T1, T2>((T1, T2) tuple) => tuple.Item2;
+    public static T2 Second<T1, T2>((T1 First, T2 Second) tuple) => tuple.Second;
 #if !NET47 && !NETSTANDARD2_0 // Filter required for frameworks whose tuples don't implement ITuple.
-    /// <summary>Gets the enumeration of the tuple.</summary>
-    /// <param name="tuple">The tuple to enumerate.</param>
-    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
-    public static IEnumerable<object?> AsEnumerable(this ITuple tuple) => tuple.Length.For(i => tuple[i]);
-
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <typeparam name="T">The type of tuple.</typeparam>
     /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
     public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
         where T : ITuple =>
-        tuple.Length.For(i => tuple[i]);
+        Enumerable.Repeat(tuple, tuple.Length).Select((x, i) => x[i]);
 
     /// <summary>Turns the tuples into key-value pairs.</summary>
     /// <typeparam name="TKey">

@@ -121,7 +121,7 @@ static partial class OperatorCaching
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
-    // ReSharper disable once ClassNeverInstantiated.Global
+    // ReSharper disable once ConvertToStaticClass ClassNeverInstantiated.Global
     public sealed partial class DirectOperators<T>
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;

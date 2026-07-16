@@ -2,8 +2,6 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-using static Span;
-
 /// <summary>Extension methods to generate random numbers.</summary>
 static partial class RandomGeneration
 {
@@ -13,11 +11,11 @@ static partial class RandomGeneration
     /// <returns>The random value.</returns>
     // ReSharper disable once RedundantNameQualifier
     public static T Next<T>(this System.Random random)
-        where T : unmanaged
+        where T : struct
     {
-        T output = default;
-        random.NextBytes(MemoryMarshal.Cast<T, byte>(Ref(ref output)));
-        return output;
+        Span<byte> bytes = stackalloc byte[Unsafe.SizeOf<T>()];
+        random.NextBytes(bytes);
+        return MemoryMarshal.Read<T>(bytes);
     }
 }
 #endif

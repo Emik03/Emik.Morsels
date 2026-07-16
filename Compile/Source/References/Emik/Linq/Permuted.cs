@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if !NET20 && !NET30
+
 /// <summary>Provides methods for creating combinations of items.</summary>
 static partial class Permuted
 {
@@ -10,25 +10,15 @@ static partial class Permuted
     /// <param name="iterator">The input to generate combinations of.</param>
     /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
     [Pure]
-#if NETFRAMEWORK && !NET45_OR_GREATER
     public static IEnumerable<IList<T>> Combinations<T>([InstantHandle] this IEnumerable<IEnumerable<T>> iterator) =>
         iterator.Select(x => x.ToIList()).ToIList().Combinations();
-#else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-        iterator.Select(x => x.ReadOnly()).ReadOnly().Combinations();
-#endif
+
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
     /// <param name="lists">The input to generate combinations of.</param>
     /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
     [Pure]
-#if NETFRAMEWORK && !NET45_OR_GREATER
     public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> lists)
-#else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> lists)
-#endif
     {
         if (lists.Any(x => x is []))
             yield break;
@@ -60,59 +50,4 @@ static partial class Permuted
             } while (index >= lists[pos].Count);
         }
     }
-#if !NO_SYSTEM_MEMORY
-    /// <summary>Generates all combinations of the nested list.</summary>
-    /// <typeparam name="T">The type of nested list.</typeparam>
-    /// <param name="lists">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
-    [Pure]
-    public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
-    {
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-        foreach (var list in lists)
-            if (list.IsEmpty)
-                return [];
-
-        return lists.CombinationsIterator();
-    }
-
-    /// <summary>Generates all combinations of the nested enumerable.</summary>
-    /// <typeparam name="T">The type of nested enumerable.</typeparam>
-    /// <param name="iterator">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
-    [Pure]
-    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
-
-    static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
-    {
-        int count = lists.Count, index = 0, pos = 0;
-        var indices = SmallList<int>.Uninit(count);
-        var accumulator = SmallList<T>.Uninit(count);
-
-        while (true)
-        {
-            while (pos < accumulator.Count)
-            {
-                indices[pos] = index;
-                accumulator[pos] = lists[pos][index];
-                index = 0;
-                pos++;
-            }
-
-            yield return accumulator.Cloned;
-
-            do
-            {
-                if (pos is 0)
-                    yield break;
-
-                index = indices[--pos] + 1;
-            } while (index >= lists[pos].Count);
-        }
-    }
-#endif
 }
-#endif

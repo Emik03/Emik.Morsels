@@ -154,7 +154,4 @@ static partial class MethodGroupings
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparer"/>.</returns>
     public static IEqualityComparer<T> Equating<T>(Func<T?, T?, bool> comparer, Func<T, int>? hashCode = null) =>
         new Equated<T>(comparer, hashCode ?? Equated<T>.Default);
-
-    /// <inheritdoc cref="Invoke"/>
-    public static TResult Invoke<TResult>([InstantHandle] Func<TResult> del) => del();
 }

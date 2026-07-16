@@ -40,6 +40,7 @@ sealed class FrameRateCounter(Game game, SpriteFont font, SpriteBatch batch, Fun
     public SpriteBatch Batch => batch;
 
     /// <summary>Gets the scale to draw the font at.</summary>
+    // ReSharper disable once AutoPropertyCanBeMadeGetOnly.Global
     public Vector2 Scale { get; set; } = Vector2.One;
 
     public override void Draw(GameTime gameTime)
@@ -51,9 +52,9 @@ sealed class FrameRateCounter(Game game, SpriteFont font, SpriteBatch batch, Fun
         _builder.Remove(Format.Length, _builder.Length - Format.Length).Append(_rate);
 
         const float Factor = 24;
-        var position = resolution() / Factor;
-        batch.DrawString(font, _builder, position + Vector2.One, Color.Black, 0, default, Scale, SpriteEffects.None, 0);
-        batch.DrawString(font, _builder, position, Color.White, 0, default, Scale, SpriteEffects.None, 0);
+        var pos = resolution() / Factor;
+        batch.DrawString(font, _builder, pos + Vector2.One, Color.Black, 0, default, Scale, SpriteEffects.None, 0);
+        batch.DrawString(font, _builder, pos, Color.White, 0, default, Scale, SpriteEffects.None, 0);
     }
 
     public override void Update(GameTime gameTime)

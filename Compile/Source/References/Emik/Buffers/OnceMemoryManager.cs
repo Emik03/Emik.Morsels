@@ -7,9 +7,9 @@ using static Span;
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
 /// <typeparam name="T">The type of value.</typeparam>
 /// <param name="value">The value to encapsulate.</param>
-sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
+sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>, IEnumerable<T>
 {
-    GCHandle _handle;
+    GCHandle _gc;
 
     T _value = value;
 
@@ -24,8 +24,8 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     protected override void Dispose(bool disposing)
 #pragma warning restore IDISP010
     {
-        if (_handle.IsAllocated)
-            _handle.Free();
+        if (_gc.IsAllocated)
+            _gc.Free();
     }
 
     /// <inheritdoc />
@@ -33,14 +33,17 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     public override void Unpin() => Dispose(true);
 
     /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    public IEnumerator<T> GetEnumerator() => MemoryMarshal.ToEnumerable<T>(Memory).GetEnumerator();
+
+    /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public override unsafe MemoryHandle Pin(int elementIndex = 0) =>
-        typeof(T).IsValueType
-            ? default
-            : new(
-                (void*)(_handle.IsAllocated ? _handle : _handle = GCHandle.Alloc(_value, GCHandleType.Pinned))
-               .AddrOfPinnedObject()
-            );
+        typeof(T).IsValueType ? default :
+        elementIndex is not 0 ? throw new() :
+        new((void*)(_gc.IsAllocated ? _gc : _gc = GCHandle.Alloc(_value, GCHandleType.Pinned)).AddrOfPinnedObject());
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

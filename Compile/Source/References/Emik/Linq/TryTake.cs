@@ -50,7 +50,7 @@ static partial class TryTake
                 return list.Count is 0 ? fallback : list[0];
             case IReadOnlyList<T> list:
                 return list.Count is 0 ? fallback : list[0];
-            case var _ when iterable.TryGetNonEnumeratedCount(out var count):
+            case var _ when iterable.TryCount() is { } count:
                 return count is 0 ? fallback : iterable.First();
             default:
             {
@@ -201,7 +201,7 @@ static partial class TryTake
 #endif
             IReadOnlyList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
             IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
-            _ when iterable.TryGetNonEnumeratedCount(out var count) =>
+            _ when iterable.TryCount() is { } count =>
                 index < count ? iterable.Skip(count - index - 1).FirstOrDefault() : default,
             _ => iterable.Reverse().Skip(index).FirstOrDefault(),
         };

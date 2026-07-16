@@ -42,32 +42,12 @@ static partial class Collected
 #else
                 : iterable.ToIList());
 #endif
-    /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
-    /// <typeparam name="T">The type of item within the enumeration.</typeparam>
-    /// <param name="iterable">The potentially empty collection.</param>
-    /// <param name="fallback">The fallback value.</param>
-    /// <returns>
-    /// The parameter <paramref name="iterable"/> when non-empty, otherwise; <paramref name="fallback"/>.
-    /// </returns>
-    [Pure]
-    public static IEnumerable<T> DefaultIfEmpty<T>(this IEnumerable<T>? iterable, IEnumerable<T> fallback)
-    {
-        using var a = iterable?.GetEnumerator();
-
-        if (a?.MoveNext() ?? false)
-            do
-                yield return a.Current;
-            while (a.MoveNext());
-        else
-            foreach (var b in fallback)
-                yield return b;
-    }
-
     /// <summary>Appends one element and returns the list.</summary>
     /// <typeparam name="T">The type of the list and element.</typeparam>
     /// <param name="list">The list to append to.</param>
     /// <param name="item">The item to append with.</param>
     /// <returns>The parameter <paramref name="list"/>.</returns>
+    // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static List<T> AndAdd<T>(this List<T> list, [CanBeNull] T item)
     {
         list.Add(item);
@@ -174,18 +154,20 @@ static partial class Collected
         }
 
         /// <inheritdoc />
-        void ICollection<T>.Add(T? item) { }
+        [DoesNotReturn]
+        void ICollection<T>.Add(T? item) => throw new NotSupportedException();
 
         /// <inheritdoc />
-        void ICollection<T>.Clear() { }
+        [DoesNotReturn]
+        void ICollection<T>.Clear() => throw new NotSupportedException();
 
         /// <inheritdoc />
         [Pure]
         public bool Contains(T item) => enumerable.Contains(item);
 
         /// <inheritdoc />
-        [Pure]
-        bool ICollection<T>.Remove(T? item) => false;
+        [DoesNotReturn, Pure]
+        bool ICollection<T>.Remove(T? item) => throw new NotSupportedException();
 
         /// <inheritdoc />
         [Pure]

@@ -18,7 +18,7 @@ static partial class Hsv
     /// <param name="value">The value.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
     // Intentionally omitting `AggressiveInlining` due to complexity.
-    public static (byte, byte, byte) ToRgb(ushort hue, byte saturation = M, byte value = M) =>
+    public static (byte R, byte G, byte B) ToRgb(ushort hue, byte saturation = M, byte value = M) =>
         (hue %= M * 6) switch
         {
             < M => (value, (byte)(V(hue % M, saturation) * value / M), (byte)((M - saturation) * value / M)),
@@ -39,7 +39,7 @@ static partial class Hsv
     /// <param name="value">The value.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static (byte, byte, byte) ToRgb<T>(this T hue, byte saturation = M, byte value = M)
+    public static (byte R, byte G, byte B) ToRgb<T>(this T hue, byte saturation = M, byte value = M)
         where T : IComparisonOperators<T, T, bool>, IModulusOperators<T, T, T>, INumberBase<T> =>
         ToRgb(ushort.CreateChecked(hue.Mod(T.CreateChecked(M * 6))), saturation, value);
 #endif

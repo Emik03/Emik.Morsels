@@ -61,29 +61,46 @@ static partial class SplitFactory
 
         return new(t, f);
     }
-#if !NO_SYSTEM_MEMORY
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="predicate">The method that decides where the item ends up.</param>
+
+    /// <summary>
+    /// Flattens the nested collection by taking all the first elements of the enumerations,
+    /// then all the second elements of the enumerations, the third, and so on.
+    /// When any enumeration runs out, it simply moves onto the next enumeration until all enumerations are finished.
+    /// </summary>
+    /// <typeparam name="T">The type of collection.</typeparam>
+    /// <param name="enumerable">The collection to flatten.</param>
     /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
-    /// <see langword="true"/> and <see langword="false"/>.
+    /// The flattened collection by taking items in order of appearance of each individual enumerable,
+    /// and only then by the outer enumerable.
     /// </returns>
-    [MustUseReturnValue]
-    public static Split<SmallList<T>> SmallSplitBy<T>(
-        [InstantHandle] this IEnumerable<T> source,
-        [InstantHandle] Predicate<T> predicate
-    )
+    [Pure]
+    public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
-        SmallList<T> t = [], f = [];
+        var (truthy, falsy) = enumerable
+           .Select([MustDisposeResource](x) => x.GetEnumerator())
+           .SplitBy(x => x.MoveNext());
 
-        foreach (var item in source)
-            (predicate(item) ? t : f).Add(item);
+        foreach (var f in falsy)
+            f.Dispose();
 
-        return new(t, f);
+        try
+        {
+            while (truthy is not [])
+            {
+                yield return truthy.ConvertAll(x => x.Current);
+
+                (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
+
+                foreach (var f in falsy)
+                    f.Dispose();
+            }
+        }
+        finally
+        {
+            foreach (var f in falsy)
+                f.Dispose();
+        }
     }
-#endif
 }
 
 /// <summary>Represents a fixed collection of 2 items.</summary>

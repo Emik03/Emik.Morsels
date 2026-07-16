@@ -7,7 +7,6 @@ using SecurityPermissionAttribute = System.Security.Permissions.SecurityPermissi
 using static System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityPermissionFlag;
 #endif
-
 /// <summary>Provides methods for exiting the program.</summary>
 // ReSharper disable WrongIndentSize
 static partial class Exit
