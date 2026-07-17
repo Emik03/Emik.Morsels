@@ -8149,9 +8149,6 @@ public sealed class FrameRateCounter(Game game, SpriteFont font, SpriteBatch bat
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().AsEnumerable().SelectMany(x => x.TryGetTypes());
-    /// <summary>Invokes a method.</summary>
-    /// <param name="del">The method to invoke.</param>
-    public static void Invoke([InstantHandle] Action del) => del();
     /// <summary>Performs nothing.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop()
