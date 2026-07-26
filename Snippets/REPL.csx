@@ -12150,7 +12150,7 @@ public ref partial struct ImmutableArrayBuilder<T>
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
-#if NET5_0_OR_GREATER
+#if !NO_SYSTEM_MEMORY
 /// <summary>Xoshiro256** (xor, shift, rotate) pseudo-random number generator (PRNG).</summary>
 /// <remarks><para>
 /// Implementation based on
@@ -12278,12 +12278,26 @@ public sealed class XoshiroRandom(ulong seed) : Random
     /// <returns>The next <see langword="ulong"/>.</returns>
     public ulong NextUInt64(ulong maxValue)
     {
-        var n1 = Math.BigMul(maxValue, NextUInt64(), out var low);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NET5_0_OR_GREATER
+        static ulong BigMul(ulong a, ulong b, out ulong low) => Math.BigMul(a, b, out low);
+#else
+        static ulong BigMul(ulong a, ulong b, out ulong low)
+        {
+            var (n1, n2, n3, n4) = ((int)(uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
+            var n5 = (ulong)(uint)n1 * n3;
+            var n6 = (ulong)n2 * n3 + (n5 >> 32);
+            var n7 = (ulong)(uint)n1 * n4 + (uint)n6;
+            low = n7 << 32 | (uint)n5;
+            return (ulong)n2 * n4 + (n6 >> 32) + (n7 >> 32);
+        }
+#endif
+        var n1 = BigMul(maxValue, NextUInt64(), out var low);
         if (low < maxValue)
         {
             var n2 = (0 - maxValue) % maxValue;
             while (low < n2)
-                n1 = Math.BigMul(maxValue, NextUInt64(), out low);
+                n1 = BigMul(maxValue, NextUInt64(), out low);
         }
         return n1;
     }
