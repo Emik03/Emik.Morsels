@@ -17,7 +17,7 @@ static partial class ListMarshal
                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                .FirstOrDefault(x => x.FieldType == typeof(T[])) is { } method
                 ? CreateGetter(method)
-                : x => [.. x];
+                : x => [..x];
 
         /// <summary>Creates the getter to the inner array.</summary>
         /// <param name="field">The field to the list's array.</param>

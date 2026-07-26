@@ -1,31 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once RedundantUsingDirective.Global
-global using static Emik.Morsels.TupleExtracts;
-
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if !NET47 && !NETSTANDARD2_0 // Filter required for frameworks whose tuples don't implement ITuple.
 /// <summary>Methods to get elements of a tuple.</summary>
 static partial class TupleExtracts
 {
-    /// <summary>Gets the first item of the tuple.</summary>
-    /// <typeparam name="T1">The first type of the tuple.</typeparam>
-    /// <typeparam name="T2">The second type of the tuple.</typeparam>
-    /// <param name="tuple">The tuple to get the value from.</param>
-    /// <returns>
-    /// The field <see cref="System.ValueTuple{T1, T2}.Item1"/> from the parameter <paramref name="tuple"/>.
-    /// </returns>
-    public static T1 First<T1, T2>((T1 First, T2 Second) tuple) => tuple.First;
-
-    /// <summary>Gets the second item of the tuple.</summary>
-    /// <typeparam name="T1">The first type of the tuple.</typeparam>
-    /// <typeparam name="T2">The second type of the tuple.</typeparam>
-    /// <param name="tuple">The tuple to get the value from.</param>
-    /// <returns>
-    /// The field <see cref="System.ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.
-    /// </returns>
-    public static T2 Second<T1, T2>((T1 First, T2 Second) tuple) => tuple.Second;
-#if !NET47 && !NETSTANDARD2_0 // Filter required for frameworks whose tuples don't implement ITuple.
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <typeparam name="T">The type of tuple.</typeparam>
     /// <param name="tuple">The tuple to enumerate.</param>
@@ -33,22 +12,5 @@ static partial class TupleExtracts
     public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
         where T : ITuple =>
         Enumerable.Repeat(tuple, tuple.Length).Select((x, i) => x[i]);
-
-    /// <summary>Turns the tuples into key-value pairs.</summary>
-    /// <typeparam name="TKey">
-    /// Corresponds to the first generic argument both in the tuple and <see cref="KeyValuePair{TKey, TValue}"/>.
-    /// </typeparam>
-    /// <typeparam name="TValue">
-    /// Corresponds to the second generic argument both in the tuple and <see cref="KeyValuePair{TKey, TValue}"/>.
-    /// </typeparam>
-    /// <param name="tuples">The <see cref="IEnumerable{T}"/> to convert.</param>
-    /// <returns>
-    /// The <see cref="KeyValuePair{TKey, TValue}"/> instances of the parameter <paramref name="tuples"/>.
-    /// </returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<KeyValuePair<TKey, TValue>> KeyValued<TKey, TValue>(
-        params IEnumerable<(TKey Key, TValue Value)> tuples
-    ) =>
-        tuples.Select(x => new KeyValuePair<TKey, TValue>(x.Key, x.Value));
-#endif
 }
+#endif
