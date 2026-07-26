@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if !NO_SYSTEM_MEMORY
+#if NET5_0_OR_GREATER
 /// <summary>Xoshiro256** (xor, shift, rotate) pseudo-random number generator (PRNG).</summary>
 /// <remarks><para>
 /// Implementation based on
@@ -77,8 +77,13 @@ sealed class XoshiroRandom(ulong seed) : Random
     /// <inheritdoc />
     public override double NextDouble() => (NextUInt64() >> 11) * 1.1102230246251565e-16;
 
-    /// <inheritdoc />
-    public override float NextSingle() => (NextUInt64() >> 40) * 5.9604645e-08f;
+    /// <inheritdoc cref="NextDouble"/>
+    public
+#if NET6_0_OR_GREATER
+        override
+#endif
+        float NextSingle() =>
+        (NextUInt64() >> 40) * 5.9604645e-08f;
 
     /// <inheritdoc />
     public override int Next()
@@ -98,8 +103,12 @@ sealed class XoshiroRandom(ulong seed) : Random
     /// <inheritdoc />
     public override int Next(int minValue, int maxValue) => (int)NextUInt32((uint)(maxValue - minValue)) + minValue;
 
-    /// <inheritdoc />
-    public override long NextInt64()
+    /// <inheritdoc cref="Next()"/>
+    public
+#if NET6_0_OR_GREATER
+        override
+#endif
+        long NextInt64()
     {
         ulong n;
 
@@ -110,11 +119,20 @@ sealed class XoshiroRandom(ulong seed) : Random
         return (long)n;
     }
 
-    /// <inheritdoc />
-    public override long NextInt64(long maxValue) => (long)NextUInt64((ulong)maxValue);
+    /// <inheritdoc cref="Next(int)"/>
+    public
+#if NET6_0_OR_GREATER
+        override
+#endif
+        long NextInt64(long maxValue) =>
+        (long)NextUInt64((ulong)maxValue);
 
-    /// <inheritdoc />
-    public override long NextInt64(long minValue, long maxValue) =>
+    /// <inheritdoc cref="Next(int, int)"/>
+    public
+#if NET6_0_OR_GREATER
+        override
+#endif
+        long NextInt64(long minValue, long maxValue) =>
         (long)NextUInt64((ulong)(maxValue - minValue)) + minValue;
 
     /// <summary>Gets the next <see langword="uint"/>.</summary>
@@ -159,21 +177,7 @@ sealed class XoshiroRandom(ulong seed) : Random
     /// <returns>The next <see langword="ulong"/>.</returns>
     public ulong NextUInt64(ulong maxValue)
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if NET5_0_OR_GREATER
-        static ulong BigMul(ulong a, ulong b, out ulong low) => Math.BigMul(a, b, out low);
-#else
-        static ulong BigMul(ulong a, ulong b, out ulong low)
-        {
-            var (n1, n2, n3, n4) = ((int)(uint)a, (uint)(a >> 32), (uint)b, (uint)(b >> 32));
-            var n5 = (ulong)(uint)n1 * n3;
-            var n6 = (ulong)n2 * n3 + (n5 >> 32);
-            var n7 = (ulong)(uint)n1 * n4 + (uint)n6;
-            low = n7 << 32 | (uint)n5;
-            return (ulong)n2 * n4 + (n6 >> 32) + (n7 >> 32);
-        }
-#endif
-        var n1 = BigMul(maxValue, NextUInt64(), out var low);
+        var n1 = Math.BigMul(maxValue, NextUInt64(), out var low);
 
         // ReSharper disable once InvertIf
         if (low < maxValue)
@@ -181,7 +185,7 @@ sealed class XoshiroRandom(ulong seed) : Random
             var n2 = (0 - maxValue) % maxValue;
 
             while (low < n2)
-                n1 = BigMul(maxValue, NextUInt64(), out low);
+                n1 = Math.BigMul(maxValue, NextUInt64(), out low);
         }
 
         return n1;

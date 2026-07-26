@@ -155,7 +155,7 @@ static partial class MemoryMarshal
             ConstructorInfo? Constructor(Type? type) => type?.GetConstructor(ConstructorFlags, null, args, null);
 
             TTarget? Make<TTarget>() =>
-                typeof(TTarget).GetMethod(nameof(Invoke))?.ReturnType is var type &&
+                typeof(TTarget).GetMethod(nameof(Action.Invoke))?.ReturnType is var type &&
                 Constructor(type) is { } constructor ?
                     System.Linq.Expressions.Expression.Lambda<TTarget>(
                             System.Linq.Expressions.Expression.New(constructor, parameters.OfType<Expression>()),

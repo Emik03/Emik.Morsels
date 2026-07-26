@@ -165,7 +165,6 @@
         <PackageReference Include="Fody" Version="6.9.3" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Divorce.Fody" Version="1.1.2" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Text.Analyzers" Version="5.6" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Absence.Fody" Version="2.0.11" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="InlineIL.Fody" Version="1.10.2" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="StaticLambda.Fody" Version="1.1.4" PrivateAssets="all" ExcludeAssets="runtime"/>
@@ -175,7 +174,6 @@
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.17" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.6" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System" Private="false"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Xml" Private="false"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Core" Private="false"/>
