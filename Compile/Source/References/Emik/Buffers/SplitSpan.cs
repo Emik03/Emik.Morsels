@@ -212,7 +212,9 @@ static partial class SplitSpanFactory
         span.AsSpan().SplitLines();
 
     /// <summary>Splits a span by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Whitespaces.Breaking"/>.</para></remarks>
+    /// <remarks><para>
+    /// Line breaks are considered any character in <see cref="Emik.Morsels.Whitespaces.Breaking"/>.
+    /// </para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -233,7 +235,9 @@ static partial class SplitSpanFactory
         span.AsSpan().SplitWhitespace();
 
     /// <summary>Splits a span by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Whitespaces.Unicode"/>.</para></remarks>
+    /// <remarks><para>
+    /// Whitespace is considered any character in <see cref="Emik.Morsels.Whitespaces.Unicode"/>.
+    /// </para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -371,7 +375,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
 
     readonly ReadOnlySpan<TSeparator> _separator = separator;
 #pragma warning restore IDE0032
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Emik.Morsels.SplitSpan{T, TSeparator, TStrategy}"/> struct.
+    /// </summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SplitSpan(ReadOnlySpan<TBody> body)
@@ -508,7 +514,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static explicit operator SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body) => new(body);
 
-    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.</summary>
+    /// <summary>
+    /// Separates the head from the tail of this <see cref="Emik.Morsels.SplitSpan{T, TSeparator, TStrategy}"/>.
+    /// </summary>
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

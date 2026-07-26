@@ -6801,7 +6801,9 @@ public enum KeyMods : ushort
     public static SplitSpan<char, ComptimeString, MatchAny> SplitSpanLines(this string? span) =>
         span.AsSpan().SplitLines();
     /// <summary>Splits a span by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
+    /// <remarks><para>
+    /// Line breaks are considered any character in <see cref="Breaking"/>.
+    /// </para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -6820,7 +6822,9 @@ public enum KeyMods : ushort
     public static SplitSpan<char, ComptimeString, MatchAny> SplitSpanWhitespace(this string? span) =>
         span.AsSpan().SplitWhitespace();
     /// <summary>Splits a span by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
+    /// <remarks><para>
+    /// Whitespace is considered any character in <see cref="Unicode"/>.
+    /// </para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -6946,7 +6950,9 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     readonly ReadOnlySpan<TBody> _body = body;
     readonly ReadOnlySpan<TSeparator> _separator = separator;
 #pragma warning restore IDE0032
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.
+    /// </summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SplitSpan(ReadOnlySpan<TBody> body)
@@ -7065,7 +7071,9 @@ public readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>(
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static explicit operator SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body) => new(body);
-    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.</summary>
+    /// <summary>
+    /// Separates the head from the tail of this <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
+    /// </summary>
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
