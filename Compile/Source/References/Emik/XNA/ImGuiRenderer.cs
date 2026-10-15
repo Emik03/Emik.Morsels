@@ -95,7 +95,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                     io.AddInputCharacter(c);
         }
 
-        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && (Task.Run(ShowAsync)) is var _;
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && Task.Run(ShowAsync) is var _;
     }
 
     /// <inheritdoc cref="BeginTabItem(ReadOnlySpan{char}, ref bool, ImGuiTabItemFlags)"/>
@@ -429,7 +429,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                 }
 
         (var ret, input) = textInput(labelSpan, hint, input, maxLength, size, flags);
-        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret && (Task.Run(ShowAsync)) is var _;
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret && Task.Run(ShowAsync) is var _;
         return ret;
     }
 

@@ -28,7 +28,7 @@
     </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <FileVersion>6.0.2</FileVersion>
+        <FileVersion>6.1</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
         <NoWarn>$(NoWarn);CS0419;IDE0028;IDE0032</NoWarn>

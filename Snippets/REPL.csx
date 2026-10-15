@@ -9978,7 +9978,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                 if (c is not '\t')
                     io.AddInputCharacter(c);
         }
-        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && (Task.Run(ShowAsync)) is var _;
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && Task.Run(ShowAsync) is var _;
     }
     /// <inheritdoc cref="BeginTabItem(ReadOnlySpan{char}, ref bool, ImGuiTabItemFlags)"/>
     public static bool BeginTabItem(string label, ref bool p_open, ImGuiTabItemFlags flags) =>
@@ -10278,7 +10278,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                     s_queued.RemoveAt(i);
                 }
         (var ret, input) = textInput(labelSpan, hint, input, maxLength, size, flags);
-        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret && (Task.Run(ShowAsync)) is var _;
+        _ = (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret && Task.Run(ShowAsync) is var _;
         return ret;
     }
     static nint SetupInput([UsedImplicitly] Game game, bool shared)

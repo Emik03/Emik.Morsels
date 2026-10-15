@@ -161,10 +161,10 @@
         <PackageReference Include="InlineIL.Fody" Version="1.10.2" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="StaticLambda.Fody" Version="1.1.4" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Collections.Analyzer" Version="0.3.1" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Collections.Analyzer" Version="0.2.14.2" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all" ExcludeAssets="runtime"/>
-        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.17" PrivateAssets="all" ExcludeAssets="runtime"/>
+        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.18" PrivateAssets="all" ExcludeAssets="runtime"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all" ExcludeAssets="runtime"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System" Private="false"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Xml" Private="false"/>
