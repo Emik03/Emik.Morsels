@@ -1,0 +1,12 @@
+{
+  "RoslynExtensionsOptions": {
+    "EnableAnalyzersSupport": true,
+    "LocationPaths": []
+  },
+  "FormattingOptions": {
+    "EnableEditorConfigSupport": true
+  },
+  "MsBuild": {
+    "LoadProjectsOnDemand": true
+  }
+}

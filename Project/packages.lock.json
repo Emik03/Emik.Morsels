@@ -10,9 +10,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "Divorce.Fody": {
         "type": "Direct",
@@ -22,9 +22,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -123,9 +123,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "Divorce.Fody": {
         "type": "Direct",
@@ -135,9 +135,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -236,9 +236,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "CommunityToolkit.HighPerformance": {
         "type": "Direct",
@@ -260,9 +260,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -406,9 +406,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "CommunityToolkit.HighPerformance": {
         "type": "Direct",
@@ -427,9 +427,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -525,9 +525,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "CommunityToolkit.HighPerformance": {
         "type": "Direct",
@@ -546,9 +546,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -644,9 +644,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "CommunityToolkit.HighPerformance": {
         "type": "Direct",
@@ -665,9 +665,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -763,9 +763,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "CommunityToolkit.HighPerformance": {
         "type": "Direct",
@@ -784,9 +784,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -882,9 +882,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "CommunityToolkit.HighPerformance": {
         "type": "Direct",
@@ -900,9 +900,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
@@ -993,9 +993,9 @@
       },
       "Collections.Analyzer": {
         "type": "Direct",
-        "requested": "[0.2.14.2, )",
-        "resolved": "0.2.14.2",
-        "contentHash": "FCQXj050exC2BDv7/yq/ECQReT62/nU19ZX08eLGO1RCEg31Uf760nz5mQBb9nSM4mqkVnkVHA7XtBEZEUIzFA=="
+        "requested": "[0.3.1, )",
+        "resolved": "0.3.1",
+        "contentHash": "0iewdqI2PvAB0r9aEAS+vHg67javORp+rQToT4eXHQIBrnCcuFwW6FmGB8/WHMHvlzIRx6zBUzNSD+Mj9UT0SA=="
       },
       "CommunityToolkit.HighPerformance": {
         "type": "Direct",
@@ -1011,9 +1011,9 @@
       },
       "Emik.SourceGenerators.Choices": {
         "type": "Direct",
-        "requested": "[1.4.17, )",
-        "resolved": "1.4.17",
-        "contentHash": "TNcX2Q7AfIBgYj5/qvTYPK/ZZh90jU+uB0dobkGXXYFu3pNivYJR8PHMT2p7vSW7Y77R2W0WPO2Bsb5WyK0cAQ=="
+        "requested": "[1.4.18, )",
+        "resolved": "1.4.18",
+        "contentHash": "8WE5Utk9ImLBqzyURCtKMe+XyQgjpEg4O8wK+mxdM53TfHTK2rwNupKB/+9VUqQKO7wgVdA0tq3bk8y5btIEQg=="
       },
       "Emik.SourceGenerators.Implicit": {
         "type": "Direct",
