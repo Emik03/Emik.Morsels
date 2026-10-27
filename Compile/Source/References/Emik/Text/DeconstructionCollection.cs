@@ -955,6 +955,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             _ => ToString(value),
         };
 
-    [Pure]
+    [Pure] // ReSharper disable once RedundantUnsafeContext
     static unsafe string ToHexString(Pointer x) => ((nint)Pointer.Unbox(x)).ToHexString();
 }

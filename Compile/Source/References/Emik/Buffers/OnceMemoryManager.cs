@@ -44,6 +44,7 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>, IEnumerab
 #endif
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    // ReSharper disable once RedundantUnsafeContext
     public override unsafe MemoryHandle Pin(int elementIndex = 0) =>
         typeof(T).IsValueType ? default :
         elementIndex is not 0 ? throw new() :

@@ -282,7 +282,7 @@ static partial class Span
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 
-    /// <summary>Turns the expression into an lvalue.</summary>
+    /// <summary>Turns the expression into an l-value.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="expression">The value to return.</param>
     /// <returns>The parameter <paramref name="expression"/> by reference.</returns>

@@ -873,7 +873,7 @@ static partial class NumberInterfaceExtensions
         where TSelf : ITrigonometricFunctions<TSelf> =>
         TSelf.TanPi(x);
 
-    /// <inheritdoc cref="IBinaryInteger{TSelf}.DivRem"/>
+    /// <inheritdoc cref="IBinaryInteger{TSelf}.DivRem(TSelf, TSelf)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static (TSelf Quotient, TSelf Remainder) DivRem<TSelf>(this TSelf left, TSelf right)
         where TSelf : IBinaryInteger<TSelf> =>

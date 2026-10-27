@@ -1433,7 +1433,7 @@ public readonly partial struct Primes
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
-    /// <summary>Turns the expression into an lvalue.</summary>
+    /// <summary>Turns the expression into an l-value.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="expression">The value to return.</param>
     /// <returns>The parameter <paramref name="expression"/> by reference.</returns>
@@ -5003,7 +5003,7 @@ public partial struct Bits<T>
     public static TSelf TanPi<TSelf>(this TSelf x)
         where TSelf : ITrigonometricFunctions<TSelf> =>
         TSelf.TanPi(x);
-    /// <inheritdoc cref="IBinaryInteger{TSelf}.DivRem"/>
+    /// <inheritdoc cref="IBinaryInteger{TSelf}.DivRem(TSelf, TSelf)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static (TSelf Quotient, TSelf Remainder) DivRem<TSelf>(this TSelf left, TSelf right)
         where TSelf : IBinaryInteger<TSelf> =>
