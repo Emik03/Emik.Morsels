@@ -5,6 +5,7 @@ module internal Emik.Morsels.FSharp
 open System
 open System.Collections.Generic
 open System.Diagnostics
+open FSharp.Core
 
 /// Combines two predicate functions together in eager AND form.
 let inline (<&&>) ([<InlineIfLambda>] fn) ([<InlineIfLambda>] gn) x = fn x && gn x
